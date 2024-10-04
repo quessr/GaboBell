@@ -12,6 +12,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GaboBell"
         tools:targetApi="31">
+
+        <activity
+            android:name=".ReportActivity"
+            android:exported="true"
+            android:label="Report Activity">
+        </activity>
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
