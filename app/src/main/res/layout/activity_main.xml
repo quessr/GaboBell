@@ -8,12 +8,52 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/main_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@string/main_registered_device"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/main_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/main_no_registered_device_des"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_title" />
+
+    <Button
+        android:id="@+id/btn_device_registration"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/black_op_66"
+        android:text="@string/main_device_registration"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/main_description" />
+
+    <Button
+        android:id="@+id/btn_emergency_report"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/red"
+        android:text="@string/main_emergency_report"
+        android:textSize="30sp"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/btn_check_report_details" />
+
+    <Button
+        android:id="@+id/btn_check_report_details"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@color/black_op_66"
+        android:text="@string/main_check_report_details"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

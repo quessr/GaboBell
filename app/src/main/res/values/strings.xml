@@ -4,7 +4,7 @@
     <!--Main-->
     <string name="main_registered_device">등록기기</string>
     <string name="main_no_registered_device_des">현재 등록된 기기가 없습니다.</string>
-    <string name="main_device_registration">기기등록</string>
+    <string name="main_device_registration">기기 등록</string>
     <string name="main_device_settings">기기설정</string>
     <string name="main_emergency_report">긴급신고</string>
     <string name="main_check_report_details">신고내역 확인</string>
