@@ -12,5 +12,11 @@ import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        binding.btnEmergencyReport.setOnClickListener {
+            val intent = Intent(this, ReportActivity::class.java)
+            startActivity(intent)
+        }
     }
+
 }
