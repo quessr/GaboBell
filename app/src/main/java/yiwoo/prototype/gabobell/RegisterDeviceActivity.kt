@@ -1,4 +1,7 @@
 package yiwoo.prototype.gabobell
 
-class RegisterDeviceActivity {
+import yiwoo.prototype.gabobell.databinding.ActivityRegisterDeviceBinding
+
+class RegisterDeviceActivity :
+    BaseActivity<ActivityRegisterDeviceBinding>(ActivityRegisterDeviceBinding::inflate) {
 }

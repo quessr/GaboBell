@@ -4,5 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red">#F44336</color>
     <color name="blue">#2196F3</color>
+    <color name="blue_device_item">#CEDFEE</color>
     <color name="black_op_66">#66000000</color>
 </resources>

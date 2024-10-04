@@ -22,6 +22,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             val intent = Intent(this, ReportDetailActivity::class.java)
             startActivity(intent)
         }
+
+        binding.btnDeviceRegistration.setOnClickListener {
+            val intent = Intent(this, RegisterDeviceActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 }

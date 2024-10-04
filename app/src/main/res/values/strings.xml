@@ -22,12 +22,12 @@
     <string name="report_details_action">액션</string>
 
     <!--RegisterDevice-->
-    <string name="report_device_registration">기기등록</string>
-    <string name="report_device_scan">스캔</string>
-    <string name="report_device_scan_cancellation">스캔 취소</string>
-    <string name="report_device_registration_cancellation">등록 취소</string>
-    <string name="report_device_finding_the_device">기기를 찾고 있습니다...</string>
-    <string name="report_device_connection">연결</string>
+    <string name="register_device_registration">기기등록</string>
+    <string name="register_device_scan">스캔</string>
+    <string name="register_device_scan_cancellation">스캔 취소</string>
+    <string name="register_device_registration_cancellation">등록 취소</string>
+    <string name="register_device_finding_the_device">기기를 찾고 있습니다...</string>
+    <string name="register_device_connection">연결</string>
 
     <!--DeviceSettings-->
     <string name="device_settings_connection_completed">연결 완료</string>

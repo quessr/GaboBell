@@ -26,6 +26,12 @@
         </activity>
 
         <activity
+            android:name=".RegisterDeviceActivity"
+            android:exported="true"
+            android:label="Register Device Activity">
+        </activity>
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
