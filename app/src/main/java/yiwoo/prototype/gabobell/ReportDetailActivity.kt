@@ -1,4 +1,7 @@
 package yiwoo.prototype.gabobell
 
-class ReportDetailActivity {
+import yiwoo.prototype.gabobell.databinding.ActivityReportDetailBinding
+
+class ReportDetailActivity :
+    BaseActivity<ActivityReportDetailBinding>(ActivityReportDetailBinding::inflate) {
 }

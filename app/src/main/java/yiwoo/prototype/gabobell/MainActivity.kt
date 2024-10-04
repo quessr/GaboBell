@@ -17,6 +17,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             val intent = Intent(this, ReportActivity::class.java)
             startActivity(intent)
         }
+
+        binding.btnCheckReportDetails.setOnClickListener {
+            val intent = Intent(this, ReportDetailActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 }

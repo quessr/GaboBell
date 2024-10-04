@@ -15,8 +15,9 @@
     <string name="report_report">신고</string>
 
     <!--ReportDetail-->
+    <string name="report_details_report_details">신고내역</string>
     <string name="report_details_confirm">신고내역확인</string>
-    <string name="report_details_date_time">일자-시간</string>
+    <string name="report_details_subtitle">순번 / 일자-시간 / 주체 / 액션</string>
     <string name="report_details_subject">주체</string>
     <string name="report_details_action">액션</string>
 

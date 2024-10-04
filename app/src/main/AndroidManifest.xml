@@ -20,6 +20,12 @@
         </activity>
 
         <activity
+            android:name=".ReportDetailActivity"
+            android:exported="true"
+            android:label="Report Detail Activity">
+        </activity>
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
