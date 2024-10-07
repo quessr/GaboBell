@@ -42,6 +42,17 @@
         app:layout_constraintTop_toBottomOf="@id/main_description" />
 
     <Button
+        android:id="@+id/btn_device_settings"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/black_op_66"
+        android:text="@string/main_device_settings"
+        android:textColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/btn_device_registration" />
+
+    <Button
         android:id="@+id/btn_emergency_report"
         android:layout_width="match_parent"
         android:layout_height="100dp"

@@ -32,6 +32,12 @@
         </activity>
 
         <activity
+            android:name=".DeviceSettingsActivity"
+            android:exported="true"
+            android:label="Device Settings Activity">
+        </activity>
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

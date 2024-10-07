@@ -32,15 +32,15 @@
     <!--DeviceSettings-->
     <string name="device_settings_connection_completed">연결 완료</string>
     <string name="device_settings_unconnected">연결 안됨</string>
-    <string name="device_settings_fw_version">FW 버전</string>
-    <string name="device_settings_battery_status">배터리 상태</string>
+    <string name="device_settings_fw_version">FW 버전 :</string>
+    <string name="device_settings_battery_status">배터리 상태 :</string>
     <string name="device_settings_battery_connected">연결됨</string>
     <string name="device_settings_battery_charging">충전</string>
     <string name="device_settings_battery_charged_completed">충전완료</string>
     <string name="device_settings_battery_low">배터리부족</string>
     <string name="device_settings_battery_unconnected">연결안됨</string>
-    <string name="device_settings_bell">벨</string>
-    <string name="device_settings_led">LED</string>
+    <string name="device_settings_bell">벨 :</string>
+    <string name="device_settings_led">LED :</string>
     <string name="device_settings_on">ON</string>
     <string name="device_settings_off">OFF</string>
     <string name="device_settings_app_to_bell">APP to BELL</string>

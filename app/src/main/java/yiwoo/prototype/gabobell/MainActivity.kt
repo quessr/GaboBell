@@ -27,6 +27,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             val intent = Intent(this, RegisterDeviceActivity::class.java)
             startActivity(intent)
         }
+
+        binding.btnDeviceSettings.setOnClickListener {
+            val intent = Intent(this, DeviceSettingsActivity::class.java)
+            startActivity(intent)
+        }
     }
 
 }

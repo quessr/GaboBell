@@ -1,4 +1,7 @@
 package yiwoo.prototype.gabobell
 
-class DeviceSettingsActivity {
+import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
+
+class DeviceSettingsActivity :
+    BaseActivity<ActivityDeviceSettingsBinding>(ActivityDeviceSettingsBinding::inflate) {
 }
