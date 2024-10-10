@@ -1,11 +1,7 @@
-package yiwoo.prototype.gabobell
+package yiwoo.prototype.gabobell.ui
 
-import android.content.Context
 import android.os.Bundle
-import android.os.PersistableBundle
-import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding

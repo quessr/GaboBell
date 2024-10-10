@@ -14,31 +14,31 @@
         tools:targetApi="31">
 
         <activity
-            android:name=".ReportActivity"
+            android:name=".ui.ReportActivity"
             android:exported="true"
             android:label="Report Activity">
         </activity>
 
         <activity
-            android:name=".ReportDetailActivity"
+            android:name=".ui.ReportDetailActivity"
             android:exported="true"
             android:label="Report Detail Activity">
         </activity>
 
         <activity
-            android:name=".RegisterDeviceActivity"
+            android:name=".ui.RegisterDeviceActivity"
             android:exported="true"
             android:label="Register Device Activity">
         </activity>
 
         <activity
-            android:name=".DeviceSettingsActivity"
+            android:name=".ui.DeviceSettingsActivity"
             android:exported="true"
             android:label="Device Settings Activity">
         </activity>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
