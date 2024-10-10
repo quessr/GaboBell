@@ -87,6 +87,7 @@ class RegisterDeviceActivity :
     }
 
     private fun startScan() {
+        binding.progressBar.isVisible = true
         bleManager.startBleScan()
         Toast.makeText(this, "Scanning started", Toast.LENGTH_SHORT).show()
     }
@@ -119,6 +120,7 @@ class RegisterDeviceActivity :
     }
 
     override fun onDeviceFound(deviceName: String) {
+        binding.progressBar.isVisible = false
         binding.clDeviceItem.isVisible = true
         binding.tvDeviceName.text = deviceName
     }
