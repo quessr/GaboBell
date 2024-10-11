@@ -61,6 +61,11 @@ class RegisterDeviceActivity :
             }
         }
 
+        binding.btnScanCancel.setOnClickListener {
+            stopScan()
+            binding.tvLoading.isVisible = false
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (permissionArray.all {
                     ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
@@ -87,9 +92,17 @@ class RegisterDeviceActivity :
     }
 
     private fun startScan() {
-        binding.progressBar.isVisible = true
+        binding.tvLoading.isVisible = true
+        binding.btnScan.isVisible = false
+        binding.btnScanCancel.isVisible = true
         bleManager.startBleScan()
         Toast.makeText(this, "Scanning started", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun stopScan() {
+        binding.btnScan.isVisible = true
+        binding.btnScanCancel.isVisible = false
+        bleManager.stopBleScan()
     }
 
     private fun startConnect() {
@@ -120,7 +133,7 @@ class RegisterDeviceActivity :
     }
 
     override fun onDeviceFound(deviceName: String) {
-        binding.progressBar.isVisible = false
+        binding.tvLoading.isVisible = false
         binding.clDeviceItem.isVisible = true
         binding.tvDeviceName.text = deviceName
     }
