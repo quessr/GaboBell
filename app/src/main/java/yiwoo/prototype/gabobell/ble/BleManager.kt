@@ -10,12 +10,11 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
-import android.bluetooth.BluetoothStatusCodes
+import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Binder
@@ -24,114 +23,229 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.ParcelUuid
-import android.util.Log
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import yiwoo.prototype.gabobell.model.DeviceData
-import java.lang.IllegalArgumentException
+import yiwoo.prototype.gabobell.helper.Logger
 import java.util.UUID
 
 class BleManager: Service() {
 
-    private var connectionState = STATE_DISCONNECTED
-    var bleGatt: BluetoothGatt? = null
-
     private var bluetoothAdapter: BluetoothAdapter? = null
-    private var bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
-
-    private var scanning = false
-    private val handler = Handler(Looper.getMainLooper())
-    // Stops scanning after 10 seconds.
-    private val SCAN_PERIOD: Long = 10000
+    private var bluetoothLeScanner: BluetoothLeScanner? = null
+    private var bleGatt: BluetoothGatt? = null
+    private var connectionState = STATE_DISCONNECTED
 
     private var writeCharacteristic: BluetoothGattCharacteristic? = null
+    private var notifyCharacteristic: BluetoothGattCharacteristic? = null
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val binder = LocalBinder()
+
+    private var scanning = false
+
+    inner class LocalBinder : Binder() {
+        fun getService() = this@BleManager
+    }
+    override fun onBind(intent: Intent?): IBinder {
+        Logger.d("onBind")
+        return binder
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
+    // region * 초기화
     fun initialize(): Boolean {
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
         bluetoothAdapter = bluetoothManager.adapter
         if (bluetoothAdapter == null) {
-            Log.e("BLE!@!@", "Unable to obtain a BluetoothAdapter.")
+            Logger.e("Unable to obtain a BluetoothAdapter.")
             return false
         }
         bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
         return true
     }
-    companion object{
-        const val ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED"
-        const val ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED"
-        const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"
-        const val ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE"
-        const val EXTRA_DATA = "EXTRA_DATA"
+    // endregion
 
-        const val STATE_DISCONNECTED = 0
-        const val STATE_CONNECTING = 1
-        const val STATE_CONNECTED = 2
+    // region * Scan 기능
+    fun startBleScan() {
+        // ScanSettings 설정
+        val scanSettings = ScanSettings.Builder()
+            .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
+            .build()
 
-        const val BLE_SCAN_RESULT = "BLE_SCAN_RESULT"
+        // ScanFilter 설정
+        // TODO: 세라 - UUID const 로 define 하여 사용
+        val scanFilter = listOf(
+            ScanFilter.Builder()
+                .setServiceUuid(ParcelUuid(UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e")))
+                .build()
+        )
+
+        val permissionGranted =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ) == PackageManager.PERMISSION_GRANTED
+
+        if (permissionGranted) {
+            if (!scanning) {
+                handler.postDelayed({
+                    scanning = false
+                    bluetoothLeScanner?.stopScan(scanCallback)
+                }, 10_000)
+                scanning = true
+                bluetoothLeScanner?.startScan(scanFilter, scanSettings, scanCallback)
+            } else {
+                scanning = false
+                bluetoothLeScanner?.stopScan(scanCallback)
+            }
+        }
+
+        // TODO: 주선 - 변경 코드 확인하고 아래 주석 삭제 할 것.
+        //       중복된 코드를 간결하게 정리하기 위해 공통 로직을 추출하고, 조건문을 단순화할 수 있다.
+
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) == PackageManager.PERMISSION_GRANTED) {
+                if (!scanning) {
+                    handler.postDelayed({
+                        scanning = false
+                        bluetoothLeScanner?.stopScan(scanCallback)
+                    }, 10_000)
+                    scanning = true
+                    bluetoothLeScanner?.startScan(scanFilter, scanSettings, scanCallback)
+                } else {
+                    scanning = false
+                    bluetoothLeScanner?.stopScan(scanCallback)
+                }
+            } else return
+        } else {
+            if (!scanning) {
+                handler.postDelayed({
+                    scanning = false
+                    bluetoothLeScanner?.stopScan(scanCallback)
+                }, 10_000)
+                scanning = true
+                bluetoothLeScanner?.startScan(scanCallback)
+            } else {
+                scanning = false
+                bluetoothLeScanner?.stopScan(scanCallback)
+            }
+        }
+    }
+    */
     }
 
-//    private val bluetoothManager =
-//        context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-//    private val bluetoothAdapter = bluetoothManager.adapter
-//
-//    private val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-//    private var scanList: MutableList<DeviceData>? = mutableListOf()
-//    private var connectedStateObserver: BleInterface? = null
-//    var bleGatt: BluetoothGatt? = null
-//    private var foundedDevice: BleInterface? = null
+    @SuppressLint("MissingPermission", "NewApi")
+    fun stopBleScan() {
+        bluetoothLeScanner?.stopScan(scanCallback)
+    }
 
-    private val scanCallback: ScanCallback =
-        object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult?) {
-                super.onScanResult(callbackType, result)
-                // 스캔이 중단된 상태라면 추가적인 스캔 결과는 무시
-                if (!scanning) return
-                Log.d("BLE!@!@", "Scanning...")
-                //스캔 결과값 받아올 콜백 메소드
-                //어뎁터에 연결하여 디바이스 정보 뿌려주는 로직(우선 리스트에 담아서 로그로 확인작업)
-                //result 를 브로드캐스트로 액티비티 전달
-                val device = result?.device
-                val deviceName = device?.name
-                val deviceAddress = device?.address
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (ContextCompat.checkSelfPermission(
-                            this@BleManager,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        scanning = false
-                        bluetoothLeScanner?.stopScan(this)
-                        handler.removeCallbacksAndMessages(null)
-                        Log.d("BLE!@!@", "Scan stopped")
+    private val scanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+            super.onScanResult(callbackType, result)
+            // 스캔이 중단된 상태라면 추가적인 스캔 결과는 무시
+            if (!scanning) {
+                return
+            }
+            Logger.d("Scanning...")
+            //스캔 결과값 받아올 콜백 메소드
+            //어뎁터에 연결하여 디바이스 정보 뿌려주는 로직(우선 리스트에 담아서 로그로 확인작업)
+            //result 를 브로드캐스트로 액티비티 전달
+            val device = result?.device
+            val deviceName = device?.name
+            val deviceAddress = device?.address
 
-                        val intent = Intent(BLE_SCAN_RESULT) //action 값
-                        intent.putExtra("device_name", deviceName)
-                        intent.putExtra("device_address", deviceAddress)
-                        intent.putExtra("result", result)
-                        sendBroadcast(intent)
-                    } else return
-                } else {
+            val permissionGranted =
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                        ContextCompat.checkSelfPermission(this@BleManager, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+
+            if (permissionGranted) {
+                scanning = false
+                bluetoothLeScanner?.stopScan(this)
+                handler.removeCallbacksAndMessages(null)
+                Logger.d("Scan stopped")
+
+                val intent = Intent(BLE_SCAN_RESULT).apply {
+                    putExtra("device_name", deviceName)
+                    putExtra("device_address", deviceAddress)
+                    putExtra("result", result)
+                }
+                sendBroadcast(intent)
+            }
+
+            // TODO: 주선 - 변경 코드 확인 후 주석 지울 것.
+            /*
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ContextCompat.checkSelfPermission(
+                        this@BleManager,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
                     scanning = false
                     bluetoothLeScanner?.stopScan(this)
                     handler.removeCallbacksAndMessages(null)
-                    Log.d("BLE!@!@", "Scan stopped")
+                    Logger.d("Scan stopped")
 
                     val intent = Intent(BLE_SCAN_RESULT) //action 값
                     intent.putExtra("device_name", deviceName)
                     intent.putExtra("device_address", deviceAddress)
                     intent.putExtra("result", result)
                     sendBroadcast(intent)
-                }
-            }
+                } else return
+            } else {
+                scanning = false
+                bluetoothLeScanner?.stopScan(this)
+                handler.removeCallbacksAndMessages(null)
+                Logger.d("Scan stopped")
 
-            override fun onScanFailed(errorCode: Int) {
-                println("onScanFailed  $errorCode")
+                val intent = Intent(BLE_SCAN_RESULT) //action 값
+                intent.putExtra("device_name", deviceName)
+                intent.putExtra("device_address", deviceAddress)
+                intent.putExtra("result", result)
+                sendBroadcast(intent)
             }
-
+            */
         }
 
+        override fun onScanFailed(errorCode: Int) {
+            println("onScanFailed  $errorCode")
+        }
+    }
+    // endregion
+
+    // region * GATT
+    fun connect(address: String?): Boolean {
+        return bluetoothAdapter?.let { adapter ->
+            try {
+                val permissionGranted =
+                    Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+
+                if (permissionGranted) {
+                    val device = adapter.getRemoteDevice(address)
+                    // Connect to the GATT server on the device
+                    bleGatt = device.connectGatt(this, false, gattCallback)
+                    Logger.d("Connect to the GATT server on the device_Success")
+                    true
+                } else {
+                    Logger.d("Gatt 서버 연결시 권한 거부")
+                    false
+                }
+            } catch (e: IllegalArgumentException) {
+                Logger.d("Device not found with provided address.")
+                false
+            }
+        } ?: run {
+            Logger.d("BluetoothAdapter not initialized")
+            false
+        }
+    }
 
     /**
      * GATT 콜백 선언
@@ -145,48 +259,31 @@ class BleManager: Service() {
             var intentAction = ""
             when(newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
-                    // successfully connected to the GATT Server
+                    Logger.d("successfully connected to the GATT Server")
                     intentAction = ACTION_GATT_CONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_CONNECTED
-                    Log.d("BLE!@!@", "successfully connected to the GATT Server")
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        if (ContextCompat.checkSelfPermission(
-                                this@BleManager,
-                                Manifest.permission.BLUETOOTH_CONNECT
-                            ) == PackageManager.PERMISSION_GRANTED
-                        ) {
-                            //BLE 기기에서 정보를 쿼리
-                            bleGatt?.discoverServices()
-                            Log.d("BLE!@!@", "discoverServices_qurey")
-                        } else return
-                    } else {
-                        //버전 11 이하
+                    val permissionGranted =
+                        Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                                ContextCompat.checkSelfPermission(
+                                    this@BleManager, Manifest.permission.BLUETOOTH_CONNECT
+                                ) == PackageManager.PERMISSION_GRANTED
+
+                    if (permissionGranted) {
                         bleGatt?.discoverServices()
+                        Logger.d("discoverServices_query")
                     }
                 }
+
                 BluetoothProfile.STATE_DISCONNECTED -> {
-                    // disconnected from the GATT Server
+                    Logger.d("disconnected from the GATT Server")
                     intentAction = ACTION_GATT_DISCONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_DISCONNECTED
-                    Log.d("BLE!@!@", "disconnected from the GATT Server")
+
                 }
             }
-
-//            if (newState == BluetoothProfile.STATE_CONNECTED) {
-//                gatt?.discoverServices()
-//                connectedStateObserver?.onConnectedStateObserve(
-//                    true,
-//                    "onConnectionStateChange: STATE_CONNECTED" + "\n" + "---"
-//                )
-//            } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-//                connectedStateObserver?.onConnectedStateObserve(
-//                    false,
-//                    "onConnectionStateChange: STATE_CONNECTED" + "\n" + "---"
-//                )
-//            }
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
@@ -195,37 +292,22 @@ class BleManager: Service() {
                 //ble 특성 읽기
                 displayGattServices(getSupportedGattServices())
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED)
-                Log.d("BLE!@!@", "onServicesDiscovered_GATT_SUCCESS")
+                Logger.d("onServicesDiscovered_GATT_SUCCESS")
             } else {
-                Log.d("BLE!@!@", "onServicesDiscovered_GATT_FAIL: $status")
+                Logger.d("onServicesDiscovered_GATT_FAIL: $status")
             }
-
-//            if (status == BluetoothGatt.GATT_SUCCESS) {
-//                MainScope().launch {
-//                    bleGatt = gatt
-//                    Toast.makeText(context, " ${gatt?.device?.name} 연결 성공", Toast.LENGTH_SHORT)
-//                        .show()
-//                    var sendText = "onServicesDiscovered:  GATT_SUCCESS" + "\n" + "↓" + "\n"
-//
-//                    for (service in gatt?.services!!) {
-//                        sendText += "- " + service.uuid.toString() + "\n"
-//                        for (characteristics in service.characteristics) {
-//                            sendText += "    "
-//                        }
-//                    }
-//                    sendText += "---"
-//                    connectedStateObserver?.onConnectedStateObserve(true, sendText)
-//                }.cancel()
-//            }
         }
-    }
 
-    /**
-     * 서비스가 검색되면 서비스는 getServices()(으)로 보고된 데이터를 가져옵니다.
-     * BLE 장치에서 제공되는 서비스들을 받아올 수 있도록 해주는 메소드
-     */
-    fun getSupportedGattServices(): List<BluetoothGattService?>? {
-        return bleGatt?.services
+        // TODO: 세라 - Notify를 통해서 데이터 수신
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic,
+            value: ByteArray
+        ) {
+            super.onCharacteristicChanged(gatt, characteristic, value)
+
+            handleCommand(value)
+        }
     }
 
     /**
@@ -237,16 +319,20 @@ class BleManager: Service() {
         if (gattServices == null) return
         var uuid: String?
 
-        Log.d("BLE!@!@", "displayGattServices")
+        Logger.d("displayGattServices")
         //사용 가능한 GATT 서비스를 반복
         gattServices.forEach { gattService ->
             uuid = gattService?.uuid.toString()
             val gattCharacteristics = gattService?.characteristics
 
+            // TODO: 세라 - notify 특성을 가지고 있는 Characteristic 찾기 (notifyCharacteristic 에 할당)
+            // TODO: 세라 - 벨에서 오는 데이터를 수신하기 위한 코드 필요
+
             //사용 가능한 특성을 반복
             gattCharacteristics?.forEach { gattCharacteristic ->
                 uuid = gattCharacteristic.uuid.toString()
                 //tx 특성만 뽑을경우
+                // TODO: 세라 - UUID 로 찾는 방법 이외에는 없는가?
                 if (uuid.equals("6E400002-B5A3-F393-E0A9-E50E24DCCA9E".lowercase())) {
                     writeCharacteristic = gattCharacteristic
                 }
@@ -259,142 +345,69 @@ class BleManager: Service() {
      */
     private fun broadcastUpdate(action: String) {
         val intent = Intent(action)
-        Log.d("BLE!@!@", "broadcastUpdate")
+        Logger.d("broadcastUpdate")
         sendBroadcast(intent)
     }
 
-
-    fun startBleScan() {
-//        scanList?.clear()
-
-        // ScanSettings 설정
-        val scanSettings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_POWER)
-            .build()
-
-        // ScanFilter 설정
-        val scanFilter = listOf(
-            ScanFilter.Builder()
-                .setServiceUuid(ParcelUuid(UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e")))
-                .build()
-        )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_SCAN
-                ) == PackageManager.PERMISSION_GRANTED) {
-                if (!scanning) {
-                    handler.postDelayed({
-                        scanning = false
-                        bluetoothLeScanner?.stopScan(scanCallback)
-                        Log.d("BLE!@!@", "No_Device_Scan stopped")
-                    }, SCAN_PERIOD)
-                    scanning = true
-                    Log.d("BLE!@!@", "Start_Scan_v12-------->")
-                    bluetoothLeScanner?.startScan(scanFilter, scanSettings, scanCallback)
-                } else {
-                    scanning = false
-                    bluetoothLeScanner?.stopScan(scanCallback)
-                    Log.d("BLE!@!@", "Scan stopped")
-                }
-            } else return
-        } else {
-            if (!scanning) {
-                handler.postDelayed({
-                    scanning = false
-                    bluetoothLeScanner?.stopScan(scanCallback)
-                    Log.d("BLE!@!@", "No_Device_Scan stopped")
-                }, SCAN_PERIOD)
-                scanning = true
-                Log.d("BLE!@!@", "Start_Scan")
-                bluetoothLeScanner?.startScan(scanCallback)
-            } else {
-                scanning = false
-                bluetoothLeScanner?.stopScan(scanCallback)
-                Log.d("BLE!@!@", "Scan stopped")
-            }
-        }
-//        bluetoothLeScanner.startScan(scanFilter, scanSettings, scanCallback)
-//        Toast.makeText(context, "Scanning started", Toast.LENGTH_SHORT).show()
+    /**
+     * 서비스가 검색되면 서비스는 getServices()(으)로 보고된 데이터를 가져옵니다.
+     * BLE 장치에서 제공되는 서비스들을 받아올 수 있도록 해주는 메소드
+     */
+    private fun getSupportedGattServices(): List<BluetoothGattService?>? {
+        return bleGatt?.services
     }
 
-    @SuppressLint("MissingPermission", "NewApi")
-    fun stopBleScan() {
-        bluetoothLeScanner?.stopScan(scanCallback)
-    }
+    // endregion
 
-//    @SuppressLint("MissingPermission")
-//    fun startBleConnectGatt(deviceData: DeviceData) {
-//        bluetoothAdapter?.getRemoteDevice(deviceData.address)
-//            ?.connectGatt(context, false, gattCallback)
-//    }
-
-//    fun setScanList(pScanList: MutableList<DeviceData>) {
-//        scanList = pScanList
-//    }
-//
-//    fun onConnectedStateObserve(pConnectedStateObserver: BleInterface) {
-//        connectedStateObserver = pConnectedStateObserver
-//    }
-
-//    fun setOnDeviceFoundListener(listener: BleInterface) {
-//        foundedDevice = listener
-//    }
-
-    inner class LocalBinder: Binder() {
-        fun getService() : BleManager {
-            return this@BleManager
-        }
-    }
-
-    private val binder = LocalBinder()
-    override fun onBind(intent: Intent?): IBinder {
-        Log.d("BLE!@!@", "onBind")
-        return binder
-    }
-
-    //블루투스 디바이스 GATT 서버 연결
-    fun connect(address: String?): Boolean {
-        bluetoothAdapter?.let { adapter ->
-            try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (ContextCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ) == PackageManager.PERMISSION_GRANTED) {
-                        //권한 설정되어있는 경우 로직
-                        val device = adapter.getRemoteDevice(address)
-                        // connect to the GATT server on the device
-                        bleGatt = device.connectGatt(this, false, gattCallback)
-                    } else {
-                        Log.d("BLE!@!@", "Gatt 서버 연결시 권한 거부")
-                    }
-                } else {
-                    //11 이하 버전
-                    val device = adapter.getRemoteDevice(address)
-                    // connect to the GATT server on the device
-                    bleGatt = device.connectGatt(this, false, gattCallback)
-                }
-                Log.d("BLE!@!@", "connect to the GATT server on the device_Success")
-                return true
-            } catch (e: IllegalArgumentException) {
-                Log.d("BLE!@!@", "Device not found with provided address.")
-                return false
-            }
-        } ?: run {
-            Log.d("BLE!@!@", "BluetoothAdapter not initialized")
-            return false
-        }
-    }
-
+    // region * Command (APP to BELL)
+    // TODO: 주선 - A2B 전체 코드 작성
     fun sayHello() {
+        Logger.d("[A2B] 0xA1")
+        /*
         writeCharacteristic?.let {
             if (it.properties or BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE > 0) {
                 writeCharacteristic(it)
             }
         }
+        */
     }
 
+    fun cmdEmergency(isRequest: Boolean) {
+        if (isRequest) {
+            Logger.d("[A2B] 0xA2")
+        } else {
+            Logger.d("[A2B] 0xA3")
+        }
+    }
+
+    fun cmdBellSetting() {
+        // param(data1) 을 enum 으로 정의 (on, off, call)
+        Logger.d("[A2B] 0xA4")
+
+    }
+
+    fun cmdGetStatus() {
+        Logger.d("[A2B] 0xA5")
+    }
+
+    fun cmdDeviceFirmwareUpdate() {
+        // 구현하지 말것.
+        Logger.d("[A2B] 0xA7")
+    }
+
+    fun cmdLedSetting(isOn: Boolean) {
+        Logger.d("[A2B] 0xA8")
+    }
+
+    fun sendCommand() {
+        // writeCharacteristic 참고하여 작성
+    }
+
+    fun sendCommand(data1: Byte) {
+        // writeCharacteristic 참고하여 작성
+    }
+
+    /*
     private fun writeCharacteristic(it: BluetoothGattCharacteristic) {
         val len: Byte = 0x01  // 데이터 길이
         val cmd: Byte = 0xA1.toByte()  // 전송할 CMD 값
@@ -412,10 +425,10 @@ class BleManager: Service() {
                 )
                 if (result == BluetoothStatusCodes.SUCCESS) {
                     // 성공적으로 데이터 전송됨
-                    Log.d("BLE!@!@", "Data written successfully")
+                    Logger.d("Data written successfully")
                 } else {
                     // 데이터 전송 실패
-                    Log.e("BLE!@!@", "Failed to write data: $result")
+                    Logger.e("Failed to write data: $result")
                 }
             }
         } else {
@@ -424,7 +437,7 @@ class BleManager: Service() {
             val result = bleGatt?.writeCharacteristic(it)
 
             if (result == true) {
-                Log.d("BLE!@!@", "Command sent successfully: len = $len, cmd = $cmd")
+                Logger.d("Command sent successfully: len = $len, cmd = $cmd")
 
                 Thread.sleep(2000)
 
@@ -439,8 +452,37 @@ class BleManager: Service() {
                 bleGatt?.writeCharacteristic(it)
 
             } else {
-                Log.d("BLE!@!@", "Failed to send command: $result")
+                Logger.d("Failed to send command: $result")
             }
         }
+    }
+    */
+    // endregion
+
+    // region * Receive (BELL to APP)
+    // TODO: 세라 - 일단은 값이 정상적으로 수신되는지만 로그로 남긴다. (이후 로직은 나중에 생각한다.)
+    private fun handleCommand(receivedData: ByteArray) {
+        // CMD 를 추출해서 동작 처리
+
+        // 긴급구조 요청 (0xB2)
+        // 긴급구조 취소 (0xB3)
+        // 벨 On/Off 설정 응답 (0xB4) with data
+        // 상태 응답 (0xB5) with data
+        // LED On/Off 설정 응답 (0xB8) with data
+    }
+    // endregion
+
+    companion object{
+        const val ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED"
+        const val ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED"
+        const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"
+        const val ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE"
+        const val EXTRA_DATA = "EXTRA_DATA"
+
+        const val STATE_DISCONNECTED = 0
+        const val STATE_CONNECTING = 1
+        const val STATE_CONNECTED = 2
+
+        const val BLE_SCAN_RESULT = "BLE_SCAN_RESULT"
     }
 }
