@@ -4,8 +4,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.opengl.Visibility
 import android.os.Bundle
 import android.os.IBinder
+import android.view.View
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
 import yiwoo.prototype.gabobell.helper.Logger
@@ -52,6 +54,11 @@ class DeviceSettingsActivity :
                     finish()
                 } else {
                     Logger.d("DeviceSettingsActivity onServiceConnected")
+                    if (bleManager?.isConnected() == true) {
+                        binding.btnDisconnectStatus.visibility = View.GONE
+                    } else {
+                        binding.btnConnectStatus.visibility = View.GONE
+                    }
                 }
             }
         }

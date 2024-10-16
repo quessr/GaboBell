@@ -2,6 +2,9 @@ package yiwoo.prototype.gabobell.ble
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
@@ -25,8 +28,11 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import java.util.UUID
 
 class BleManager: Service() {
@@ -61,7 +67,30 @@ class BleManager: Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logger.d("onStartCommand")
+        val notification = createNotification()
+        startForeground(1, notification)
         return START_STICKY
+    }
+
+    private fun createNotification(): Notification {
+        val notificationChannelId = "BLE_SERVICE_CHANNEL"
+        val channel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel(
+                notificationChannelId,
+                "BLE Background Service",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+        } else {
+            TODO("VERSION.SDK_INT < O")
+        }
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+
+        return NotificationCompat.Builder(this, notificationChannelId)
+            .setContentTitle("BLE 연결 서비스")
+            .setContentText("BLE 기기와 연결 중입니다.")
+            .setSmallIcon(R.drawable.baseline_notifications_24)
+            .build()
     }
 
     // region * 초기화
@@ -186,6 +215,28 @@ class BleManager: Service() {
             Logger.d("BluetoothAdapter not initialized")
             false
         }
+    }
+
+    fun isConnected(): Boolean {
+        val deviceAddress = UserDeviceManager.getAddress(applicationContext)
+        Logger.d("isConnected : $deviceAddress")
+        val device = bluetoothAdapter?.getRemoteDevice(deviceAddress)
+        val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
+        val connectionState = bluetoothManager.getConnectionState(device, BluetoothProfile.GATT)
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return if (connectionState == BluetoothProfile.STATE_CONNECTED) {
+                Logger.d("Device is connected")
+                true
+            } else {
+                Logger.d("Device is not connected")
+                false
+            }
+        }
+        return false
     }
 
     /**
