@@ -18,12 +18,14 @@ import androidx.core.view.isVisible
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityRegisterDeviceBinding
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.UserDeviceManager
 
 class RegisterDeviceActivity :
     BaseActivity<ActivityRegisterDeviceBinding>(ActivityRegisterDeviceBinding::inflate) {
 
     private var bleManager: BleManager? = null
     private var deviceAddress: String? = null
+    private var deviceName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +92,7 @@ class RegisterDeviceActivity :
             Logger.d("bleScanReceiver_PERMISSION_GRANTED")
             showDevice(result?.device!!.name)
             deviceAddress = result.device.address
+            deviceName = result.device.name
         }
         Logger.d("bleScanReceiver_result : $result")
     }
@@ -115,12 +118,14 @@ class RegisterDeviceActivity :
                     Logger.d("BLE : GATT_SERVICES_DISCOVERED")
                     // 디바이스 연결 후 10초 이내 0xA1을 전송.
                     bleManager?.sayHello()
+                    // 연결된 디바이스 정보 저장
+                    UserDeviceManager.registerDevice(applicationContext, deviceName!!, deviceAddress!!)
                 }
             }
         }
     }
 
-    private fun makeGattUpdateIntentFilter(): IntentFilter? {
+    private fun makeGattUpdateIntentFilter(): IntentFilter {
         return IntentFilter().apply {
             addAction(BleManager.ACTION_GATT_CONNECTED)
             addAction(BleManager.ACTION_GATT_DISCONNECTED)
@@ -129,7 +134,7 @@ class RegisterDeviceActivity :
         }
     }
 
-    private fun bleScanIntentFilter(): IntentFilter? {
+    private fun bleScanIntentFilter(): IntentFilter {
         return IntentFilter().apply {
             addAction(BleManager.BLE_SCAN_RESULT)
         }

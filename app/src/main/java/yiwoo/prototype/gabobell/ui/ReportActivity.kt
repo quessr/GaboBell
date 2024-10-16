@@ -12,8 +12,6 @@ import yiwoo.prototype.gabobell.helper.Logger
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate) {
 
-    // TODO: 주선 - 정상 동작 확인 할 것.
-
     private var bleManager: BleManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

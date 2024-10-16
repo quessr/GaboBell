@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.bluetooth.BluetoothStatusCodes
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
@@ -23,6 +24,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.ParcelUuid
+import android.util.Log
 import androidx.core.content.ContextCompat
 import yiwoo.prototype.gabobell.helper.Logger
 import java.util.UUID
@@ -42,6 +44,8 @@ class BleManager: Service() {
 
     private var scanning = false
 
+    private var byteArrayValue: ByteArray? = null
+
     inner class LocalBinder : Binder() {
         fun getService() = this@BleManager
     }
@@ -51,7 +55,13 @@ class BleManager: Service() {
     }
 
     override fun onDestroy() {
+        Logger.d("onDestroy")
         super.onDestroy()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Logger.d("onStartCommand")
+        return START_STICKY
     }
 
     // region * 초기화
@@ -94,6 +104,7 @@ class BleManager: Service() {
                 handler.postDelayed({
                     scanning = false
                     bluetoothLeScanner?.stopScan(scanCallback)
+                    Logger.d("10초 동안 찾지 못함")
                 }, 10_000)
                 scanning = true
                 bluetoothLeScanner?.startScan(scanFilter, scanSettings, scanCallback)
@@ -102,43 +113,6 @@ class BleManager: Service() {
                 bluetoothLeScanner?.stopScan(scanCallback)
             }
         }
-
-        // TODO: 주선 - 변경 코드 확인하고 아래 주석 삭제 할 것.
-        //       중복된 코드를 간결하게 정리하기 위해 공통 로직을 추출하고, 조건문을 단순화할 수 있다.
-
-        /*
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_SCAN
-                ) == PackageManager.PERMISSION_GRANTED) {
-                if (!scanning) {
-                    handler.postDelayed({
-                        scanning = false
-                        bluetoothLeScanner?.stopScan(scanCallback)
-                    }, 10_000)
-                    scanning = true
-                    bluetoothLeScanner?.startScan(scanFilter, scanSettings, scanCallback)
-                } else {
-                    scanning = false
-                    bluetoothLeScanner?.stopScan(scanCallback)
-                }
-            } else return
-        } else {
-            if (!scanning) {
-                handler.postDelayed({
-                    scanning = false
-                    bluetoothLeScanner?.stopScan(scanCallback)
-                }, 10_000)
-                scanning = true
-                bluetoothLeScanner?.startScan(scanCallback)
-            } else {
-                scanning = false
-                bluetoothLeScanner?.stopScan(scanCallback)
-            }
-        }
-    }
-    */
     }
 
     @SuppressLint("MissingPermission", "NewApi")
@@ -178,39 +152,6 @@ class BleManager: Service() {
                 }
                 sendBroadcast(intent)
             }
-
-            // TODO: 주선 - 변경 코드 확인 후 주석 지울 것.
-            /*
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (ContextCompat.checkSelfPermission(
-                        this@BleManager,
-                        Manifest.permission.BLUETOOTH_CONNECT
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    scanning = false
-                    bluetoothLeScanner?.stopScan(this)
-                    handler.removeCallbacksAndMessages(null)
-                    Logger.d("Scan stopped")
-
-                    val intent = Intent(BLE_SCAN_RESULT) //action 값
-                    intent.putExtra("device_name", deviceName)
-                    intent.putExtra("device_address", deviceAddress)
-                    intent.putExtra("result", result)
-                    sendBroadcast(intent)
-                } else return
-            } else {
-                scanning = false
-                bluetoothLeScanner?.stopScan(this)
-                handler.removeCallbacksAndMessages(null)
-                Logger.d("Scan stopped")
-
-                val intent = Intent(BLE_SCAN_RESULT) //action 값
-                intent.putExtra("device_name", deviceName)
-                intent.putExtra("device_address", deviceAddress)
-                intent.putExtra("result", result)
-                sendBroadcast(intent)
-            }
-            */
         }
 
         override fun onScanFailed(errorCode: Int) {
@@ -360,103 +301,83 @@ class BleManager: Service() {
     // endregion
 
     // region * Command (APP to BELL)
-    // TODO: 주선 - A2B 전체 코드 작성
     fun sayHello() {
         Logger.d("[A2B] 0xA1")
-        /*
-        writeCharacteristic?.let {
-            if (it.properties or BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE > 0) {
-                writeCharacteristic(it)
-            }
-        }
-        */
+        sendCommand(0x01, 0xA1.toByte(), null)
     }
 
     fun cmdEmergency(isRequest: Boolean) {
         if (isRequest) {
-            Logger.d("[A2B] 0xA2")
+            Logger.d("[A2B] 0xA2_EMERGENCY_ON")
+            sendCommand(0x01, 0xA2.toByte(), null)
         } else {
-            Logger.d("[A2B] 0xA3")
+            Logger.d("[A2B] 0xA3_EMERGENCY_OFF")
+            sendCommand(0x01, 0xA3.toByte(), null)
         }
     }
 
-    fun cmdBellSetting() {
+    fun cmdBellSetting(cmd: BellCommand) {
         // param(data1) 을 enum 으로 정의 (on, off, call)
         Logger.d("[A2B] 0xA4")
+        Logger.d("[A2B] 0xA4_BELL_ON/OFF : ${cmd.data}")
+        sendCommand(0x02, 0xA4.toByte(), cmd.data)
+    }
 
+    enum class BellCommand(val data: Byte) {
+        ON(0x02),
+        OFF(0x01),
+        SIREN(0x03)
     }
 
     fun cmdGetStatus() {
         Logger.d("[A2B] 0xA5")
+        Logger.d("[A2B] 0xA5_STATE_CHECK")
+        sendCommand(0x01, 0xA5.toByte(), null)
     }
 
     fun cmdDeviceFirmwareUpdate() {
         // 구현하지 말것.
         Logger.d("[A2B] 0xA7")
+        // sendCommand(0x01, 0xA7.toByte(), null)
     }
 
     fun cmdLedSetting(isOn: Boolean) {
         Logger.d("[A2B] 0xA8")
-    }
-
-    fun sendCommand() {
-        // writeCharacteristic 참고하여 작성
-    }
-
-    fun sendCommand(data1: Byte) {
-        // writeCharacteristic 참고하여 작성
-    }
-
-    /*
-    private fun writeCharacteristic(it: BluetoothGattCharacteristic) {
-        val len: Byte = 0x01  // 데이터 길이
-        val cmd: Byte = 0xA1.toByte()  // 전송할 CMD 값
-        val byteArrayValue = byteArrayOf(len, cmd)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) == PackageManager.PERMISSION_GRANTED) {
-                val result = bleGatt?.writeCharacteristic(
-                    it,
-                    byteArrayValue,
-                    BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                )
-                if (result == BluetoothStatusCodes.SUCCESS) {
-                    // 성공적으로 데이터 전송됨
-                    Logger.d("Data written successfully")
-                } else {
-                    // 데이터 전송 실패
-                    Logger.e("Failed to write data: $result")
-                }
-            }
+        if (isOn) {
+            Logger.d("[A2B] 0xA8_LED_ON")
+            sendCommand(0x02, 0xA8.toByte(), 0x02)
         } else {
-            it.value = byteArrayValue
-            it.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-            val result = bleGatt?.writeCharacteristic(it)
-
-            if (result == true) {
-                Logger.d("Command sent successfully: len = $len, cmd = $cmd")
-
-                Thread.sleep(2000)
-
-                //test -> Led on
-                val ledLen: Byte = 0x02  // 데이터 길이
-                val ledCmd: Byte = 0xA8.toByte()  // 전송할 CMD 값
-                val ledData: Byte = 0x02
-                val ledByteArrayValue = byteArrayOf(ledLen, ledCmd, ledData)
-
-                it.value = ledByteArrayValue
-                it.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-                bleGatt?.writeCharacteristic(it)
-
-            } else {
-                Logger.d("Failed to send command: $result")
-            }
+            Logger.d("[A2B] 0xA8_LED_OFF")
+            sendCommand(0x02, 0xA8.toByte(), 0x01)
         }
     }
-    */
+
+    private fun sendCommand(
+        len: Byte,
+        cmd: Byte,
+        data: Byte?
+    ) {
+        if (writeCharacteristic == null)
+            return
+        byteArrayValue = if (data == null){
+            byteArrayOf(len, cmd)
+        } else {
+            byteArrayOf(len, cmd, data)
+        }
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) ==
+                    PackageManager.PERMISSION_GRANTED &&
+                    bleGatt?.writeCharacteristic(
+                        writeCharacteristic!!, byteArrayValue!!, BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                    ) == BluetoothStatusCodes.SUCCESS
+        } else {
+            writeCharacteristic!!.value = byteArrayValue
+            writeCharacteristic!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            bleGatt?.writeCharacteristic(writeCharacteristic) == true
+        }
+        Logger.d("Command sent successfully: $result")
+    }
+
     // endregion
 
     // region * Receive (BELL to APP)
