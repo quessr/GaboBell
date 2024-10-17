@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -35,7 +36,7 @@ import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import java.util.UUID
 
-class BleManager: Service() {
+class BleManager : Service() {
 
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var bluetoothLeScanner: BluetoothLeScanner? = null
@@ -49,12 +50,14 @@ class BleManager: Service() {
     private val binder = LocalBinder()
 
     private var scanning = false
+    private var permissionGranted: Boolean = true
 
     private var byteArrayValue: ByteArray? = null
 
     inner class LocalBinder : Binder() {
         fun getService() = this@BleManager
     }
+
     override fun onBind(intent: Intent?): IBinder {
         Logger.d("onBind")
         return binder
@@ -117,11 +120,11 @@ class BleManager: Service() {
         // TODO: 세라 - UUID const 로 define 하여 사용
         val scanFilter = listOf(
             ScanFilter.Builder()
-                .setServiceUuid(ParcelUuid(UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e")))
+                .setServiceUuid(ParcelUuid(CLIENT_CHARACTERISTIC_CONFIG_UUID))
                 .build()
         )
 
-        val permissionGranted =
+        permissionGranted =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
                     ContextCompat.checkSelfPermission(
                         this,
@@ -168,7 +171,10 @@ class BleManager: Service() {
 
             val permissionGranted =
                 Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-                        ContextCompat.checkSelfPermission(this@BleManager, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                        ContextCompat.checkSelfPermission(
+                            this@BleManager,
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        ) == PackageManager.PERMISSION_GRANTED
 
             if (permissionGranted) {
                 scanning = false
@@ -208,7 +214,7 @@ class BleManager: Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Logger.d("StopForeground_Service")
             stopForeground(STOP_FOREGROUND_REMOVE)
-        }else{
+        } else {
             Logger.d("StopForeground_Service")
             stopForeground(true)
         }
@@ -220,7 +226,10 @@ class BleManager: Service() {
             try {
                 val permissionGranted =
                     Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-                            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                            ContextCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.BLUETOOTH_CONNECT
+                            ) == PackageManager.PERMISSION_GRANTED
 
                 if (permissionGranted) {
                     val device = adapter.getRemoteDevice(address)
@@ -274,7 +283,7 @@ class BleManager: Service() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             var intentAction = ""
-            when(newState) {
+            when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Logger.d("successfully connected to the GATT Server")
                     intentAction = ACTION_GATT_CONNECTED
@@ -307,7 +316,12 @@ class BleManager: Service() {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 //ble 특성 읽기
-                displayGattServices(getSupportedGattServices())
+                displayGattServices(getSupportedGattServices()).apply {
+                    notifyCharacteristic?.let { characteristic ->
+                        Logger.d("BleManager notifyCharacteristic@@")
+                        setCharacteristicNotification(characteristic, true)
+                    }
+                }
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED)
                 Logger.d("onServicesDiscovered_GATT_SUCCESS")
             } else {
@@ -323,9 +337,81 @@ class BleManager: Service() {
         ) {
             super.onCharacteristicChanged(gatt, characteristic, value)
 
+            Logger.d(
+                "BleManager onCharacteristicChanged: gatt//$gatt, characteristic//$characteristic, value//${
+                    value.get(
+                        1
+                    )
+                }"
+            )
             handleCommand(value)
         }
+
+        @Deprecated("Deprecated in Java")
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?
+        ) {
+            super.onCharacteristicChanged(gatt, characteristic)
+
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                Logger.d(
+                    "BleManager onCharacteristicChanged: gatt//$gatt, characteristic//${
+                        characteristic?.value?.get(
+                            1
+                        )
+                    }"
+                )
+            }
+        }
     }
+
+    private fun setCharacteristicNotification(
+        characteristic: BluetoothGattCharacteristic,
+        enable: Boolean
+    ) {
+        permissionGranted =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED
+        if (permissionGranted) {
+
+            // 알림 설정의 성공 여부를 확인
+            val notificationSet =
+                bleGatt?.setCharacteristicNotification(characteristic, enable) == true
+            Logger.d("BleManager Set characteristic notification success: $notificationSet")
+
+
+            // 특성이 알림을 지원하는지 확인
+            if ((characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY) > 0) {
+                Logger.d("BleManager Characteristic supports notifications")
+                bleGatt?.setCharacteristicNotification(characteristic, enable)
+
+                val descriptor =
+                    characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    val writeSuccess = bleGatt?.writeDescriptor(descriptor)
+                    Logger.d("BleManager Write descriptor success: $writeSuccess")
+                } else {
+                    val writeSuccess = bleGatt?.writeDescriptor(
+                        descriptor,
+                        BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    )
+                    Logger.d("BleManager Write descriptor success (TIRAMISU): $writeSuccess")
+
+                }
+            } else {
+                Logger.e("BleManager Characteristic does not support notifications")
+            }
+        } else {
+            Logger.e("BleManager setCharacteristicNotification: Permission denied")
+        }
+    }
+
 
     /**
      * BLE 특성읽기
@@ -337,21 +423,15 @@ class BleManager: Service() {
         var uuid: String?
 
         Logger.d("displayGattServices")
-        //사용 가능한 GATT 서비스를 반복
-        gattServices.forEach { gattService ->
-            uuid = gattService?.uuid.toString()
-            val gattCharacteristics = gattService?.characteristics
 
-            // TODO: 세라 - notify 특성을 가지고 있는 Characteristic 찾기 (notifyCharacteristic 에 할당)
-            // TODO: 세라 - 벨에서 오는 데이터를 수신하기 위한 코드 필요
+        for (gattService in gattServices) {
+            val gattCharacteristics: List<BluetoothGattCharacteristic> =
+                gattService!!.characteristics
 
-            //사용 가능한 특성을 반복
-            gattCharacteristics?.forEach { gattCharacteristic ->
-                uuid = gattCharacteristic.uuid.toString()
-                //tx 특성만 뽑을경우
-                // TODO: 세라 - UUID 로 찾는 방법 이외에는 없는가?
-                if (uuid.equals("6E400002-B5A3-F393-E0A9-E50E24DCCA9E".lowercase())) {
-                    writeCharacteristic = gattCharacteristic
+            for (gattCharacteristic in gattCharacteristics) {
+                when (gattCharacteristic.uuid) {
+                    UUID_DATA_WRITE -> writeCharacteristic = gattCharacteristic
+                    UUID_DATA_NOTIFY -> notifyCharacteristic = gattCharacteristic
                 }
             }
         }
@@ -374,7 +454,7 @@ class BleManager: Service() {
         return bleGatt?.services
     }
 
-    // endregion
+// endregion
 
     // region * Command (APP to BELL)
     fun sayHello() {
@@ -435,7 +515,7 @@ class BleManager: Service() {
     ) {
         if (writeCharacteristic == null)
             return
-        byteArrayValue = if (data == null){
+        byteArrayValue = if (data == null) {
             byteArrayOf(len, cmd)
         } else {
             byteArrayOf(len, cmd, data)
@@ -444,7 +524,9 @@ class BleManager: Service() {
             ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) ==
                     PackageManager.PERMISSION_GRANTED &&
                     bleGatt?.writeCharacteristic(
-                        writeCharacteristic!!, byteArrayValue!!, BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+                        writeCharacteristic!!,
+                        byteArrayValue!!,
+                        BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
                     ) == BluetoothStatusCodes.SUCCESS
         } else {
             writeCharacteristic!!.value = byteArrayValue
@@ -454,10 +536,10 @@ class BleManager: Service() {
         Logger.d("Command sent successfully: $result")
     }
 
-    // endregion
+// endregion
 
     // region * Receive (BELL to APP)
-    // TODO: 세라 - 일단은 값이 정상적으로 수신되는지만 로그로 남긴다. (이후 로직은 나중에 생각한다.)
+// TODO: 세라 - 일단은 값이 정상적으로 수신되는지만 로그로 남긴다. (이후 로직은 나중에 생각한다.)
     private fun handleCommand(receivedData: ByteArray) {
         // CMD 를 추출해서 동작 처리
 
@@ -467,9 +549,9 @@ class BleManager: Service() {
         // 상태 응답 (0xB5) with data
         // LED On/Off 설정 응답 (0xB8) with data
     }
-    // endregion
+// endregion
 
-    companion object{
+    companion object {
         const val ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED"
         const val ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED"
         const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"
@@ -482,5 +564,10 @@ class BleManager: Service() {
 
         const val BLE_SCAN_RESULT = "BLE_SCAN_RESULT"
         const val BLE_SCAN_NOT_FOUND = "BLE_SCAN_NOT_FOUND"
+
+        val UUID_DATA_NOTIFY: UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
+        val UUID_DATA_WRITE: UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E")
+        private val CLIENT_CHARACTERISTIC_CONFIG_UUID =
+            UUID.fromString("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
     }
 }
