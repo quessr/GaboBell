@@ -1,10 +1,12 @@
 package yiwoo.prototype.gabobell.ui
 
 import android.Manifest
+import android.app.AlertDialog
 import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
@@ -12,6 +14,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.View
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -58,6 +61,12 @@ class RegisterDeviceActivity :
         }
     }
 
+    private fun upDateUI() {
+        binding.btnScan.isVisible = true
+        binding.btnScanCancel.isVisible = false
+        binding.tvLoading.isVisible = false
+    }
+
     private fun showDevice(deviceName: String) {
         Logger.d("onDeviceFound : $deviceName")
         binding.tvLoading.isVisible = false
@@ -79,22 +88,40 @@ class RegisterDeviceActivity :
                     }
                     result?.let { onDeviceFounded(it) }
                 }
+                BleManager.BLE_SCAN_NOT_FOUND -> {
+                    Logger.d("bleScanReceiver_BLE_SCAN_NOT_FOUND")
+                    val builder = AlertDialog.Builder(this@RegisterDeviceActivity)
+                    builder.setTitle("SCAN FAIL")
+                        .setMessage("디바이스를 찾지 못했습니다.\n스캔 재시도")
+                        .setPositiveButton("네",
+                            DialogInterface.OnClickListener { dialog, which ->
+                        upDateUI()
+                    })
+                    builder.setNegativeButton("아니오",
+                        DialogInterface.OnClickListener { dialog, which ->
+                        finish()
+                    })
+                    builder.show()
+                }
             }
         }
     }
 
     private fun onDeviceFounded(result: ScanResult?) {
-        if (ContextCompat.checkSelfPermission(
-                applicationContext,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            Logger.d("bleScanReceiver_PERMISSION_GRANTED")
-            showDevice(result?.device!!.name)
-            deviceAddress = result.device.address
-            deviceName = result.device.name
+        result?.device?.let { device ->
+            if (ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                Logger.d("bleScanReceiver_PERMISSION_GRANTED")
+            }
+            Logger.d("bleScanReceiver_onDeviceFounded")
+            showDevice(device.name)
+            deviceAddress = device.address
+            deviceName = device.name
+            Logger.d("bleScanReceiver_result : $result")
         }
-        Logger.d("bleScanReceiver_result : $result")
     }
 
 
@@ -120,6 +147,7 @@ class RegisterDeviceActivity :
                     bleManager?.sayHello()
                     // 연결된 디바이스 정보 저장
                     UserDeviceManager.registerDevice(applicationContext, deviceName!!, deviceAddress!!)
+                    finish()
                 }
             }
         }
@@ -137,6 +165,7 @@ class RegisterDeviceActivity :
     private fun bleScanIntentFilter(): IntentFilter {
         return IntentFilter().apply {
             addAction(BleManager.BLE_SCAN_RESULT)
+            addAction(BleManager.BLE_SCAN_NOT_FOUND)
         }
     }
     // endregion
@@ -166,11 +195,20 @@ class RegisterDeviceActivity :
 
     // region * Scan & Connect
     private fun startScan() {
-        // 서비스 생성 및 바인딩
-        // TODO: 공통 - 서비스 지속 확인 (현재 엑티비티 종료 시에도 서비스가 유지되고 있는지 가시적으로 확인 할 것.)
-        val intent = Intent(this, BleManager::class.java)
-        startService(intent)
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+//        // 서비스 생성 및 바인딩
+//        // TODO: 공통 - 서비스 지속 확인 (현재 엑티비티 종료 시에도 서비스가 유지되고 있는지 가시적으로 확인 할 것.)
+//        val intent = Intent(this, BleManager::class.java)
+//        startService(intent)
+//        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+
+        if (bleManager == null) {
+            val intent = Intent(this, BleManager::class.java)
+            startService(intent)
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        } else {
+            // 이미 서비스가 바인딩되어 있으면 바로 스캔 시작
+            bleManager?.startBleScan()
+        }
 
         binding.tvLoading.isVisible = true
         binding.btnScan.isVisible = false

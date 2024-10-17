@@ -27,6 +27,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
         binding.btnCancellations.setOnClickListener {
             bleManager?.cmdEmergency(false)
+            finish()
         }
     }
 

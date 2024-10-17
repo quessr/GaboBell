@@ -11,6 +11,7 @@ import android.view.View
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import yiwoo.prototype.gabobell.ui.BaseActivity
 
 class DeviceSettingsActivity :
@@ -38,6 +39,11 @@ class DeviceSettingsActivity :
         }
         binding.btnLedOff.setOnClickListener {
             bleManager?.cmdLedSetting(false)
+        }
+        binding.btnSettingsDisconnect.setOnClickListener {
+            bleManager?.disconnect()
+            UserDeviceManager.deleteDevice(this)
+            Logger.d("연결 해제")
         }
     }
 

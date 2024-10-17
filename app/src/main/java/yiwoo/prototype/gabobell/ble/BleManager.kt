@@ -134,6 +134,8 @@ class BleManager: Service() {
                     scanning = false
                     bluetoothLeScanner?.stopScan(scanCallback)
                     Logger.d("10초 동안 찾지 못함")
+                    val intent = Intent(BLE_SCAN_NOT_FOUND)
+                    sendBroadcast(intent)
                 }, 10_000)
                 scanning = true
                 bluetoothLeScanner?.startScan(scanFilter, scanSettings, scanCallback)
@@ -189,6 +191,29 @@ class BleManager: Service() {
     }
     // endregion
 
+
+    fun disconnect() {
+        bleGatt?.let { gatt ->
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                Logger.d("BluetoothGatt_DISCONNECT_PERMISSION_GRANTED")
+            }
+            gatt.disconnect()
+            gatt.close()
+            bleGatt = null
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            Logger.d("StopForeground_Service")
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        }else{
+            Logger.d("StopForeground_Service")
+            stopForeground(true)
+        }
+    }
+
     // region * GATT
     fun connect(address: String?): Boolean {
         return bluetoothAdapter?.let { adapter ->
@@ -228,15 +253,15 @@ class BleManager: Service() {
                 Manifest.permission.BLUETOOTH_CONNECT
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            return if (connectionState == BluetoothProfile.STATE_CONNECTED) {
-                Logger.d("Device is connected")
-                true
-            } else {
-                Logger.d("Device is not connected")
-                false
-            }
+            Logger.d("Permission is granted")
         }
-        return false
+        return if (connectionState == BluetoothProfile.STATE_CONNECTED) {
+            Logger.d("Device is connected")
+            true
+        } else {
+            Logger.d("Device is not connected")
+            false
+        }
     }
 
     /**
@@ -456,5 +481,6 @@ class BleManager: Service() {
         const val STATE_CONNECTED = 2
 
         const val BLE_SCAN_RESULT = "BLE_SCAN_RESULT"
+        const val BLE_SCAN_NOT_FOUND = "BLE_SCAN_NOT_FOUND"
     }
 }
