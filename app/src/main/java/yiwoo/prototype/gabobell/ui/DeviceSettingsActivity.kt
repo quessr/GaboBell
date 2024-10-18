@@ -25,15 +25,21 @@ class DeviceSettingsActivity :
     }
 
     private fun initUi() {
+        // TODO: 세라 - 등록 기기 표시
+
         binding.btnStatusCheck.setOnClickListener {
             bleManager?.cmdGetStatus()
         }
+
+        // TODO: 세라 - 벨 ON/OFF 요청 후 화면에 내용 반영
         binding.btnBellOn.setOnClickListener {
             bleManager?.cmdBellSetting(BleManager.BellCommand.ON)
         }
         binding.btnBellOff.setOnClickListener {
             bleManager?.cmdBellSetting(BleManager.BellCommand.OFF)
         }
+
+        // TODO: 세라 - LED ON/OFF 요청 후 화면에 내용 반영
         binding.btnLedOn.setOnClickListener {
             bleManager?.cmdLedSetting(true)
         }
@@ -65,6 +71,9 @@ class DeviceSettingsActivity :
                     } else {
                         binding.btnConnectStatus.visibility = View.GONE
                     }
+
+                    // TODO: 세라 - 디바이스 상태 요청 후 화면에 내용 반영
+                    bleManager?.cmdGetStatus()
                 }
             }
         }
