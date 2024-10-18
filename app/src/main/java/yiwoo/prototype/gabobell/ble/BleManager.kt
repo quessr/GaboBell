@@ -77,17 +77,15 @@ class BleManager : Service() {
 
     private fun createNotification(): Notification {
         val notificationChannelId = "BLE_SERVICE_CHANNEL"
-        val channel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
                 notificationChannelId,
                 "BLE Background Service",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
-        } else {
-            TODO("VERSION.SDK_INT < O")
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
         }
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
 
         return NotificationCompat.Builder(this, notificationChannelId)
             .setContentTitle("BLE 연결 서비스")
@@ -316,17 +314,23 @@ class BleManager : Service() {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 //ble 특성 읽기
-                displayGattServices(getSupportedGattServices()).apply {
-                    notifyCharacteristic?.let { characteristic ->
-                        Logger.d("BleManager notifyCharacteristic@@")
-                        setCharacteristicNotification(characteristic, true)
-                    }
-                }
+
+                displayGattServices(getSupportedGattServices())
+
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED)
+
                 Logger.d("onServicesDiscovered_GATT_SUCCESS")
             } else {
                 Logger.d("onServicesDiscovered_GATT_FAIL: $status")
             }
+        }
+
+        override fun onCharacteristicWrite(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?,
+            status: Int
+        ) {
+            super.onCharacteristicWrite(gatt, characteristic, status)
         }
 
         // TODO: 세라 - Notify를 통해서 데이터 수신
@@ -354,15 +358,18 @@ class BleManager : Service() {
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
 
-
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+
+                val byteArray = characteristic?.value
+                val valueHex = byteArray?.joinToString(" ") { byte ->
+                    String.format("0x%02X", byte)
+                }
                 Logger.d(
-                    "BleManager onCharacteristicChanged: gatt//$gatt, characteristic//${
-                        characteristic?.value?.get(
-                            1
-                        )
-                    }"
+                    "BleManager onCharacteristicChanged: gatt//$gatt, characteristic//$valueHex"
                 )
+                byteArray?.let {
+                    handleCommand(it)
+                }
             }
         }
     }
@@ -430,8 +437,15 @@ class BleManager : Service() {
 
             for (gattCharacteristic in gattCharacteristics) {
                 when (gattCharacteristic.uuid) {
-                    UUID_DATA_WRITE -> writeCharacteristic = gattCharacteristic
-                    UUID_DATA_NOTIFY -> notifyCharacteristic = gattCharacteristic
+                    UUID_DATA_WRITE -> {
+                        writeCharacteristic = gattCharacteristic
+                        Logger.d("Write Characteristic set: ${gattCharacteristic.uuid}")
+                    }
+
+                    UUID_DATA_NOTIFY -> {
+                        notifyCharacteristic = gattCharacteristic
+                        Logger.d("Notify Characteristic set: ${gattCharacteristic.uuid}")
+                    }
                 }
             }
         }
@@ -460,6 +474,7 @@ class BleManager : Service() {
     fun sayHello() {
         Logger.d("[A2B] 0xA1")
         sendCommand(0x01, 0xA1.toByte(), null)
+        setCharacteristicNotification(notifyCharacteristic!!, true)
     }
 
     fun cmdEmergency(isRequest: Boolean) {
@@ -539,15 +554,80 @@ class BleManager : Service() {
 // endregion
 
     // region * Receive (BELL to APP)
-// TODO: 세라 - 일단은 값이 정상적으로 수신되는지만 로그로 남긴다. (이후 로직은 나중에 생각한다.)
     private fun handleCommand(receivedData: ByteArray) {
-        // CMD 를 추출해서 동작 처리
 
-        // 긴급구조 요청 (0xB2)
-        // 긴급구조 취소 (0xB3)
-        // 벨 On/Off 설정 응답 (0xB4) with data
-        // 상태 응답 (0xB5) with data
-        // LED On/Off 설정 응답 (0xB8) with data
+        // CMD 값 및 데이터 추출
+        val cmd = receivedData[1]
+        val data1 = receivedData.getOrNull(2) ?: 0
+        val data2 = receivedData.getOrNull(3) ?: 0
+        val data3 = receivedData.getOrNull(4) ?: 0
+        val data4 = receivedData.getOrNull(5) ?: 0
+
+        // CMD 값에 따라 처리
+        when (cmd) {
+            0xB2.toByte() -> handleEmergencyRequest()
+            0xB3.toByte() -> handleEmergencyCancel()
+            0xB4.toByte() -> handleBellSetting(data1)
+            0xB5.toByte() -> handleStatusResponse(data1, data2, data3, data4)
+            0xB8.toByte() -> handleLedSetting(data1)
+            else -> Logger.d("알 수 없는 CMD: 0x${String.format("%02X", cmd)}")
+        }
+    }
+
+    // 긴급 구조 요청 처리 (0xB2)
+    private fun handleEmergencyRequest() {
+        Logger.d("긴급 구조 요청")
+    }
+
+    // 긴급 구조 취소 처리 (0xB3)
+    private fun handleEmergencyCancel() {
+        Logger.d("긴급 구조 취소")
+    }
+
+    // 벨 On/Off 설정 응답 처리 (0xB4)
+    private fun handleBellSetting(data1: Byte) {
+        Logger.d("벨 On/Off 설정 응답")
+    }
+
+    // 상태 응답 처리 (0xB5)
+    private fun handleStatusResponse(data1: Byte, data2: Byte, data3: Byte, data4: Byte) {
+        Logger.d("상태 응답")
+
+        // data1 처리
+        val statusMessage1 = when (data1) {
+            0x01.toByte() -> "충전 중"
+            0x02.toByte() -> "완충"
+            0x03.toByte() -> "충전 중"
+            0x04.toByte() -> "기타"
+            else -> "알 수 없는 상태"
+        }
+        Logger.d("상태 응답 data1: $statusMessage1")
+
+        // data2 처리
+        val statusMessage2 = when (data2) {
+            0x01.toByte() -> "벨 Off"
+            0x02.toByte() -> "벨 On"
+            else -> "벨 상태 알 수 없음"
+        }
+        Logger.d("상태 응답 data2: $statusMessage2")
+
+        // data3 처리
+        val version = (data3 - 0x10).toString(16) // 0x12 -> 1.2, 0x13 -> 1.3, ...
+        val statusMessage3 = "v1.$version"
+        Logger.d("상태 응답 data3: $statusMessage3")
+
+        // data4 처리
+        val statusMessage4 = when (data4) {
+            0x01.toByte() -> "LED Off"
+            0x02.toByte() -> "LED On"
+            else -> "LED 상태 알 수 없음"
+        }
+        Logger.d("상태 응답 data4: $statusMessage4")
+    }
+
+    // LED On/Off 설정 응답 처리 (0xB8)
+    private fun handleLedSetting(data1: Byte) {
+        Logger.d("LED On/Off 설정 응답")
     }
 // endregion
 
