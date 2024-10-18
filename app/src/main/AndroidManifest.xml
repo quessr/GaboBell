@@ -60,6 +60,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".helper.SettingsReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
+
         <service android:name=".ble.BleManager" android:foregroundServiceType="connectedDevice" android:enabled="true"/>
 <!--        <receiver android:name=".helper.BroadcastReceiver"-->
 <!--            android:enabled="true"-->
@@ -68,6 +75,8 @@
 <!--                <action android:name="android.intent.action.BOOT_COMPLETED"/>-->
 <!--            </intent-filter>-->
 <!--        </receiver>-->
+
+
     </application>
 
 </manifest>
