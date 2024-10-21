@@ -12,7 +12,7 @@
     <!--Report-->
     <string name="report_report_screen">신고화면</string>
     <string name="report_cancellation">취소</string>
-    <string name="report_report">신고</string>
+    <string name="report_report">즉시 신고</string>
 
     <!--ReportDetail-->
     <string name="report_details_report_details">신고내역</string>
