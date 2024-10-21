@@ -18,7 +18,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:id="@+id/device_name"
+                android:id="@+id/tv_device_name"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="기기 설정 화면"

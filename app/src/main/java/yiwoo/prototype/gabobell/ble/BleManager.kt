@@ -115,7 +115,6 @@ class BleManager : Service() {
             .build()
 
         // ScanFilter 설정
-        // TODO: 세라 - UUID const 로 define 하여 사용
         val scanFilter = listOf(
             ScanFilter.Builder()
                 .setServiceUuid(ParcelUuid(CLIENT_CHARACTERISTIC_CONFIG_UUID))
@@ -535,6 +534,8 @@ class BleManager : Service() {
         } else {
             byteArrayOf(len, cmd, data)
         }
+
+        Logger.d("byteArrayValue: $byteArrayValue")
         val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) ==
                     PackageManager.PERMISSION_GRANTED &&
@@ -587,6 +588,16 @@ class BleManager : Service() {
     // 벨 On/Off 설정 응답 처리 (0xB4)
     private fun handleBellSetting(data1: Byte) {
         Logger.d("벨 On/Off 설정 응답")
+        val bellStatusData = when (data1) {
+            0x01.toByte() -> "Off"
+            0x02.toByte() -> "On"
+            else -> "BELL 상태 알 수 없음"
+        }
+
+        val intent = Intent(BLE_BELL_SETTING_CHANGED).apply {
+            putExtra("status_bell", bellStatusData)
+        }
+        sendBroadcast(intent)
     }
 
     // 상태 응답 처리 (0xB5)
@@ -623,11 +634,30 @@ class BleManager : Service() {
             else -> "LED 상태 알 수 없음"
         }
         Logger.d("상태 응답 data4: $statusMessage4")
+
+        // 상태 업데이트 브로드캐스트 전송
+        val intent = Intent(BLE_STATUS_UPDATE).apply {
+            putExtra("status_charging", statusMessage1)
+            putExtra("status_bell", statusMessage2)
+            putExtra("status_version", statusMessage3)
+            putExtra("status_led", statusMessage4)
+        }
+        sendBroadcast(intent)
     }
 
     // LED On/Off 설정 응답 처리 (0xB8)
     private fun handleLedSetting(data1: Byte) {
         Logger.d("LED On/Off 설정 응답")
+        val ledStatusData = when (data1) {
+            0x01.toByte() -> "Off"
+            0x02.toByte() -> "On"
+            else -> "LED 상태 알 수 없음"
+        }
+
+        val intent = Intent(BLE_LED_SETTING_CHANGED).apply {
+            putExtra("status_led", ledStatusData)
+        }
+        sendBroadcast(intent)
     }
 // endregion
 
@@ -637,6 +667,9 @@ class BleManager : Service() {
         const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"
         const val ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE"
         const val EXTRA_DATA = "EXTRA_DATA"
+        const val BLE_STATUS_UPDATE = "BLE_STATUS_UPDATE"
+        const val BLE_LED_SETTING_CHANGED = "BLE_LED_SETTING_CHANGED"
+        const val BLE_BELL_SETTING_CHANGED = "BLE_BELL_SETTING_CHANGED"
 
         const val STATE_DISCONNECTED = 0
         const val STATE_CONNECTING = 1
