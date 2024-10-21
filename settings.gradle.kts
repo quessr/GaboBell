@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "GaboBell"
 include(":app")
+include(":retrofit")

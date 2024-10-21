@@ -7,17 +7,31 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import yiwoo.prototype.gabobell.api.GaboAPI
+import yiwoo.prototype.gabobell.api.RetrofitModule
+import yiwoo.prototype.gabobell.api.dto.CreateEvent
+import yiwoo.prototype.gabobell.api.dto.CreateEventRequest
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityReportBinding
 import yiwoo.prototype.gabobell.helper.Logger
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate) {
 
+    private lateinit var gaboApi: GaboAPI
+
     private var bleManager: BleManager? = null
     private var countDownTimer: CountDownTimer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val retrofit: Retrofit = RetrofitModule.provideRetrofit()
+        gaboApi = retrofit.create(GaboAPI::class.java)
+
         initUi()
         bindService()
     }
@@ -42,6 +56,10 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
         binding.btnReport.setOnClickListener {
             reportEmergency()
+            bleManager?.cmdEmergency(true)
+
+            //응답에대한 결과처리 해줘야함 onReceive
+            sendPostRequest()
         }
 
         binding.btnCancellations.setOnClickListener {
@@ -59,6 +77,45 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         countDownTimer?.cancel()
     }
 
+    private fun sendPostRequest() {
+        val requestBody = CreateEventRequest(
+            CreateEvent(
+                userUuid = "283697cc-8e00-40da-947f-058ece8af8aa",
+                latitude = 37.585057,
+                longitude = 126.885347
+            )
+        )
+        Logger.d("Request Body: $requestBody") // 요청 데이터 로그 출력
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = gaboApi.createEvent(requestBody)
+                Logger.d("responseBody: ${response.body()}")
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    responseBody?.let {
+                        val eventId = it.data.createEvent.id
+                        val eventAddress = it.data.createEvent.eventAddress
+                        val eventStatus = it.result.status
+                        val eventMessage = it.result.message
+
+                        Logger.d(
+                            "eventStatus: $eventStatus \n eventMessage: $eventMessage \n " +
+                                    "eventId: $eventId \n eventAddress: $eventAddress"
+                        )
+                    }
+                } else {
+                    Logger.e(
+                        "Request failed with code: ${response.code()} \n " +
+                                "errorBody: ${
+                                    response.errorBody()?.string()
+                                }"
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     private fun bindService() {
         val intent = Intent(this, BleManager::class.java)
