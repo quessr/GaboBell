@@ -1,25 +1,24 @@
 package yiwoo.prototype.gabobell.api.dto
 
-
 data class CreateEventResponse(
-    val result: ResultData,
-    val data: EventData
+    val result: CreateResultData,
+    val data: CreateEventData
 )
 
-data class EventData(
+data class CreateEventData(
     val id: Int,
-    val createEvent: EventDetails
+    val createEvent: CreateEventDetails
 )
 
-data class EventDetails(
-    val id: Int,
+data class CreateEventDetails(
+    val id: Long,
     val userUuid: String,
     val eventAddress: String,
     val latitude: Double,
     val longitude: Double
 )
 
-data class ResultData(
+data class CreateResultData(
     val status: String,
     val message: String
 )
