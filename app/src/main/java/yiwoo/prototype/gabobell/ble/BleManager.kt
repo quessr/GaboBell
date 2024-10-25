@@ -28,12 +28,12 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.Logger
-import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import java.util.UUID
 
 class BleManager : Service() {
@@ -53,6 +53,8 @@ class BleManager : Service() {
     private var permissionGranted: Boolean = true
 
     private var byteArrayValue: ByteArray? = null
+
+    private val valueList = mutableListOf<String>()
 
     inner class LocalBinder : Binder() {
         fun getService() = this@BleManager
@@ -248,8 +250,10 @@ class BleManager : Service() {
         }
     }
 
+    /*
     fun isConnected(): Boolean {
         val deviceAddress = UserDeviceManager.getAddress(applicationContext)
+        if (deviceAddress == "") return false
         Logger.d("isConnected : $deviceAddress")
         val device = bluetoothAdapter?.getRemoteDevice(deviceAddress)
         val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
@@ -269,6 +273,7 @@ class BleManager : Service() {
             false
         }
     }
+    */
 
     /**
      * GATT 콜백 선언
@@ -283,6 +288,9 @@ class BleManager : Service() {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Logger.d("successfully connected to the GATT Server")
+
+                    (application as GaboApplication).isConnected = true
+
                     intentAction = ACTION_GATT_CONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_CONNECTED
@@ -301,6 +309,9 @@ class BleManager : Service() {
 
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Logger.d("disconnected from the GATT Server")
+
+                    (application as GaboApplication).isConnected = false
+
                     intentAction = ACTION_GATT_DISCONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_DISCONNECTED
@@ -574,14 +585,40 @@ class BleManager : Service() {
         }
     }
 
+    private fun handleEmergency(cmd: Byte, stateEmergency: String) {
+        val valueHex = String.format("0x%02X", cmd.toInt() and 0xFF)
+        valueList.add(valueHex)
+        if (valueList.size == 3) {
+            if (cmd == 0xB2.toByte()) {
+                // 전역 상태 변경 및 신고 API 호출
+                (application as GaboApplication).isEmergency = true
+                ApiSender.reportEmergency(context = this@BleManager)
+            } else {
+                // 전역 상태 변경 및 신고 취소 API 호출
+                (application as GaboApplication).isEmergency = false
+                val eventId = (application as GaboApplication).eventId
+                ApiSender.cancelEmergency(this@BleManager, eventId)
+            }
+
+            val intent = Intent(stateEmergency).apply {
+                putExtra("cmd", valueHex)
+            }
+            sendBroadcast(intent)
+
+            valueList.clear()
+        }
+    }
+
     // 긴급 구조 요청 처리 (0xB2)
     private fun handleEmergencyRequest() {
         Logger.d("긴급 구조 요청")
+        handleEmergency(0xB2.toByte(), BLE_REPORTE_EMERGENCY)
     }
 
     // 긴급 구조 취소 처리 (0xB3)
     private fun handleEmergencyCancel() {
         Logger.d("긴급 구조 취소")
+        handleEmergency(0xB3.toByte(), BLE_CANCEL_REPORTE_EMERGENCY)
     }
 
     // 벨 On/Off 설정 응답 처리 (0xB4)
@@ -669,6 +706,8 @@ class BleManager : Service() {
         const val BLE_STATUS_UPDATE = "BLE_STATUS_UPDATE"
         const val BLE_LED_SETTING_CHANGED = "BLE_LED_SETTING_CHANGED"
         const val BLE_BELL_SETTING_CHANGED = "BLE_BELL_SETTING_CHANGED"
+        const val BLE_REPORTE_EMERGENCY = "BLE_REPORTE_EMERGENCY"
+        const val BLE_CANCEL_REPORTE_EMERGENCY = "BLE_CANCEL_REPORTE_EMERGENCY"
 
         const val STATE_DISCONNECTED = 0
         const val STATE_CONNECTING = 1

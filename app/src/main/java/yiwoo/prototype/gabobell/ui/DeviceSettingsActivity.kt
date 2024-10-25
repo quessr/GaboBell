@@ -5,10 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
-import android.opengl.Visibility
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
+import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.ble.BroadcastReceiver
@@ -108,7 +108,7 @@ class DeviceSettingsActivity :
                     finish()
                 } else {
                     Logger.d("DeviceSettingsActivity onServiceConnected")
-                    if (bleManager?.isConnected() == true) {
+                    if ((application as GaboApplication).isConnected) {
                         binding.btnDisconnectStatus.visibility = View.GONE
                     } else {
                         binding.btnConnectStatus.visibility = View.GONE
