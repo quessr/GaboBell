@@ -30,10 +30,10 @@ import android.os.Looper
 import android.os.ParcelUuid
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import okio.ByteString.Companion.toByteString
+import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.Logger
-import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import java.util.UUID
 
 class BleManager : Service() {
@@ -250,6 +250,7 @@ class BleManager : Service() {
         }
     }
 
+    /*
     fun isConnected(): Boolean {
         val deviceAddress = UserDeviceManager.getAddress(applicationContext)
         if (deviceAddress == "") return false
@@ -272,6 +273,7 @@ class BleManager : Service() {
             false
         }
     }
+    */
 
     /**
      * GATT 콜백 선언
@@ -286,6 +288,9 @@ class BleManager : Service() {
             when (newState) {
                 BluetoothProfile.STATE_CONNECTED -> {
                     Logger.d("successfully connected to the GATT Server")
+
+                    (application as GaboApplication).isConnected = true
+
                     intentAction = ACTION_GATT_CONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_CONNECTED
@@ -304,6 +309,9 @@ class BleManager : Service() {
 
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     Logger.d("disconnected from the GATT Server")
+
+                    (application as GaboApplication).isConnected = false
+
                     intentAction = ACTION_GATT_DISCONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_DISCONNECTED
@@ -582,10 +590,22 @@ class BleManager : Service() {
         val valueHex = String.format("0x%02X", cmd.toInt() and 0xFF)
         valueList.add(valueHex)
         if (valueList.size == 3) {
+            if (cmd == 0xB2.toByte()) {
+                // 전역 상태 변경 및 신고 API 호출
+                (application as GaboApplication).isEmergency = true
+                ApiSender.reportEmergency(context = this@BleManager)
+            } else {
+                // 전역 상태 변경 및 신고 취소 API 호출
+                (application as GaboApplication).isEmergency = false
+                val eventId = (application as GaboApplication).eventId
+                ApiSender.cancelEmergency(this@BleManager, eventId)
+            }
+
             val intent = Intent(stateEmergency).apply {
                 putExtra("cmd", valueHex)
             }
             sendBroadcast(intent)
+
             valueList.clear()
         }
     }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GaboBell</string>
+    <string name="app_name">안심벨</string>
 
     <!--Main-->
     <string name="main_registered_device">등록기기</string>
