@@ -332,7 +332,6 @@ class BleManager : Service() {
             super.onCharacteristicWrite(gatt, characteristic, status)
         }
 
-        // TODO: 세라 - Notify를 통해서 데이터 수신
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,

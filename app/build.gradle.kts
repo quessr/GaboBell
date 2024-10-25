@@ -42,12 +42,21 @@ dependencies {
     implementation(project(":retrofit")) // retrofit 대한 의존성
 
     //retrofit2
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation ("com.squareup.okhttp3:logging-interceptor:4.9.2")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.2")
 
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    //CameraX
+    implementation("androidx.camera:camera-core:1.1.0-beta01")
+    implementation("androidx.camera:camera-camera2:1.1.0-beta01")
+    implementation("androidx.camera:camera-lifecycle:1.1.0-beta01")
+    implementation("androidx.camera:camera-video:1.1.0-beta01")
+
+    implementation("androidx.camera:camera-view:1.1.0-beta01")
+    implementation("androidx.camera:camera-extensions:1.1.0-beta01")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

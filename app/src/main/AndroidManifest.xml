@@ -5,21 +5,30 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Bluetooth 및 위치 권한 (Android 12 미만) -->
-    <uses-permission android:name="android.permission.BLUETOOTH"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- Bluetooth 관련 권한 (Android 12 이상) -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <uses-feature android:name="android.hardware.camera.any" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -28,31 +37,42 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GaboBell"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path" />
+        </provider>
 
         <activity
             android:name=".ui.ReportActivity"
             android:exported="true"
-            android:label="Report Activity">
-        </activity>
+            android:label="Report Activity" />
 
         <activity
             android:name=".ui.ReportDetailActivity"
             android:exported="true"
-            android:label="Report Detail Activity">
-        </activity>
+            android:label="Report Detail Activity" />
 
         <activity
             android:name=".ui.RegisterDeviceActivity"
             android:exported="true"
-            android:label="Register Device Activity">
-        </activity>
+            android:label="Register Device Activity" />
 
         <activity
             android:name=".ui.DeviceSettingsActivity"
             android:exported="true"
-            android:label="Device Settings Activity">
-        </activity>
+            android:label="Device Settings Activity" />
+
+        <activity
+            android:name=".ui.MediaCaptureActivity"
+            android:exported="true"
+            android:label="Device Media Capture" />
 
         <activity
             android:name=".ui.MainActivity"
@@ -67,17 +87,19 @@
         <receiver
             android:name=".helper.SettingsReceiver"
             android:enabled="true"
-            android:exported="true">
-        </receiver>
+            android:exported="true" />
 
-        <service android:name=".ble.BleManager" android:foregroundServiceType="connectedDevice" android:enabled="true"/>
-<!--        <receiver android:name=".helper.BroadcastReceiver"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="false">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.BOOT_COMPLETED"/>-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <service
+            android:name=".ble.BleManager"
+            android:enabled="true"
+            android:foregroundServiceType="connectedDevice" />
+        <!--        <receiver android:name=".helper.BroadcastReceiver"-->
+        <!--            android:enabled="true"-->
+        <!--            android:exported="false">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="android.intent.action.BOOT_COMPLETED"/>-->
+        <!--            </intent-filter>-->
+        <!--        </receiver>-->
 
 
     </application>

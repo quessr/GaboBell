@@ -7,6 +7,8 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
+import android.provider.MediaStore
+import androidx.activity.result.ActivityResultLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +21,7 @@ import yiwoo.prototype.gabobell.api.dto.CreateEventRequest
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityReportBinding
 import yiwoo.prototype.gabobell.helper.Logger
+import java.io.File
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate) {
 
@@ -44,7 +47,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     private fun initUi() {
 
         // 타이머 동작
-        countDownTimer = object: CountDownTimer(5_000, 1_000) {
+        countDownTimer = object : CountDownTimer(5_000, 1_000) {
             override fun onTick(millisUntilFinished: Long) {
                 binding.reportCounter.text = (millisUntilFinished / 1_000).toString()
             }
@@ -55,8 +58,14 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }.start()
 
         binding.btnReport.setOnClickListener {
-            reportEmergency()
-            bleManager?.cmdEmergency(true)
+            // TODO startActivity 대신 startForResultActivity로 수정
+            // TODO eventId와 mediaFormat정보를 넘겨야한다. -> intent로 eventId와 format 정보 넘긴다.
+            // TODO 파일 전송 api 처리
+            val intent = Intent(this, MediaCaptureActivity::class.java)
+            startActivity(intent)
+
+//            reportEmergency()
+//            bleManager?.cmdEmergency(true)
 
             //응답에대한 결과처리 해줘야함 onReceive
             sendPostRequest()
