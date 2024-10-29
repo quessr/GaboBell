@@ -121,27 +121,38 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         } else {
             // TODO: 해당 메소드를 서비스에서도 호출해야하므로 따로 뺄것.
             // 벨 연동 없이 직접 API 호출을 수행함.
-            sendEventCreate()
+            sendEmergencyCreate()
         }
+
+        // TODO: 세라님 here
+        val eventId = (application as GaboApplication).eventId
+        Logger.d("세라: $eventId")
     }
 
     private fun cancelEmergency() {
         if (isConnected()) {
             bleManager?.cmdEmergency(false)
         } else {
-            sendEventUpdate()
+            sendEmergencyCancel()
         }
     }
 
 
     // region * API (단말 미연결시 호출)
-    private fun sendEventUpdate() {
-        ApiSender.reportEmergency(this@ReportActivity)
-    }
-
-    private fun sendEventCreate() {
+    private fun sendEmergencyCancel() {
+//        ApiSender.reportEmergency(this@ReportActivity)
         val eventId = (application as GaboApplication).eventId
         ApiSender.cancelEmergency(this@ReportActivity, eventId)
+        (application as GaboApplication).isEmergency = false
+        uiEmergency()
+    }
+
+    private fun sendEmergencyCreate() {
+//        val eventId = (application as GaboApplication).eventId
+//        ApiSender.cancelEmergency(this@ReportActivity, eventId)
+        ApiSender.reportEmergency(this@ReportActivity)
+        (application as GaboApplication).isEmergency = true
+        uiEmergency()
     }
 
     // endregion

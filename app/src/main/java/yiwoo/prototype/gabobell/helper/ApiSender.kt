@@ -44,6 +44,8 @@ object ApiSender {
 
                         (context.applicationContext as GaboApplication).eventId = eventId
 
+
+
                         Logger.d(
                             "eventStatus: $eventStatus \n eventMessage: $eventMessage \n " +
                                     "eventId: $eventId \n eventAddress: $eventAddress \n " +
