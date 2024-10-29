@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+    <!--  백그라운드 위치 권한  -->
+    <!--  지속적으로 위치를 추적해야할 경우 -> ACCESS_BACKGROUND_LOCATION   -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <!--  앱에 위치 정보를 한 번만 또는 정의된 시간 동안 공유 -> FOREGROUND_SERVICE_LOCATION  -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <!-- Bluetooth 관련 권한 (Android 12 이상) -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
@@ -75,7 +80,7 @@
             android:exported="true">
         </receiver>
 
-        <service android:name=".ble.BleManager" android:foregroundServiceType="connectedDevice" android:enabled="true"/>
+        <service android:name=".ble.BleManager" android:foregroundServiceType="connectedDevice|location" android:enabled="true"/>
 <!--        <receiver android:name=".helper.BroadcastReceiver"-->
 <!--            android:enabled="true"-->
 <!--            android:exported="false">-->
