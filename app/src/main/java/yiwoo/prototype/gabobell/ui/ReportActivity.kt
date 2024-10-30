@@ -9,23 +9,32 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 
 import retrofit2.Retrofit
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.api.GaboAPI
 import yiwoo.prototype.gabobell.ble.BleManager
+import yiwoo.prototype.gabobell.constants.MediaFormatConstants
 import yiwoo.prototype.gabobell.databinding.ActivityReportBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.UserSettingsManager
+import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 
 import yiwoo.prototype.gabobell.module.RetrofitModule
 
-class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate) {
+class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate),
+    EventIdCallback {
 
     private var bleManager: BleManager? = null
     private var gaboApi: GaboAPI? = null
     private var countDownTimer: CountDownTimer? = null
     private val timeLimit: Long = 5_000
+    private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +43,14 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         initUi()
         initReceiver()
         bindService()
+
+        activityResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (it.resultCode == RESULT_OK) {
+                    Toast.makeText(this.applicationContext, "사진이 등록되었습니다.", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
     }
 
     override fun onDestroy() {
@@ -61,11 +78,6 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }
 
         binding.btnReport.setOnClickListener {
-            // TODO startActivity 대신 startForResultActivity로 수정
-            // TODO eventId와 mediaFormat정보를 넘겨야한다. -> intent로 eventId와 format 정보 넘긴다.
-            // TODO 파일 전송 api 처리
-            val intent = Intent(this, MediaCaptureActivity::class.java)
-            startActivity(intent)
 
 
             //응답에대한 결과처리 해줘야함 onReceive
@@ -123,10 +135,6 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
             // 벨 연동 없이 직접 API 호출을 수행함.
             sendEmergencyCreate()
         }
-
-        // TODO: 세라님 here
-        val eventId = (application as GaboApplication).eventId
-        Logger.d("세라: $eventId")
     }
 
     private fun cancelEmergency() {
@@ -148,9 +156,23 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     }
 
     private fun sendEmergencyCreate() {
-//        val eventId = (application as GaboApplication).eventId
-//        ApiSender.cancelEmergency(this@ReportActivity, eventId)
-        ApiSender.reportEmergency(this@ReportActivity)
+
+        ApiSender.reportEmergency(this) { eventId ->
+            Logger.d("Received event ID in SomeActivity: $eventId")
+
+            tryMediaCapture(eventId)
+        }
+    }
+
+    private fun tryMediaCapture(eventId: Long) {
+        val captureFormat = UserSettingsManager.getEmergencyFormat(this)
+        if (captureFormat != UserSettingsManager.EmergencyFormatType.NONE) {
+            val intent = Intent(this, MediaCaptureActivity::class.java)
+            intent.putExtra("eventId", eventId)
+            intent.putExtra("mediaFormat", captureFormat.value)
+            activityResultLauncher.launch(intent)
+        }
+
         (application as GaboApplication).isEmergency = true
         uiEmergency()
     }
@@ -171,6 +193,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
                     Logger.e("Unable to initialize Bluetooth")
                     finish()
                 } else {
+                    service.setEventIdCallback(this@ReportActivity)
                     Logger.d("ReportActivity onServiceConnected")
                 }
             }
@@ -182,5 +205,8 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }
     }
 
+    override fun onEventId(eventId: Long) {
+        tryMediaCapture(eventId)
+    }
     // endregion
 }

@@ -34,6 +34,7 @@ import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import java.util.UUID
 
 class BleManager : Service() {
@@ -55,6 +56,12 @@ class BleManager : Service() {
     private var byteArrayValue: ByteArray? = null
 
     private val valueList = mutableListOf<String>()
+
+    private var eventIdCallback: EventIdCallback? = null
+
+    fun setEventIdCallback(callback: EventIdCallback) {
+        eventIdCallback = callback
+    }
 
     inner class LocalBinder : Binder() {
         fun getService() = this@BleManager
@@ -592,7 +599,9 @@ class BleManager : Service() {
             if (cmd == 0xB2.toByte()) {
                 // 전역 상태 변경 및 신고 API 호출
                 (application as GaboApplication).isEmergency = true
-                ApiSender.reportEmergency(context = this@BleManager)
+                ApiSender.reportEmergency(context = this@BleManager) { eventId ->
+                    eventIdCallback?.onEventId(eventId)
+                }
             } else {
                 // 전역 상태 변경 및 신고 취소 API 호출
                 (application as GaboApplication).isEmergency = false

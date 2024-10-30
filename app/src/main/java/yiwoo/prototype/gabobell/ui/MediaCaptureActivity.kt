@@ -1,6 +1,7 @@
 package yiwoo.prototype.gabobell.ui
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -16,12 +17,14 @@ import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import yiwoo.prototype.gabobell.constants.MediaFormatConstants
 import yiwoo.prototype.gabobell.databinding.ActivityMediaCaptureBinding
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.logging.Logger
 
 class MediaCaptureActivity :
     BaseActivity<ActivityMediaCaptureBinding>(ActivityMediaCaptureBinding::inflate) {
@@ -76,10 +79,16 @@ class MediaCaptureActivity :
                     this, cameraSelector, preview, imageCapture, videoCapture
                 )
 
+                val mediaFormat = intent.getIntExtra("mediaFormat", 0)
+                val mediaEventId = intent.getLongExtra("eventId", 0)
+
+                Log.d("MediaCaptureActivity", "mediaFormat: $mediaFormat")
+                Log.d("MediaCaptureActivity", "mediaEventId: $mediaEventId")
+
                 // 촬영 형식에 따라 호출
-                when (captureFormat) {
-                    UserSettingsManager.EmergencyFormatType.PHOTO -> takePhoto()
-                    UserSettingsManager.EmergencyFormatType.VIDEO -> captureVideo()
+                when (mediaFormat) {
+                    UserSettingsManager.EmergencyFormatType.PHOTO.value -> takePhoto()
+                    UserSettingsManager.EmergencyFormatType.VIDEO.value -> captureVideo()
                     else -> Log.d("MediaCaptureActivity", "No valid capture format")
                 }
             } catch (exc: Exception) {
@@ -170,6 +179,7 @@ class MediaCaptureActivity :
                             Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                             Log.d("CameraXApp", msg)
 
+                            // TODO ResultActivity에 결과 넘어가는지 확인
                             finish()
                         } else {
                             Log.e("CameraXApp", "Video capture failed: ${recordEvent.error}")

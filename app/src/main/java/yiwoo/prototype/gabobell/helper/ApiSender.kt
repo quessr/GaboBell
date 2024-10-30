@@ -4,6 +4,7 @@ import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.api.GaboAPI
@@ -11,6 +12,7 @@ import yiwoo.prototype.gabobell.api.dto.CreateEvent
 import yiwoo.prototype.gabobell.api.dto.CreateEventRequest
 import yiwoo.prototype.gabobell.api.dto.EventStatus
 import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
+import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import yiwoo.prototype.gabobell.module.RetrofitModule
 
 object ApiSender {
@@ -19,7 +21,9 @@ object ApiSender {
         context: Context,
         uuid: String = UserSettingsManager.getUuid(context),
         latitude: Double = 37.585057,
-        longitude: Double = 126.885347) {
+        longitude: Double = 126.885347,
+        eventIdCallback: ((Long) -> Unit)? = null
+    ) {
 
         val retrofit: Retrofit = RetrofitModule.provideRetrofit(context)
         val gaboApi = retrofit.create(GaboAPI::class.java)
@@ -44,7 +48,9 @@ object ApiSender {
 
                         (context.applicationContext as GaboApplication).eventId = eventId
 
-
+                        withContext(Dispatchers.Main) {
+                            eventIdCallback?.invoke(eventId)
+                        }
 
                         Logger.d(
                             "eventStatus: $eventStatus \n eventMessage: $eventMessage \n " +
