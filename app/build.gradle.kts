@@ -41,6 +41,9 @@ android {
 dependencies {
     implementation(project(":retrofit")) // retrofit 대한 의존성
 
+    //location
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
+
     //retrofit2
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
