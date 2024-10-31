@@ -78,10 +78,12 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }
 
         binding.btnReport.setOnClickListener {
-
-
             //응답에대한 결과처리 해줘야함 onReceive
             reportEmergency()
+        }
+
+        binding.btnCancellations.setOnClickListener {
+            cancelEmergency()
         }
 
         uiEmergency()

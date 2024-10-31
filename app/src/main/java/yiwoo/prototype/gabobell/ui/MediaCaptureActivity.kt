@@ -17,7 +17,11 @@ import androidx.camera.video.*
 import androidx.camera.video.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import yiwoo.prototype.gabobell.constants.MediaFormatConstants
+import yiwoo.prototype.gabobell.data.network.FileUploadClient
 import yiwoo.prototype.gabobell.databinding.ActivityMediaCaptureBinding
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import java.io.File
@@ -34,6 +38,11 @@ class MediaCaptureActivity :
     private var recording: Recording? = null
     private var captureFormat: UserSettingsManager.EmergencyFormatType =
         UserSettingsManager.EmergencyFormatType.NONE
+
+    private var mediaFormat: Int = 0
+    private var mediaEventId: Long = 0
+
+    private val fileUploadClient = FileUploadClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,8 +88,8 @@ class MediaCaptureActivity :
                     this, cameraSelector, preview, imageCapture, videoCapture
                 )
 
-                val mediaFormat = intent.getIntExtra("mediaFormat", 0)
-                val mediaEventId = intent.getLongExtra("eventId", 0)
+                mediaFormat = intent.getIntExtra("mediaFormat", 0)
+                mediaEventId = intent.getLongExtra("eventId", 0)
 
                 Log.d("MediaCaptureActivity", "mediaFormat: $mediaFormat")
                 Log.d("MediaCaptureActivity", "mediaEventId: $mediaEventId")
@@ -122,6 +131,14 @@ class MediaCaptureActivity :
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d("CameraXApp", msg)
 
+                    CoroutineScope(Dispatchers.IO).launch {
+                        uploadFiles(
+                            eventId = mediaEventId,
+                            imageFiles = listOf(photoFile),
+                            videoFile = null
+                        )
+                    }
+
                     finish()
                 }
             }
@@ -134,6 +151,7 @@ class MediaCaptureActivity :
         val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
             .format(System.currentTimeMillis())
         val videoFile = File(getExternalFilesDir(DIRECTORY_MOVIES), "$name.mp4")
+        val videoFilePath: String = videoFile.absolutePath
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
 
         if (recording != null) {
@@ -162,7 +180,7 @@ class MediaCaptureActivity :
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        object : CountDownTimer(10_000, 1_000) {
+                        object : CountDownTimer(3_000, 1_000) {
                             override fun onTick(millisUntilFinished: Long) {
                             }
 
@@ -179,6 +197,13 @@ class MediaCaptureActivity :
                             Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                             Log.d("CameraXApp", msg)
 
+                            CoroutineScope(Dispatchers.IO).launch {
+                                uploadFiles(
+                                    eventId = mediaEventId,
+                                    imageFiles = null,
+                                    videoFile = videoFile
+                                )
+                            }
                             // TODO ResultActivity에 결과 넘어가는지 확인
                             finish()
                         } else {
@@ -187,6 +212,20 @@ class MediaCaptureActivity :
                     }
                 }
             }
+    }
+
+    private suspend fun uploadFiles(eventId: Long, videoFile: File?, imageFiles: List<File>?) {
+        fileUploadClient.uploadFiles(
+            context = this,
+            eventId = eventId,
+            videoFile = videoFile,
+            imageFiles = imageFiles,
+            onSuccess = {
+                yiwoo.prototype.gabobell.helper.Logger.d("파일 업로드 성공 $eventId")
+            },
+            onFailure = { errorMessage ->
+                yiwoo.prototype.gabobell.helper.Logger.d("파일 업로드 실패: $errorMessage, $eventId")
+            })
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
