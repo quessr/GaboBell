@@ -43,10 +43,21 @@ class FileUploadClient {
             )
         }
 
+        val emptyImage = MultipartBody.Part.createFormData(
+            "imageFiles",
+            "",
+            "".toRequestBody()
+        )
+
         try {
             val response = withContext(Dispatchers.IO) {
                 when {
-                    partVideo != null -> gaboApi.uploadFiles(eventIdBody, partVideo, null)
+                    partVideo != null -> gaboApi.uploadFiles(
+                        eventIdBody,
+                        partVideo,
+                        listOf(emptyImage)
+                    )
+
                     partImages != null -> gaboApi.uploadFiles(eventIdBody, null, partImages)
                     else -> throw IllegalArgumentException("No files provided for upload")
                 }
