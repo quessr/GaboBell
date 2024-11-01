@@ -47,14 +47,8 @@ class MediaCaptureActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (allPermissionsGranted()) {
-            captureFormat = UserSettingsManager.getEmergencyFormat(this)
-            startCamera()
-        } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
-            )
-        }
+        captureFormat = UserSettingsManager.getEmergencyFormat(this)
+        startCamera()
     }
 
     private fun startCamera() {
@@ -151,7 +145,6 @@ class MediaCaptureActivity :
         val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
             .format(System.currentTimeMillis())
         val videoFile = File(getExternalFilesDir(DIRECTORY_MOVIES), "$name.mp4")
-        val videoFilePath: String = videoFile.absolutePath
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
 
         if (recording != null) {
@@ -226,18 +219,5 @@ class MediaCaptureActivity :
             onFailure = { errorMessage ->
                 yiwoo.prototype.gabobell.helper.Logger.d("파일 업로드 실패: $errorMessage, $eventId")
             })
-    }
-
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
-    }
-
-    companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
     }
 }
