@@ -69,9 +69,6 @@ class MediaCaptureActivity :
 
             try {
                 cameraProvider.unbindAll()
-//                cameraProvider.bindToLifecycle(
-//                    this, cameraSelector, preview, imageCapture, videoCapture
-//                )
 
                 mediaFormat = intent.getIntExtra("mediaFormat", 0)
                 mediaEventId = intent.getLongExtra("eventId", 0)
