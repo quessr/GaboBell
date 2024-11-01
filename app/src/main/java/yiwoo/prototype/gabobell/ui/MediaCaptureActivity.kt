@@ -182,7 +182,7 @@ class MediaCaptureActivity :
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        object : CountDownTimer(3_000, 1_000) {
+                        object : CountDownTimer(5_000, 1_000) {
                             override fun onTick(millisUntilFinished: Long) {
                             }
 

@@ -47,11 +47,11 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         activityResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 if (it.resultCode == RESULT_OK) {
-                    Toast.makeText(this, "사진이 등록되었습니다.", Toast.LENGTH_SHORT)
+                    Toast.makeText(this, "미디어 파일이 등록되었습니다.", Toast.LENGTH_SHORT)
                         .show()
                 } else if (it.resultCode == RESULT_CANCELED) {
                     val errorMessage = it.data?.getStringExtra("onFailure")
-                    Toast.makeText(this, errorMessage ?: "사진 등록 실패", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, errorMessage ?: "미디어 파일 등록 실패", Toast.LENGTH_SHORT).show()
                 }
             }
     }
