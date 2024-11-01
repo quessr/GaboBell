@@ -132,8 +132,6 @@ class MediaCaptureActivity :
                             videoFile = null
                         )
                     }
-
-                    finish()
                 }
             }
         )
@@ -197,8 +195,6 @@ class MediaCaptureActivity :
                                     videoFile = videoFile
                                 )
                             }
-                            // TODO ResultActivity에 결과 넘어가는지 확인
-                            finish()
                         } else {
                             Log.e("CameraXApp", "Video capture failed: ${recordEvent.error}")
                         }
@@ -215,9 +211,19 @@ class MediaCaptureActivity :
             imageFiles = imageFiles,
             onSuccess = {
                 yiwoo.prototype.gabobell.helper.Logger.d("파일 업로드 성공 $eventId")
+                val intent = Intent().apply {
+                    putExtra("onSuccess", "파일 업로드 성공 $eventId")
+                }
+                setResult(RESULT_OK, intent)
+                if (!isFinishing) finish()
             },
             onFailure = { errorMessage ->
                 yiwoo.prototype.gabobell.helper.Logger.d("파일 업로드 실패: $errorMessage, $eventId")
+                val intent = Intent().apply {
+                    putExtra("onFailure", "파일 업로드 실패 $errorMessage")
+                }
+                setResult(RESULT_CANCELED, intent)
+                if (!isFinishing) finish()
             })
     }
 }
