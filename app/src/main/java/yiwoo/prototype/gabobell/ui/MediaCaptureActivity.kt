@@ -65,22 +65,13 @@ class MediaCaptureActivity :
                     it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
-            imageCapture = ImageCapture.Builder()
-                .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                .build()
-
-            val recorder = Recorder.Builder()
-                .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
-                .build()
-            videoCapture = VideoCapture.withOutput(recorder)
-
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture, videoCapture
-                )
+//                cameraProvider.bindToLifecycle(
+//                    this, cameraSelector, preview, imageCapture, videoCapture
+//                )
 
                 mediaFormat = intent.getIntExtra("mediaFormat", 0)
                 mediaEventId = intent.getLongExtra("eventId", 0)
@@ -90,8 +81,31 @@ class MediaCaptureActivity :
 
                 // 촬영 형식에 따라 호출
                 when (mediaFormat) {
-                    UserSettingsManager.EmergencyFormatType.PHOTO.value -> takePhoto()
-                    UserSettingsManager.EmergencyFormatType.VIDEO.value -> captureVideo()
+                    UserSettingsManager.EmergencyFormatType.PHOTO.value -> {
+                        imageCapture = ImageCapture.Builder()
+                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                            .build()
+
+                        cameraProvider.bindToLifecycle(
+                            this, cameraSelector, preview, imageCapture
+                        )
+
+                        takePhoto()
+                    }
+
+                    UserSettingsManager.EmergencyFormatType.VIDEO.value -> {
+                        val recorder = Recorder.Builder()
+                            .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+                            .build()
+                        videoCapture = VideoCapture.withOutput(recorder)
+
+                        cameraProvider.bindToLifecycle(
+                            this, cameraSelector, preview, videoCapture
+                        )
+
+                        captureVideo()
+                    }
+
                     else -> Log.d("MediaCaptureActivity", "No valid capture format")
                 }
             } catch (exc: Exception) {

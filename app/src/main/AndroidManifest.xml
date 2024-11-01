@@ -29,7 +29,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
+        android:maxSdkVersion="32" />
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -98,7 +98,7 @@
             android:name=".helper.SettingsReceiver"
             android:enabled="true"
             android:exported="true" />
-        
+
         <service
             android:name=".ble.BleManager"
             android:enabled="true"
