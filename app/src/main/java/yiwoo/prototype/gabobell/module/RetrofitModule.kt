@@ -7,6 +7,7 @@ import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.TokenStore
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import yiwoo.prototype.gabobell.module.RetrofitModule.okHttpClient
 
@@ -36,7 +37,7 @@ object RetrofitModule {
             val newRequest = originalRequest.newBuilder()
                 .addHeader("Authorization", authToken)
                 .build()
-            Logger.d(authToken)
+            TokenStore.saveToken(context, authToken)
             return chain.proceed(newRequest)
         }
     }

@@ -61,6 +61,9 @@ dependencies {
     implementation("androidx.camera:camera-view:1.1.0-beta01")
     implementation("androidx.camera:camera-extensions:1.1.0-beta01")
 
+    // EncryptedSharedPreferences
+    implementation("androidx.security:security-crypto-ktx:1.1.0-alpha04")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
