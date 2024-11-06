@@ -42,6 +42,12 @@ interface GaboAPI {
         @Part imageFiles: List<MultipartBody.Part>?
     ): Response<ApiResponse<UpdateEventResponse>>
 
+    @POST("users/checkusername")
+    suspend fun checkUserAccountDuplicate(
+        @Body username: String
+    ): Response<ApiResponse<UpdateEventResponse>>
+
+
 //    @Headers("Content-Type: application/json")
 //    @PUT("events/update-status/{eventId}")
 //    suspend fun updateEvent(
