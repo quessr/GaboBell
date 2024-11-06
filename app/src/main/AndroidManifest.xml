@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="yiwoo.prototype.gabobell">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -92,7 +93,30 @@
 
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true"></activity>
+            android:exported="true" />
+
+        <activity
+            android:name=".ui.SignInActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".ui.MembershipActivity"
+            android:exported="true" />
+
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="oauth"
+                    android:scheme="kakao2ec0ef7ff1549353fb1a5a9d4ac4b0ea" />
+            </intent-filter>
+        </activity>
 
         <receiver
             android:name=".helper.SettingsReceiver"

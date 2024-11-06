@@ -1,6 +1,7 @@
 package yiwoo.prototype.gabobell
 
 import android.app.Application
+import com.kakao.sdk.common.KakaoSdk
 
 class GaboApplication: Application() {
 
@@ -15,5 +16,7 @@ class GaboApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        KakaoSdk.init(this, "2ec0ef7ff1549353fb1a5a9d4ac4b0ea")
     }
 }

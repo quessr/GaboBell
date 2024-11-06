@@ -52,7 +52,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    //CameraX
+    //cameraX
     implementation("androidx.camera:camera-core:1.1.0-beta01")
     implementation("androidx.camera:camera-camera2:1.1.0-beta01")
     implementation("androidx.camera:camera-lifecycle:1.1.0-beta01")
@@ -61,7 +61,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.1.0-beta01")
     implementation("androidx.camera:camera-extensions:1.1.0-beta01")
 
-    // EncryptedSharedPreferences
+    //encryptedSharedPreferences
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha04")
 
     implementation(libs.androidx.core.ktx)
@@ -72,4 +72,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    //kakao
+    implementation("com.kakao.sdk:v2-all:2.20.0")
+
 }
