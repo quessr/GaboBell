@@ -143,8 +143,7 @@ class RegisterDeviceActivity :
                 BleManager.ACTION_GATT_SERVICES_DISCOVERED -> {
                     Logger.d("BLE : GATT_SERVICES_DISCOVERED")
                     // 디바이스 연결 후 10초 이내 0xA1을 전송.
-                    bleManager?.sayHello()
-
+//                    bleManager?.sayHello()
                     // 연결된 디바이스 정보 저장
                     UserDeviceManager.registerDevice(applicationContext, deviceName!!, deviceAddress!!)
                     finish()
