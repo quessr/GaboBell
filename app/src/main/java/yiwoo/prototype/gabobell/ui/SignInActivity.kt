@@ -73,7 +73,12 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
 
                             val intent = when (message) {
                                 CheckAccountConstants.NO_ACCOUNT_REDUNDANCY ->
-                                    Intent(this@SignInActivity, MembershipActivity::class.java)
+                                    Intent(
+                                        this@SignInActivity,
+                                        MembershipActivity::class.java
+                                    ).apply {
+                                        putExtra("USERNAME", username)
+                                    }
 
                                 CheckAccountConstants.ACCOUNT_REDUNDANCY ->
                                     Intent(this@SignInActivity, MainActivity::class.java)
@@ -85,7 +90,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
                             }
                             Log.d("SignInActivity", "userAccountClient onSuccess")
                         },
-                        onFailure = {error ->
+                        onFailure = { error ->
                             Log.d("SignInActivity", "userAccountClient onFailure: $error")
                         })
                 }
