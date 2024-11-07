@@ -5,8 +5,9 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
-object TokenStore {
+object UserDataStore {
     private val TOKEN_KEY = "token"
+    private val UUID_KEY = "uuid"
     private val PREFERENCE_NAME = "encrypted_preferences"
 
     private fun getSharedPreferences(context: Context): SharedPreferences {
@@ -23,7 +24,7 @@ object TokenStore {
         )
     }
 
-    // 데이터 저장하기
+    // 토근 저장하기
     fun saveToken(context: Context, token: String) {
         val sharedPreferences = getSharedPreferences(context)
         with(sharedPreferences.edit()) {
@@ -32,10 +33,25 @@ object TokenStore {
         }
     }
 
-    // 데이터 가져오기
+    // UUID 저장하기
+    fun saveUUID(context: Context, uuid: String) {
+        val sharedPreferences = getSharedPreferences(context)
+        with(sharedPreferences.edit()) {
+            putString(UUID_KEY, uuid)
+            commit()
+        }
+    }
+
+    // 토큰 가져오기
     fun getToken(context: Context): String {
         val sharedPreferences = getSharedPreferences(context)
         return sharedPreferences.getString(TOKEN_KEY, "") ?: ""
+    }
+
+    // UUID 가져오기
+    fun getUUID(context: Context): String {
+        val sharedPreferences = getSharedPreferences(context)
+        return sharedPreferences.getString(UUID_KEY, "") ?: ""
     }
 
     // EncryptedSharedPreferences 제거하기
