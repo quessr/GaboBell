@@ -15,6 +15,10 @@ import yiwoo.prototype.gabobell.api.dto.CreateEventRequest
 import yiwoo.prototype.gabobell.api.dto.CreateEventResponse
 import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
 import yiwoo.prototype.gabobell.api.dto.UpdateEventResponse
+import yiwoo.prototype.gabobell.api.dto.request.LogInRequest
+import yiwoo.prototype.gabobell.api.dto.request.SignUpRequest
+import yiwoo.prototype.gabobell.api.dto.response.LogInResponse
+import yiwoo.prototype.gabobell.api.dto.response.SignUpResponse
 
 interface GaboAPI {
     @Headers("Content-Type: application/json")
@@ -46,6 +50,16 @@ interface GaboAPI {
     suspend fun checkUserAccountDuplicate(
         @Body username: String
     ): Response<ApiResponse<UpdateEventResponse>>
+
+    @POST("users")
+    suspend fun signUpUser(
+        @Body signUpRequest: SignUpRequest
+    ): Response<ApiResponse<SignUpResponse>>
+
+    @POST("auth/user/login")
+    suspend fun loginInUser(
+        @Body logInRequest: LogInRequest
+    ): Response<ApiResponse<LogInResponse>>
 
 
 //    @Headers("Content-Type: application/json")
