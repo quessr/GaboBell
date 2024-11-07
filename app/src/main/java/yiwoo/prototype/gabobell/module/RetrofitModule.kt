@@ -6,10 +6,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import yiwoo.prototype.gabobell.helper.Logger
-import yiwoo.prototype.gabobell.helper.TokenStore
-import yiwoo.prototype.gabobell.helper.UserSettingsManager
-import yiwoo.prototype.gabobell.module.RetrofitModule.okHttpClient
+import yiwoo.prototype.gabobell.helper.UserDataStore
 
 object RetrofitModule {
 
@@ -32,12 +29,12 @@ object RetrofitModule {
 
     class AuthInterceptor(private val context: Context) : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
-            val authToken = UserSettingsManager.getToken(context)
+            val authToken = UserDataStore.getToken(context)
+            // TODO Token이 없는경우?
             val originalRequest = chain.request()
             val newRequest = originalRequest.newBuilder()
                 .addHeader("Authorization", authToken)
                 .build()
-            TokenStore.saveToken(context, authToken)
             return chain.proceed(newRequest)
         }
     }

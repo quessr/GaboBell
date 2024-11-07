@@ -8,11 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
-import org.json.JSONException
-import org.json.JSONObject
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.Logger
-import yiwoo.prototype.gabobell.helper.TokenStore
+import yiwoo.prototype.gabobell.helper.UserDataStore
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
 
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
@@ -29,7 +27,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         super.onResume()
         updateUi()
 
-        val authToken = TokenStore.getToken(this)
+        val authToken = UserDataStore.getToken(this)
         Logger.d("Retrieved authToken: $authToken")
     }
 
