@@ -1,21 +1,16 @@
 package yiwoo.prototype.gabobell.ui
 
-import android.content.ComponentName
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.os.Bundle
-import android.os.IBinder
 import android.view.View
 import yiwoo.prototype.gabobell.GaboApplication
-import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.ble.BleManager
-import yiwoo.prototype.gabobell.ble.BroadcastReceiver
 import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
-import yiwoo.prototype.gabobell.ui.BaseActivity
 
 class DeviceSettingsActivity :
     BaseActivity<ActivityDeviceSettingsBinding>(ActivityDeviceSettingsBinding::inflate) {
@@ -56,8 +51,9 @@ class DeviceSettingsActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        bleManager = BleManager.instance
         initUi()
-        bindService()
+        updateUi()
 
         val filter = IntentFilter().apply {
             addAction(BleManager.BLE_STATUS_UPDATE)
@@ -94,34 +90,13 @@ class DeviceSettingsActivity :
         }
     }
 
-    private fun bindService() {
-        val intent = Intent(this, BleManager::class.java)
-        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    private val serviceConnection: ServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            bleManager = (service as BleManager.LocalBinder).getService()
-            bleManager?.let { service ->
-                if (!service.initialize()) {
-                    Logger.e("Unable to initialize Bluetooth")
-                    finish()
-                } else {
-                    Logger.d("DeviceSettingsActivity onServiceConnected")
-                    if ((application as GaboApplication).isConnected) {
-                        binding.btnDisconnectStatus.visibility = View.GONE
-                    } else {
-                        binding.btnConnectStatus.visibility = View.GONE
-                    }
-
-                    bleManager?.cmdGetStatus()
-                }
-            }
+    private fun updateUi() {
+        if ((application as GaboApplication).isConnected) {
+            binding.btnDisconnectStatus.visibility = View.GONE
+        } else {
+            binding.btnConnectStatus.visibility = View.GONE
         }
 
-        override fun onServiceDisconnected(name: ComponentName?) {
-            bleManager = null
-            Logger.d("onServiceDisconnected")
-        }
+        bleManager?.cmdGetStatus()
     }
 }

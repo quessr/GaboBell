@@ -21,6 +21,7 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build
@@ -34,6 +35,7 @@ import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import java.util.UUID
 
@@ -59,10 +61,11 @@ class BleManager : Service() {
 
     private var eventIdCallback: EventIdCallback? = null
 
+    private lateinit var bluetoothStateReceiver: CommonReceiver
+    private var isReceiverRegistered = false
     fun setEventIdCallback(callback: EventIdCallback) {
         eventIdCallback = callback
     }
-
     inner class LocalBinder : Binder() {
         fun getService() = this@BleManager
     }
@@ -79,8 +82,19 @@ class BleManager : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logger.d("onStartCommand")
+        instance = this
+        initialize()
+
         val notification = createNotification()
         startForeground(1, notification)
+
+        if (!isReceiverRegistered) {
+            bluetoothStateReceiver = CommonReceiver()
+            val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+            registerReceiver(bluetoothStateReceiver, filter)
+            isReceiverRegistered = true
+        }
+
         return START_STICKY
     }
 
@@ -219,10 +233,20 @@ class BleManager : Service() {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Logger.d("StopForeground_Service")
+            instance = null
             stopForeground(STOP_FOREGROUND_REMOVE)
+            if (isReceiverRegistered) {
+                unregisterReceiver(bluetoothStateReceiver)
+                isReceiverRegistered = false
+            }
         } else {
             Logger.d("StopForeground_Service")
+            instance = null
             stopForeground(true)
+            if (isReceiverRegistered) {
+                unregisterReceiver(bluetoothStateReceiver)
+                isReceiverRegistered = false
+            }
         }
     }
 
@@ -239,8 +263,7 @@ class BleManager : Service() {
 
                 if (permissionGranted) {
                     val device = adapter.getRemoteDevice(address)
-                    // Connect to the GATT server on the device
-                    bleGatt = device.connectGatt(this, false, gattCallback)
+                    bleGatt = device.connectGatt(this, true, gattCallback)
                     Logger.d("Connect to the GATT server on the device_Success")
                     true
                 } else {
@@ -257,30 +280,14 @@ class BleManager : Service() {
         }
     }
 
-    /*
-    fun isConnected(): Boolean {
-        val deviceAddress = UserDeviceManager.getAddress(applicationContext)
-        if (deviceAddress == "") return false
-        Logger.d("isConnected : $deviceAddress")
-        val device = bluetoothAdapter?.getRemoteDevice(deviceAddress)
-        val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
-        val connectionState = bluetoothManager.getConnectionState(device, BluetoothProfile.GATT)
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            Logger.d("Permission is granted")
-        }
-        return if (connectionState == BluetoothProfile.STATE_CONNECTED) {
-            Logger.d("Device is connected")
-            true
-        } else {
-            Logger.d("Device is not connected")
-            false
+    fun reconnect() {
+        val address = UserDeviceManager.getAddress(this)
+        address.let {
+            Logger.d("Attempting to reconnect...")
+            connect(it)
         }
     }
-    */
+
 
     /**
      * GATT 콜백 선언
@@ -307,9 +314,10 @@ class BleManager : Service() {
                                 ContextCompat.checkSelfPermission(
                                     this@BleManager, Manifest.permission.BLUETOOTH_CONNECT
                                 ) == PackageManager.PERMISSION_GRANTED
-
                     if (permissionGranted) {
-                        bleGatt?.discoverServices()
+                        bleGatt = gatt
+                        gatt?.discoverServices()
+//                        bleGatt?.discoverServices()
                         Logger.d("discoverServices_query")
                     }
                 }
@@ -318,11 +326,13 @@ class BleManager : Service() {
                     Logger.d("disconnected from the GATT Server")
 
                     (application as GaboApplication).isConnected = false
-
                     intentAction = ACTION_GATT_DISCONNECTED
                     broadcastUpdate(intentAction)
                     connectionState = STATE_DISCONNECTED
 
+                    bleGatt?.close()
+                    bleGatt = null
+                    reconnect()
                 }
             }
         }
@@ -331,14 +341,31 @@ class BleManager : Service() {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 //ble 특성 읽기
-
                 displayGattServices(getSupportedGattServices())
-
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED)
+                // 알림 설정을 위해 setCharacteristicNotification 호출
+                setCharacteristicNotification(notifyCharacteristic!!, true)
 
                 Logger.d("onServicesDiscovered_GATT_SUCCESS")
             } else {
                 Logger.d("onServicesDiscovered_GATT_FAIL: $status")
+            }
+        }
+
+        override fun onDescriptorWrite(
+            gatt: BluetoothGatt?,
+            descriptor: BluetoothGattDescriptor?,
+            status: Int
+        ) {
+            super.onDescriptorWrite(gatt, descriptor, status)
+            if (descriptor?.uuid == UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    Logger.d("onDescriptorWrite: Descriptor write successful")
+                    // writeSuccess가 true일 때 sayHello 호출
+                    sayHello()
+                } else {
+                    Logger.e("onDescriptorWrite: Descriptor write failed with status: $status")
+                }
             }
         }
 
@@ -417,7 +444,8 @@ class BleManager : Service() {
                     characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"))
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                     descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-                    val writeSuccess = bleGatt?.writeDescriptor(descriptor)
+//                    val writeSuccess = bleGatt?.writeDescriptor(descriptor)
+                    val writeSuccess = bleGatt?.writeDescriptor(descriptor) == true
                     Logger.d("BleManager Write descriptor success: $writeSuccess")
                 } else {
                     val writeSuccess = bleGatt?.writeDescriptor(
@@ -490,7 +518,7 @@ class BleManager : Service() {
     fun sayHello() {
         Logger.d("[A2B] 0xA1")
         sendCommand(0x01, 0xA1.toByte(), null)
-        setCharacteristicNotification(notifyCharacteristic!!, true)
+//        setCharacteristicNotification(notifyCharacteristic!!, true)
     }
 
     fun cmdEmergency(isRequest: Boolean) {
@@ -707,6 +735,9 @@ class BleManager : Service() {
 // endregion
 
     companion object {
+        //외부에서 서비스 클래스 인스턴스 사용
+        var instance: BleManager? = null
+
         const val ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED"
         const val ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED"
         const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"
