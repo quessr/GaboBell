@@ -24,22 +24,13 @@ class MembershipActivity :
         binding.tvBtnRegister.setOnClickListener {
             val userDetails = mapOf(
                 "username" to username,
+                "nickname" to binding.tilNickname.editText?.text.toString(),
                 "phoneNumber" to binding.tilPhoneNumber.editText?.text.toString(),
                 "birthDate" to binding.tilBirthDate.editText?.text.toString(),
                 "gender" to binding.tilGender.editText?.text.toString(),
                 "nationality" to binding.tilNationality.editText?.text.toString(),
                 "district" to binding.tilDistrict.editText?.text.toString()
             )
-//            val phoneNumber = binding.tilPhoneNumber.editText?.text.toString()
-//            val birthDate = binding.tilBirthDate.editText?.text.toString()
-//            val gender = binding.tilGender.editText?.text.toString()
-//            val nationality = binding.tilNationality.editText?.text.toString()
-//            val district = binding.tilDistrict.editText?.text.toString()
-
-//            Log.d(
-//                "MembershipActivity@@",
-//                "phoneNumber: $phoneNumber, birthDate: $birthDate, gender: $gender, nationality: $nationality, district: $district"
-//            )
 
             CoroutineScope(Dispatchers.IO).launch {
                 signUpUserClient.signUpUser(
@@ -50,6 +41,7 @@ class MembershipActivity :
                                 username = username,
                                 password = userPassword,
                                 onSuccess = { uuid, token ->
+                                    Log.d("TOKEN@@", "uuid: $uuid, token: $token")
                                     UserDataStore.saveUUID(this@MembershipActivity, uuid)
                                     UserDataStore.saveToken(this@MembershipActivity, token)
 

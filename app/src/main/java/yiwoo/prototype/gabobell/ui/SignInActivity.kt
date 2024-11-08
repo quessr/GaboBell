@@ -1,6 +1,5 @@
 package yiwoo.prototype.gabobell.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -12,11 +11,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import yiwoo.prototype.gabobell.constants.CheckAccountConstants
-import yiwoo.prototype.gabobell.data.network.UserAccountClient
+import yiwoo.prototype.gabobell.data.network.LogInUserClient
+import yiwoo.prototype.gabobell.data.network.UserAccountCheckClient
 import yiwoo.prototype.gabobell.databinding.ActivitySignInBinding
+import yiwoo.prototype.gabobell.helper.UserDataStore
 
 class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding::inflate) {
-    private val userAccountClient = UserAccountClient(this)
+    private val userAccountClient = UserAccountCheckClient(this)
+    private val logInUpUserClient = LogInUserClient(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +26,7 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
             kakaoLogin()
         }
 
-        var keyHash = Utility.getKeyHash(this)
+        val keyHash = Utility.getKeyHash(this)
         Log.d("MainActivity@@", "keyHash: $keyHash")
     }
 
@@ -47,10 +49,10 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
 
     private suspend fun handleLoginResult(token: OAuthToken?, error: Throwable?) {
         if (error != null) {
-            Log.d("SignInActivity", "로그인 실패: $error")
-            Toast.makeText(this, "로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+            Log.d("SignInActivity", "카카오 로그인 실패: $error")
+            Toast.makeText(this, "카카오 로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
         } else if (token != null) {
-            Log.d("SignInActivity", "로그인 성공: ${token.accessToken}")
+            Log.d("SignInActivity", "카카오 로그인 성공: ${token.accessToken}")
             fetchKakaoUserInfo()
         }
     }
@@ -80,8 +82,35 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
                                         putExtra("USERNAME", username)
                                     }
 
-                                CheckAccountConstants.ACCOUNT_REDUNDANCY ->
+                                CheckAccountConstants.ACCOUNT_REDUNDANCY -> {
+
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        logInUpUserClient.logInUser(
+                                            username = username,
+                                            password = username,
+                                            onSuccess = { uuid, token ->
+                                                Log.d(
+                                                    "TOKEN@@",
+                                                    "ACCOUNT_REDUNDANCY uuid: $uuid, token: $token"
+                                                )
+                                                UserDataStore.saveUUID(this@SignInActivity, uuid)
+                                                UserDataStore.saveToken(this@SignInActivity, token)
+
+                                                Log.d(
+                                                    "SignInActivity@@",
+                                                    "ACCOUNT_REDUNDANCY logInUpUserClient onSuccess"
+                                                )
+                                            },
+                                            onFailure = { error ->
+                                                Log.d(
+                                                    "SignInActivity@@",
+                                                    "ACCOUNT_REDUNDANCY logInUpUserClient onFailure: $error"
+                                                )
+                                            }
+                                        )
+                                    }
                                     Intent(this@SignInActivity, MainActivity::class.java)
+                                }
 
                                 else -> null
                             }
