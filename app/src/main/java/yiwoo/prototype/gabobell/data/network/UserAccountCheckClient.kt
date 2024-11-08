@@ -1,14 +1,13 @@
 package yiwoo.prototype.gabobell.data.network
 
 import android.content.Context
-import android.provider.SyncStateContract.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.Response
+import yiwoo.prototype.gabobell.api.dto.request.CheckUserAccountRequest
 import yiwoo.prototype.gabobell.constants.CheckAccountConstants
 import yiwoo.prototype.gabobell.helper.ApiProvider
 
-class UserAccountClient(private val context: Context) {
+class UserAccountCheckClient(private val context: Context) {
     private val gaboApi = ApiProvider.provideGaboApi(context)
 
     suspend fun checkUserAccountDuplicate(
@@ -18,13 +17,17 @@ class UserAccountClient(private val context: Context) {
     ) {
         try {
             val response = withContext(Dispatchers.IO) {
-                gaboApi.checkUserAccountDuplicate(username)
+                gaboApi.checkUserAccountDuplicate(
+                    checkUserAccountRequest = CheckUserAccountRequest(
+                        username
+                    )
+                )
             }
             if (response.isSuccessful) {
-                val resultStatus = response.body()?.result?.status ?: ""
+                val resultStatus = response.body()?.data?.code ?: ""
                 val message = when (resultStatus) {
-                    "0000" -> CheckAccountConstants.NO_ACCOUNT_REDUNDANCY
-                    "0001" -> CheckAccountConstants.ACCOUNT_REDUNDANCY
+                    "0000" -> CheckAccountConstants.NO_ACCOUNT_REDUNDANCY // 신규
+                    "1000" -> CheckAccountConstants.ACCOUNT_REDUNDANCY // 기존
                     else -> "Unknown status"
                 }
                 onSuccess(message)

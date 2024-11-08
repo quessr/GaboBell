@@ -15,8 +15,10 @@ import yiwoo.prototype.gabobell.api.dto.CreateEventRequest
 import yiwoo.prototype.gabobell.api.dto.CreateEventResponse
 import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
 import yiwoo.prototype.gabobell.api.dto.UpdateEventResponse
+import yiwoo.prototype.gabobell.api.dto.request.CheckUserAccountRequest
 import yiwoo.prototype.gabobell.api.dto.request.LogInRequest
 import yiwoo.prototype.gabobell.api.dto.request.SignUpRequest
+import yiwoo.prototype.gabobell.api.dto.response.CheckUserAccountResponse
 import yiwoo.prototype.gabobell.api.dto.response.LogInResponse
 import yiwoo.prototype.gabobell.api.dto.response.SignUpResponse
 
@@ -48,8 +50,8 @@ interface GaboAPI {
 
     @POST("users/checkusername")
     suspend fun checkUserAccountDuplicate(
-        @Body username: String
-    ): Response<ApiResponse<UpdateEventResponse>>
+        @Body checkUserAccountRequest: CheckUserAccountRequest
+    ): Response<ApiResponse<CheckUserAccountResponse>>
 
     @POST("users")
     suspend fun signUpUser(
