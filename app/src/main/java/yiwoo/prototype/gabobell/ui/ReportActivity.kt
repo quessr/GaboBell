@@ -9,22 +9,18 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-
 import retrofit2.Retrofit
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.api.GaboAPI
 import yiwoo.prototype.gabobell.ble.BleManager
-import yiwoo.prototype.gabobell.constants.MediaFormatConstants
 import yiwoo.prototype.gabobell.databinding.ActivityReportBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
-
 import yiwoo.prototype.gabobell.module.RetrofitModule
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate),

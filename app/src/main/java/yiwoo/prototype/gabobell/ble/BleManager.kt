@@ -21,6 +21,7 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Binder
 import android.os.Build
@@ -59,10 +60,12 @@ class BleManager : Service() {
     private val valueList = mutableListOf<String>()
 
     private var eventIdCallback: EventIdCallback? = null
+
+    private lateinit var bluetoothStateReceiver: CommonReceiver
+    private var isReceiverRegistered = false
     fun setEventIdCallback(callback: EventIdCallback) {
         eventIdCallback = callback
     }
-
     inner class LocalBinder : Binder() {
         fun getService() = this@BleManager
     }
@@ -79,8 +82,19 @@ class BleManager : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Logger.d("onStartCommand")
+        instance = this
+        initialize()
+
         val notification = createNotification()
         startForeground(1, notification)
+
+        if (!isReceiverRegistered) {
+            bluetoothStateReceiver = CommonReceiver()
+            val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+            registerReceiver(bluetoothStateReceiver, filter)
+            isReceiverRegistered = true
+        }
+
         return START_STICKY
     }
 
@@ -219,10 +233,20 @@ class BleManager : Service() {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Logger.d("StopForeground_Service")
+            instance = null
             stopForeground(STOP_FOREGROUND_REMOVE)
+            if (isReceiverRegistered) {
+                unregisterReceiver(bluetoothStateReceiver)
+                isReceiverRegistered = false
+            }
         } else {
             Logger.d("StopForeground_Service")
+            instance = null
             stopForeground(true)
+            if (isReceiverRegistered) {
+                unregisterReceiver(bluetoothStateReceiver)
+                isReceiverRegistered = false
+            }
         }
     }
 
@@ -256,7 +280,7 @@ class BleManager : Service() {
         }
     }
 
-    private fun reconnect() {
+    fun reconnect() {
         val address = UserDeviceManager.getAddress(this)
         address.let {
             Logger.d("Attempting to reconnect...")
@@ -711,6 +735,9 @@ class BleManager : Service() {
 // endregion
 
     companion object {
+        //외부에서 서비스 클래스 인스턴스 사용
+        var instance: BleManager? = null
+
         const val ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED"
         const val ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED"
         const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"

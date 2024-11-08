@@ -170,6 +170,10 @@ class RegisterDeviceActivity :
     // endregion
 
     // region * Bind service
+    /**
+     * BleManager 가 초기화 되는 시점은 startForeground 가 될때의 시점
+     * 스캔을 시작하면서 초기화를 진행하므로 bind 함수를 사용하여 serviceConnection 콜백처리 진행
+     */
     private val serviceConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             bleManager = (service as BleManager.LocalBinder).getService()
