@@ -11,6 +11,7 @@
     <string name="main_device_settings">기기설정</string>
     <string name="main_emergency_report">긴급신고</string>
     <string name="main_check_report_details">신고내역 확인</string>
+    <string name="main_monitoring">귀가 모니터링</string>
 
     <!--Report-->
     <string name="report_report_screen">신고화면</string>
