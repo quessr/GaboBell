@@ -41,10 +41,10 @@ android {
 dependencies {
     implementation(project(":retrofit")) // retrofit 대한 의존성
 
-    //location
-    implementation ("com.google.android.gms:play-services-location:21.3.0")
+//location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
-    //retrofit2
+//retrofit2
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.2")
@@ -52,7 +52,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-    //cameraX
+//cameraX
     implementation("androidx.camera:camera-core:1.1.0-beta01")
     implementation("androidx.camera:camera-camera2:1.1.0-beta01")
     implementation("androidx.camera:camera-lifecycle:1.1.0-beta01")
@@ -61,7 +61,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.1.0-beta01")
     implementation("androidx.camera:camera-extensions:1.1.0-beta01")
 
-    //encryptedSharedPreferences
+//encryptedSharedPreferences
     implementation("androidx.security:security-crypto-ktx:1.1.0-alpha04")
 
     implementation(libs.androidx.core.ktx)
@@ -73,7 +73,9 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    //kakao
+//kakao
     implementation("com.kakao.sdk:v2-all:2.20.0")
+
+    implementation("com.kakao.maps.open:android:2.12.8")
 
 }
