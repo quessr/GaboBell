@@ -47,6 +47,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             enableBleAdapter()
         }
 
+        binding.btnMonitoring.setOnClickListener {
+            val intent = Intent(this, MonitoringActivity::class.java)
+            startActivity(intent)
+        }
+
         binding.btnDeviceSettings.setOnClickListener {
             val intent = Intent(this, DeviceSettingsActivity::class.java)
             startActivity(intent)

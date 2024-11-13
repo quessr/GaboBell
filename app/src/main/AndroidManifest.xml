@@ -104,6 +104,14 @@
             android:exported="true" />
 
         <activity
+            android:name=".ui.MonitoringActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".ui.AddressSearchActivity"
+            android:exported="true" />
+
+        <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
             android:exported="true">
             <intent-filter>

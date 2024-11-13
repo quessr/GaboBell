@@ -62,6 +62,17 @@
         android:text="@string/main_emergency_report"
         android:textColor="@color/white"
         android:textSize="30sp"
+        app:layout_constraintBottom_toTopOf="@id/btn_monitoring" />
+
+    <Button
+        android:id="@+id/btn_monitoring"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/blue"
+        android:text="@string/main_monitoring"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toTopOf="@id/btn_check_report_details" />
 
     <Button
