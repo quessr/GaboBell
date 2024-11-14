@@ -3,7 +3,6 @@ package yiwoo.prototype.gabobell.ui
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.core.content.ContextCompat
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -15,14 +14,10 @@ import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.databinding.ActivityMonitoringBinding
 import yiwoo.prototype.gabobell.helper.LocationHelper
+import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 
 class MonitoringActivity :
     BaseActivity<ActivityMonitoringBinding>(ActivityMonitoringBinding::inflate) {
@@ -34,7 +29,7 @@ class MonitoringActivity :
         val mapView = MapView(this)
         binding.mapView.addView(mapView)
 
-        val intent = Intent(this, AddressSearchActivity::class.java)
+        val intent = Intent(this, SearchAddressActivity::class.java)
         listOf(binding.etDeparture, binding.etDestination).forEach { editText ->
             editText.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) {
