@@ -22,6 +22,8 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
+    <!--  재부팅시 서비스 실행  -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature android:name="android.hardware.camera.any" />
@@ -135,15 +137,13 @@
             android:name=".ble.BleManager"
             android:enabled="true"
             android:foregroundServiceType="connectedDevice|location" />
-        <!--        <receiver android:name=".helper.BroadcastReceiver"-->
-        <!--            android:enabled="true"-->
-        <!--            android:exported="false">-->
-        <!--            <intent-filter>-->
-        <!--                <action android:name="android.intent.action.BOOT_COMPLETED"/>-->
-        <!--            </intent-filter>-->
-        <!--        </receiver>-->
-
-
+                <receiver android:name=".ble.CommonReceiver"
+                    android:enabled="true"
+                    android:exported="false">
+                    <intent-filter>
+                        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                    </intent-filter>
+                </receiver>
     </application>
 
 </manifest>

@@ -23,5 +23,11 @@ open class CommonReceiver: BroadcastReceiver() {
                 }
             }
         }
+
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+            Logger.d("ACTION_BOOT_COMPLETED")
+            val serviceIntent = Intent(context, BleManager::class.java)
+            context?.startService(serviceIntent)
+        }
     }
 }

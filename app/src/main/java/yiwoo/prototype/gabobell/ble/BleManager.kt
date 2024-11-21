@@ -76,7 +76,7 @@ class BleManager : Service() {
     }
 
     override fun onDestroy() {
-        Logger.d("onDestroy")
+        Logger.d("BleManager_onDestroy")
         super.onDestroy()
     }
 
@@ -93,6 +93,12 @@ class BleManager : Service() {
             val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
             registerReceiver(bluetoothStateReceiver, filter)
             isReceiverRegistered = true
+        }
+
+        //reboot 후 재연결 시도
+        if (bluetoothAdapter != null && bluetoothAdapter!!.isEnabled) {
+            Logger.d("reboot_reconnect")
+            reconnect()
         }
 
         return START_STICKY
