@@ -1,7 +1,7 @@
 package yiwoo.prototype.gabobell.ui.searchAddress.model
 
 data class SearchAddressModel(
-    val addressMain: String,
-    val addressLotNumber: String,
-    val addressRoad: String
+    val placeName: String,
+    val addressName: String,
+    val addressRoadName: String
 )

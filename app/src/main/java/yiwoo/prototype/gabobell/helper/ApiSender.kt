@@ -15,7 +15,7 @@ import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import yiwoo.prototype.gabobell.module.RetrofitModule
 
-object ApiSender {
+object  ApiSender {
 
     fun reportEmergency(
         context: Context,

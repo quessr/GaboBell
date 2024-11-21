@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -7,6 +10,9 @@ android {
     namespace = "yiwoo.prototype.gabobell"
     compileSdk = 34
 
+    val properties = Properties()
+    properties.load(FileInputStream(rootProject.file("local.properties")))
+
     defaultConfig {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
@@ -15,6 +21,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "SEARCH_REST_API_KEY", properties.getProperty("SEARCH_REST_API_KEY"))
     }
 
     buildTypes {
@@ -35,11 +43,14 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
 dependencies {
     implementation(project(":retrofit")) // retrofit 대한 의존성
+
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.2")
 
 //location
     implementation("com.google.android.gms:play-services-location:21.3.0")

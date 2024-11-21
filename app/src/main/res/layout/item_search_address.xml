@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/tvAddressMain"
+            android:id="@+id/tvPlaceName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
@@ -25,17 +25,17 @@
             tools:text="전북 익산시 부송동 100" />
 
         <TextView
-            android:id="@+id/tvAddressLotNumber"
+            android:id="@+id/tvAddressName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/tvAddressMain"
+            app:layout_constraintTop_toBottomOf="@id/tvPlaceName"
             tools:text="전북 익산시 부송동 100" />
 
         <TextView
-            android:id="@+id/tvAddressRoad"
+            android:id="@+id/tvAddressRoadName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/tvAddressLotNumber"
+            app:layout_constraintTop_toBottomOf="@id/tvAddressName"
             tools:text="전북 익산시 망산길 11-17" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
