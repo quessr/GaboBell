@@ -5,8 +5,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.helper.NetworkUtil
 import yiwoo.prototype.gabobell.helper.UserDataStore
 
 class SplashActivity : AppCompatActivity() {
@@ -16,26 +19,50 @@ class SplashActivity : AppCompatActivity() {
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
-
         setContentView(R.layout.activity_splash)
-        Handler(Looper.getMainLooper()).postDelayed({
-            moveToScreen()
-        }, 3_000)
+
+        // 버전 네임 표기
+        findViewById<TextView>(R.id.tv_version).text = getVersionName()
+
+        if (NetworkUtil.isAvailable(this@SplashActivity)) {
+            // 네트워크 에러
+            showNetworkError()
+        } else {
+            // 화면 이동
+            Handler(Looper.getMainLooper()).postDelayed({
+                moveToScreen()
+            }, 3_000)
+        }
     }
 
     private fun moveToScreen() {
-        // 앱내 서비스 토큰 저장 여부를 체크 후 그에따른 화면 이동 (로그그인화면 or 메인화면)
-        val token = UserDataStore.getToken(this)
-
-        val intent: Intent = if (token == "") {
-            // 토큰 없는 경우 (회원가입을 한 적 없는 유저) -> 회원가입 화면 이동
-            Intent(this, SignInActivity::class.java)
+        // 서비스 토큰 여부에 따라 화면 분기 (로그인 or 메인)
+        val token = UserDataStore.getToken(this@SplashActivity)
+        val target = if (token.isEmpty()) {
+            SignInActivity::class.java
         } else {
-            // 토큰 있는 경우 (기존에 회원가입을 한 유저) -> 메인 화면 이동
-            // 추후 token에 유효시간이 추가되면, 로직이 추가 될 예정
-            Intent(this, MainActivity::class.java)
+            MainActivity::class.java
         }
-        startActivity(intent)
+        startActivity(Intent(this@SplashActivity, target))
         finish()
+    }
+
+    private fun getVersionName(): String {
+        return try {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            packageInfo.versionName
+        } catch (e: Exception) {
+            ""
+        }
+    }
+    private fun showNetworkError() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.pop_network_error_title)
+            .setMessage(R.string.pop_network_error_description)
+            .setCancelable(false)
+            .setPositiveButton(R.string.pop_btn_confirm) { _, _ ->
+                finish()
+            }
+            .show()
     }
 }

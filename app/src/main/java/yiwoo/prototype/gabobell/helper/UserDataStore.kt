@@ -6,9 +6,9 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
 object UserDataStore {
-    private val TOKEN_KEY = "token"
-    private val UUID_KEY = "uuid"
-    private val PREFERENCE_NAME = "encrypted_preferences"
+    private const val TOKEN_KEY = "token"
+    private const val UUID_KEY = "uuid"
+    private const val PREFERENCE_NAME = "encrypted_preferences"
 
     private fun getSharedPreferences(context: Context): SharedPreferences {
         val masterKey = MasterKey.Builder(context)

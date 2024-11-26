@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="yiwoo.prototype.gabobell">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Bluetooth 및 위치 권한 (Android 12 미만) -->

@@ -4,6 +4,11 @@
     <string name="kakao_native_app_key">2ec0ef7ff1549353fb1a5a9d4ac4b0ea</string>
     <string name="scheme_kakao_app_key">kakao2ec0ef7ff1549353fb1a5a9d4ac4b0ea</string>
 
+    <!-- Popup -->
+    <string name="pop_network_error_title">네트워크 에러</string>
+    <string name="pop_network_error_description">네트워크에 연결할 수 없습니다.\n앱을 종료합니다.</string>
+    <string name="pop_btn_confirm">확인</string>
+
     <!--Main-->
     <string name="main_registered_device">등록기기</string>
     <string name="main_no_registered_device_des">현재 등록된 기기가 없습니다.</string>
