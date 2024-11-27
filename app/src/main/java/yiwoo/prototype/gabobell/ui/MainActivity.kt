@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
+import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDataStore
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
@@ -97,12 +98,23 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
+    private fun startLocation() {
+        LocationHelper.locationInit(this)
+        LocationHelper.startLocation(this) { lat, lng ->
+            val locationLat: Double? = lat
+            val locationLng: Double? = lng
+            Logger.d("LatLng: $locationLat | $locationLng")
+        }
+    }
+
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val allGranted = permissions.all { it.value } // 모든 권한이 승인되었는지 확인
         if (allGranted) {
             Logger.d("모든 권한이 허용됨")
+            //모든 권한 허용 후 gps 추적 시작
+            startLocation()
         } else {
             Logger.d("일부 권한이 거부됨")
             // TODO: 권한 거부에 대한 시나리오는 추후 반영
