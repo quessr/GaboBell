@@ -91,6 +91,20 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
+
+    <Button
+        android:id="@+id/fab_police"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="-24dp"
+        android:background="@color/black_op_66"
+        android:text="지구대"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/ll_btn_group"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <LinearLayout
         android:id="@+id/ll_btn_group"
         android:layout_width="match_parent"

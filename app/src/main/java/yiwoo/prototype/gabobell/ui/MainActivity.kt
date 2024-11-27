@@ -1,11 +1,16 @@
 package yiwoo.prototype.gabobell.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -23,6 +28,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var currentLocationLabel: Label? = null
+    private var isVisibleFab: Boolean = false
+    private var isActivePolice: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +86,35 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             } else {
                 enableBleAdapter()
             }
+        }
+
+        // 안심시설 (지구대)
+        visibleFab(isVisibleFab)
+        togglePolice(isActivePolice)
+
+        binding.btnFacilities.setOnClickListener {
+            isVisibleFab = !isVisibleFab
+            visibleFab(isVisibleFab)
+        }
+
+        binding.fabPolice.setOnClickListener {
+            isActivePolice = !isActivePolice
+            togglePolice(isActivePolice)
+        }
+    }
+
+    private fun visibleFab(visible: Boolean) {
+        binding.fabPolice.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+
+    private fun togglePolice(isActive: Boolean) {
+        Log.d("@!@", ">>>togglePolice : $isActive")
+        if (isActive) {
+            binding.fabPolice.setBackgroundResource(R.color.pink)
+            // TODO: 지구대 마커 표기
+        } else {
+            binding.fabPolice.setBackgroundResource(R.color.black_op_66)
+            // TODO: 지구대 마커 해제
         }
     }
 
