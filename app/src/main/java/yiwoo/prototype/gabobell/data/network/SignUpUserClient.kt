@@ -29,7 +29,7 @@ class SignUpUserClient(private val context: Context) {
 //        val userStatus = "ACTIVE"
 
         val username = userDetails["username"] ?: ""
-        val userPassword = userDetails["username"] ?: ""
+        val userPassword = userDetails["password"] ?: ""
         val name = userDetails["nickname"] ?: ""
         val phoneNumber = userDetails["phoneNumber"] ?: ""
         val birthDate = userDetails["birthDate"] ?: ""

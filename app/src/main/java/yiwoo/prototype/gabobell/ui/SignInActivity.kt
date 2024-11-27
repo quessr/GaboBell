@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,12 +21,16 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding.btnKakaoLogIn.setOnClickListener() {
-            kakaoLogin()
-        }
+        checkKeyHash()
+        initUi()
+    }
 
-        val keyHash = Utility.getKeyHash(this)
-        Log.d("MainActivity@@", "keyHash: $keyHash")
+    private fun initUi() {
+        binding.btnKakaoLogIn.setOnClickListener { kakaoLogin() }
+        binding.btnNormalLogIn.setOnClickListener {
+            startActivity(Intent(this@SignInActivity, MembershipActivity::class.java))
+            finish()
+        }
     }
 
     private fun kakaoLogin() {
@@ -127,5 +130,10 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
         }
     }
 
-
+    private fun checkKeyHash() {
+        /*
+        val keyHash = Utility.getKeyHash(this)
+        Log.d("MainActivity@@", "keyHash: $keyHash")
+        */
+    }
 }
