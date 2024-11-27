@@ -1,12 +1,10 @@
 package yiwoo.prototype.gabobell.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.graphics.Color
+import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +34,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         initUi()
         initMap()
         checkPermissions()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.mapView.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.mapView.pause()
     }
 
     private fun initMap() {
