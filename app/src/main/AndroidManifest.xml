@@ -75,11 +75,6 @@
         </activity>
 
         <activity
-            android:name=".ui.ReportDetailActivity"
-            android:exported="true"
-            android:label="Report Detail Activity" />
-
-        <activity
             android:name=".ui.RegisterDeviceActivity"
             android:exported="true"
             android:label="Register Device Activity" />

@@ -6,12 +6,18 @@ import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import com.kakao.vectormap.label.LabelOptions
+import com.kakao.vectormap.label.LabelTextBuilder
+import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
-import yiwoo.prototype.gabobell.helper.UserDataStore
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
 
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
@@ -21,54 +27,118 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initUi()
+        initMap()
         checkPermissions()
     }
 
-    override fun onResume() {
-        super.onResume()
-        updateUi()
+    private fun initMap() {
+        val mapView = MapView(this)
+        binding.mapView.addView(mapView)
+        LocationHelper.locationInit(this)
 
-        val authToken = UserDataStore.getToken(this)
-        Logger.d("Retrieved authToken: $authToken")
+        mapView.start(object : MapLifeCycleCallback() {
+            override fun onMapDestroy() {
+                // 지도 API가 정상적으로 종료될 때 호출됨
+            }
+
+            override fun onMapError(error: Exception) {
+                // 인증 실패 및 지도 사용 중 에러가 발생할 때 호출됨
+            }
+        }, object : KakaoMapReadyCallback() {
+            override fun getPosition(): LatLng {
+
+                return LatLng.from(37.58376, 126.8867)
+            }
+
+            override fun onMapReady(kakaoMap: KakaoMap) {
+                // 마커가 표시될 위치
+                val departureLatLng = LatLng.from(37.5848659, 126.88598)
+                val destinationLatLng = LatLng.from(37.5810471, 126.8905417)
+//                val currentLatLng = LatLng.from(37.58376, 126.8867)
+
+
+                // 레이블을 지도에 추가 (출발지점)
+                kakaoMap.labelManager?.layer?.addLabel(
+                    LabelOptions.from(departureLatLng)
+                        .setStyles(
+                            MonitoringActivity.setPinStyle(
+                                this@MainActivity,
+                                R.drawable.marker_departure
+                            )
+                        )
+                        .setTexts(
+                            LabelTextBuilder().setTexts("출발")
+                        )
+                )
+
+//                // 레이블을 지도에 추가 (현재지점)
+//                kakaoMap.labelManager?.layer?.addLabel(
+//                    LabelOptions.from(currentLatLng)
+//                        .setStyles(setPinStyle(this@MonitoringActivity, R.drawable.marker_current))
+//                        .setTexts(
+//                            LabelTextBuilder().setTexts("현재")
+//                        )
+//                )
+
+                // 레이블을 지도에 추가 (도착지점)
+                kakaoMap.labelManager?.layer?.addLabel(
+                    LabelOptions.from(destinationLatLng)
+                        .setStyles(
+                            MonitoringActivity.setPinStyle(
+                                this@MainActivity,
+                                R.drawable.marker_destination
+                            )
+                        )
+                        .setTexts(
+                            LabelTextBuilder().setTexts("도착") // 여기에 원하는 텍스트 추가
+                        )
+                )
+
+                // 현재 위치 가져오기
+                LocationHelper.getCurrentLocation(this@MainActivity) { lat, lng ->
+                    val latitude = lat ?: 37.559984
+                    val longitude = lng ?: 126.9753071
+
+                    val currentLatLng = LatLng.from(latitude, longitude)
+
+                    // 레이블을 지도에 추가 (현재지점)
+                    kakaoMap.labelManager?.layer?.addLabel(
+                        LabelOptions.from(currentLatLng)
+                            .setStyles(
+                                MonitoringActivity.setPinStyle(
+                                    this@MainActivity,
+                                    R.drawable.marker_current
+                                )
+                            )
+                            .setTexts(LabelTextBuilder().setTexts("현재"))
+                    )
+                }
+            }
+        })
     }
 
     private fun initUi() {
 
-        binding.btnEmergencyReport.setOnClickListener {
-            val intent = Intent(this, ReportActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnCheckReportDetails.setOnClickListener {
-            val intent = Intent(this, ReportDetailActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.btnDeviceRegistration.setOnClickListener {
-            enableBleAdapter()
-        }
-
+        // 귀가 모니터링
         binding.btnMonitoring.setOnClickListener {
             val intent = Intent(this, MonitoringActivity::class.java)
             startActivity(intent)
         }
 
-        binding.btnDeviceSettings.setOnClickListener {
-            val intent = Intent(this, DeviceSettingsActivity::class.java)
+        // 신고하기
+        binding.btnEmergencyReport.setOnClickListener {
+            val intent = Intent(this, ReportActivity::class.java)
             startActivity(intent)
         }
-    }
 
-    private fun updateUi() {
-        // 기기 등록 여부 체크 및 화면 반영
-        if (UserDeviceManager.isRegister(this)) {
-            binding.btnDeviceRegistration.visibility = View.GONE
-            binding.btnDeviceSettings.visibility = View.VISIBLE
-            binding.tvDeviceName.text = UserDeviceManager.getDeviceName(this)
-        } else {
-            binding.btnDeviceRegistration.visibility = View.VISIBLE
-            binding.btnDeviceSettings.visibility = View.GONE
-            binding.tvDeviceName.text = "현재 등록된 기기가 없습니다."
+        // 설정
+        binding.btnSetting.setOnClickListener {
+            if (UserDeviceManager.isRegister(this)) {
+                val intent = Intent(this, DeviceSettingsActivity::class.java)
+                startActivity(intent)
+            } else {
+                enableBleAdapter()
+            }
         }
     }
 
