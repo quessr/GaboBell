@@ -14,21 +14,26 @@ import yiwoo.prototype.gabobell.ui.searchAddress.model.SearchAddressModel
 class SearchAddressActivity :
     BaseActivity<ActivitySearchAddressBinding>(ActivitySearchAddressBinding::inflate) {
     private val searchAddressClient = SearchAddressClient()
+    private var searchQuery: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val adapter = SearchAddressAdapter()
         binding.rvAddressSearch.adapter = adapter
+        binding.tvBtnSearch.setOnClickListener {
+            searchQuery = binding.etDeparture.text.toString()
+            Log.d("SearchAddressActivity@@", "editText: $searchQuery")
 
-        CoroutineScope(Dispatchers.Main).launch {
+            CoroutineScope(Dispatchers.Main).launch {
 //                Log.d("SearchAddressActivity@@", "searchAddress: ${document.address}")
-            val response = searchAddressClient.searchAddress(query = "DMC")
-            val documents = response?.documents ?: emptyList()
-            val searchAddressModels: List<SearchAddressModel> =
-                documents.map { it.toSearchAddressModel() }
+                val response = searchAddressClient.searchAddress(query = searchQuery)
+                val documents = response?.documents ?: emptyList()
+                val searchAddressModels: List<SearchAddressModel> =
+                    documents.map { it.toSearchAddressModel() }
 
-            Log.d("SearchAddressActivity", "documents: $documents")
-            adapter.submitList(searchAddressModels)
+                Log.d("SearchAddressActivity", "documents: $documents")
+                adapter.submitList(searchAddressModels)
+            }
         }
 
         val mockData = listOf(
