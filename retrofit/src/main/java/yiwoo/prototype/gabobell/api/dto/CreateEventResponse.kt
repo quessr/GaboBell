@@ -13,9 +13,13 @@ data class CreateEventData(
 data class CreateEventDetails(
     val id: Long,
     val userUuid: String,
+    val serviceType: String,
     val eventAddress: String,
     val latitude: Double,
     val longitude: Double
+
+//    val dstLatitude: Double,
+//    val dstLongitude: Double
 )
 
 data class CreateResultData(

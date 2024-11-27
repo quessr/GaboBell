@@ -12,7 +12,6 @@ import yiwoo.prototype.gabobell.api.dto.CreateEvent
 import yiwoo.prototype.gabobell.api.dto.CreateEventRequest
 import yiwoo.prototype.gabobell.api.dto.EventStatus
 import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
-import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import yiwoo.prototype.gabobell.module.RetrofitModule
 
 object  ApiSender {
@@ -20,6 +19,7 @@ object  ApiSender {
     fun reportEmergency(
         context: Context,
         uuid: String = UserSettingsManager.getUuid(context),
+        serviceType: String = "EMERGENCY",
         latitude: Double = 37.585057,
         longitude: Double = 126.885347,
         eventIdCallback: ((Long) -> Unit)? = null
@@ -29,7 +29,7 @@ object  ApiSender {
         val gaboApi = retrofit.create(GaboAPI::class.java)
 
         val requestBody = CreateEventRequest(
-            CreateEvent(userUuid = uuid, latitude = latitude, longitude = longitude)
+            CreateEvent(userUuid = uuid, serviceType = serviceType, latitude = latitude, longitude = longitude)
         )
 
         Logger.d("Request Body: $requestBody") // 요청 데이터 로그 출력
@@ -40,6 +40,7 @@ object  ApiSender {
                 if (response.isSuccessful) {
                     response.body()?.let {
                         val eventId = it.data.createEvent.id
+                        val serviceType = it.data.createEvent.serviceType
                         val eventAddress = it.data.createEvent.eventAddress
                         val eventStatus = it.result.status
                         val eventMessage = it.result.message
@@ -54,7 +55,8 @@ object  ApiSender {
 
                         Logger.d(
                             "eventStatus: $eventStatus \n eventMessage: $eventMessage \n " +
-                                    "eventId: $eventId \n eventAddress: $eventAddress \n " +
+                                    "eventId: $eventId \n serviceType: $serviceType\n" +
+                                    "eventAddress: $eventAddress \n " +
                                     "latitude: $latitude \n evelongitudentAddress: $longitude"
                         )
                     }
