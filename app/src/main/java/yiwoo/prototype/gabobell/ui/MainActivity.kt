@@ -11,9 +11,8 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
-import com.kakao.vectormap.MapView
+import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
-import com.kakao.vectormap.label.LabelTextBuilder
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.LocationHelper
@@ -23,6 +22,7 @@ import yiwoo.prototype.gabobell.helper.UserDeviceManager
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
 
     private var bluetoothAdapter: BluetoothAdapter? = null
+    private var currentLocationLabel: Label? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,10 +32,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     }
 
     private fun initMap() {
-        val mapView = MapView(this)
-        binding.mapView.addView(mapView)
         LocationHelper.locationInit(this)
 
+        val mapView = binding.mapView
         mapView.start(object : MapLifeCycleCallback() {
             override fun onMapDestroy() {
                 // 지도 API가 정상적으로 종료될 때 호출됨
@@ -46,72 +45,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             }
         }, object : KakaoMapReadyCallback() {
             override fun getPosition(): LatLng {
-
+                // TODO: 초기 맵 위치
                 return LatLng.from(37.58376, 126.8867)
             }
 
             override fun onMapReady(kakaoMap: KakaoMap) {
-                // 마커가 표시될 위치
-                val departureLatLng = LatLng.from(37.5848659, 126.88598)
-                val destinationLatLng = LatLng.from(37.5810471, 126.8905417)
-//                val currentLatLng = LatLng.from(37.58376, 126.8867)
-
-
-                // 레이블을 지도에 추가 (출발지점)
-                kakaoMap.labelManager?.layer?.addLabel(
-                    LabelOptions.from(departureLatLng)
-                        .setStyles(
-                            MonitoringActivity.setPinStyle(
-                                this@MainActivity,
-                                R.drawable.marker_departure
-                            )
-                        )
-                        .setTexts(
-                            LabelTextBuilder().setTexts("출발")
-                        )
-                )
-
-//                // 레이블을 지도에 추가 (현재지점)
-//                kakaoMap.labelManager?.layer?.addLabel(
-//                    LabelOptions.from(currentLatLng)
-//                        .setStyles(setPinStyle(this@MonitoringActivity, R.drawable.marker_current))
-//                        .setTexts(
-//                            LabelTextBuilder().setTexts("현재")
-//                        )
-//                )
-
-                // 레이블을 지도에 추가 (도착지점)
-                kakaoMap.labelManager?.layer?.addLabel(
-                    LabelOptions.from(destinationLatLng)
-                        .setStyles(
-                            MonitoringActivity.setPinStyle(
-                                this@MainActivity,
-                                R.drawable.marker_destination
-                            )
-                        )
-                        .setTexts(
-                            LabelTextBuilder().setTexts("도착") // 여기에 원하는 텍스트 추가
-                        )
-                )
-
-                // 현재 위치 가져오기
-                LocationHelper.getCurrentLocation(this@MainActivity) { lat, lng ->
-                    val latitude = lat ?: 37.559984
-                    val longitude = lng ?: 126.9753071
-
-                    val currentLatLng = LatLng.from(latitude, longitude)
-
-                    // 레이블을 지도에 추가 (현재지점)
-                    kakaoMap.labelManager?.layer?.addLabel(
-                        LabelOptions.from(currentLatLng)
-                            .setStyles(
-                                MonitoringActivity.setPinStyle(
-                                    this@MainActivity,
-                                    R.drawable.marker_current
-                                )
-                            )
-                            .setTexts(LabelTextBuilder().setTexts("현재"))
-                    )
+                LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
+                    updateCurrentLocationMarker(kakaoMap, latitude, longitude)
                 }
             }
         })
@@ -142,6 +82,30 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
+    private fun updateCurrentLocationMarker(
+        map: KakaoMap, latitude: Double, longitude: Double) {
+        val position = LatLng.from(latitude, longitude)
+        val labelLayer = map.labelManager?.layer
+        if (currentLocationLabel != null) {
+            // 현재 위치 마커 이동
+            currentLocationLabel?.moveTo(position)
+        } else {
+            // 현재 위치 마커 생성
+            currentLocationLabel = labelLayer?.addLabel(
+                LabelOptions.from(position)
+                    .setStyles(
+                        // TODO: 추후 공통 처리
+                        MonitoringActivity.setPinStyle(
+                            this@MainActivity,
+                            R.drawable.marker_current
+                        )
+                    )
+            )
+        }
+    }
+
+
+
     private fun checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             //android 12 이상
@@ -168,6 +132,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
+    /*
     private fun startLocation() {
         LocationHelper.locationInit(this)
         LocationHelper.startLocation(this) { lat, lng ->
@@ -176,6 +141,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             Logger.d("LatLng: $locationLat | $locationLng")
         }
     }
+    */
 
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -183,8 +149,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val allGranted = permissions.all { it.value } // 모든 권한이 승인되었는지 확인
         if (allGranted) {
             Logger.d("모든 권한이 허용됨")
-            //모든 권한 허용 후 gps 추적 시작
-            startLocation()
+            //모든 권한 허용 후 gps 추적 시작 (확인용)
+            // startLocation()
         } else {
             Logger.d("일부 권한이 거부됨")
             // TODO: 권한 거부에 대한 시나리오는 추후 반영

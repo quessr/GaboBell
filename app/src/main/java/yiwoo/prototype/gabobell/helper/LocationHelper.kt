@@ -58,7 +58,7 @@ object LocationHelper {
     }
 
     //현재 위치를 지속적으로 수신
-    fun startLocation(context: Context, locationResult: (Double?, Double?) -> Unit) {
+    fun startLocation(context: Context, locationResult: (Double, Double) -> Unit) {
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
