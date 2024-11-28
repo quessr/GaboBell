@@ -18,6 +18,8 @@ class SearchAddressActivity :
     BaseActivity<ActivitySearchAddressBinding>(ActivitySearchAddressBinding::inflate) {
     private val searchAddressClient = SearchAddressClient()
     private var searchQuery: String = ""
+    private var searchPlaceLat: Double = 0.0
+    private var searchPlaceLon: Double = 0.0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -26,6 +28,8 @@ class SearchAddressActivity :
             val resultIntent = Intent().apply {
                 putExtra("selected_place_name", placeName)
                 putExtra("is_departure", isDeparture)
+                putExtra("search_place_lat", searchPlaceLat)
+                putExtra("search_place_long", searchPlaceLon)
             }
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
@@ -40,21 +44,25 @@ class SearchAddressActivity :
                 val response = searchAddressClient.searchAddress(query = searchQuery)
                 val documents = response?.documents ?: emptyList()
                 val searchAddressModels: List<SearchAddressModel> =
-                    documents.map { it.toSearchAddressModel() }
+                    documents.map {
+                        searchPlaceLat = it.y
+                        searchPlaceLon = it.x
+                        it.toSearchAddressModel()
+                    }
 
                 Log.d("SearchAddressActivity", "documents: $documents")
                 adapter.submitList(searchAddressModels)
             }
         }
 
-        val mockData = listOf(
-            SearchAddressModel("서울특별시 강남구 삼성동", "123-456", "서울특별시 강남구 삼성로 123"),
-            SearchAddressModel("서울특별시 서초구 서초동", "789-012", "서울특별시 서초구 서초대로 456"),
-            SearchAddressModel("서울특별시 종로구 청운동", "345-678", "서울특별시 종로구 자하문로 789"),
-            SearchAddressModel("서울특별시 강남구 삼성동", "123-456", "서울특별시 강남구 삼성로 123"),
-            SearchAddressModel("서울특별시 서초구 서초동", "789-012", "서울특별시 서초구 서초대로 456"),
-            SearchAddressModel("서울특별시 종로구 청운동", "345-678", "서울특별시 종로구 자하문로 789")
-        )
+//        val mockData = listOf(
+//            SearchAddressModel("서울특별시 강남구 삼성동", "123-456", "서울특별시 강남구 삼성로 123"),
+//            SearchAddressModel("서울특별시 서초구 서초동", "789-012", "서울특별시 서초구 서초대로 456"),
+//            SearchAddressModel("서울특별시 종로구 청운동", "345-678", "서울특별시 종로구 자하문로 789"),
+//            SearchAddressModel("서울특별시 강남구 삼성동", "123-456", "서울특별시 강남구 삼성로 123"),
+//            SearchAddressModel("서울특별시 서초구 서초동", "789-012", "서울특별시 서초구 서초대로 456"),
+//            SearchAddressModel("서울특별시 종로구 청운동", "345-678", "서울특별시 종로구 자하문로 789")
+//        )
 
 //        adapter.submitList(mockData)
     }

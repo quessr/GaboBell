@@ -198,6 +198,7 @@ class MediaCaptureActivity :
                             val msg = "Video capture succeeded: ${videoFile.absolutePath}"
                             Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                             Log.d("CameraXApp", msg)
+                            Log.d("MediaCaptureActivity videoFileSize", "${videoFile.length() / (1024 * 1024)} MB")
 
                             CoroutineScope(Dispatchers.IO).launch {
                                 uploadFiles(

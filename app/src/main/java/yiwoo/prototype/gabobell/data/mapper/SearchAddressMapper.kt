@@ -8,7 +8,9 @@ object SearchAddressMapper {
         return SearchAddressModel(
             placeName = this.place_name ?: "Unknown Place",
             addressName = this.address_name ?: "Unknown Address",
-            addressRoadName = this.road_address_name ?: "Unknown Road"
+            addressRoadName = this.road_address_name ?: "Unknown Road",
+            x = this.x,
+            y = this.y
         )
     }
 }
