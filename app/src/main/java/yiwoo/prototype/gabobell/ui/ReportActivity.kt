@@ -19,6 +19,10 @@ import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import yiwoo.prototype.gabobell.module.RetrofitModule
+import android.media.MediaPlayer
+import android.media.AudioManager
+import android.media.AudioAttributes
+import yiwoo.prototype.gabobell.R
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate),
     EventIdCallback {
@@ -28,9 +32,12 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     private var countDownTimer: CountDownTimer? = null
     private val timeLimit: Long = 6_000
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    private var mediaPlayer: MediaPlayer? = null
+    private lateinit var audioManager: AudioManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val retrofit: Retrofit = RetrofitModule.provideRetrofit(this)
         gaboApi = retrofit.create(GaboAPI::class.java)
         initUi()
@@ -46,7 +53,31 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     }
 
     private fun emergencyEffect(isPlay: Boolean) {
-        // TODO: 플래시, 사이렌 발생
+        if (isPlay) {
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
+
+            // MediaPlayer 설정 및 시작
+            mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                isLooping = true
+                start()
+            }
+        } else {
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
+            }
+            mediaPlayer = null
+        }
     }
 
     private fun initUi() {
