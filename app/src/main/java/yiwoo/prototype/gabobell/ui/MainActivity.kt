@@ -26,6 +26,7 @@ import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
 
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
+    // SensorEventListener {
 
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var currentLocationLabel: Label? = null
@@ -33,23 +34,100 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private var isActivePolice: Boolean = false
     private lateinit var emergencyLauncher: ActivityResultLauncher<Intent>
 
+    /*
+    private lateinit var sensorManager: SensorManager
+    private var acceleration = 0f
+    private var currentAcceleration = 0f
+    private var lastAcceleration = 0f
+    private var shakeCount = 0
+    private var lastShakeTime: Long = 0
+    private val shakeThreshold = 30.0f  // 흔들기 감지 임계값
+    */
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initUi()
         initLauncher()
         initMap()
         checkPermissions()
+        // initShakeDetection()
     }
 
     override fun onResume() {
         super.onResume()
         binding.mapView.resume()
+        /*
+        shakeCount = 0
+        sensorManager.registerListener(
+            this@MainActivity,
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+        */
     }
 
     override fun onPause() {
         super.onPause()
         binding.mapView.pause()
+        // sensorManager.unregisterListener(this@MainActivity)
     }
+
+    private fun initUi() {
+
+        // 귀가 모니터링
+        binding.btnMonitoring.setOnClickListener {
+            val intent = Intent(this, MonitoringActivity::class.java)
+            startActivity(intent)
+        }
+
+        // 신고/신고취소하기
+        binding.btnEmergencyReport.setOnClickListener {
+            if (isEmergency()) {
+                val eventId = (application as GaboApplication).eventId
+                // 신고 취소 (자동종료)
+                ApiSender.cancelEmergency(this@MainActivity, eventId)
+                (application as GaboApplication).isEmergency = false
+                updateUi()
+            } else {
+                // 신고화면 이동
+                val intent = Intent(this, ReportActivity::class.java)
+                emergencyLauncher.launch(intent)
+            }
+        }
+
+        // 설정
+        binding.btnSetting.setOnClickListener {
+            if (UserDeviceManager.isRegister(this)) {
+                val intent = Intent(this, DeviceSettingsActivity::class.java)
+                startActivity(intent)
+            } else {
+                enableBleAdapter()
+            }
+        }
+
+        // 안심시설 (지구대)
+        visibleFab(isVisibleFab)
+        togglePolice(isActivePolice)
+
+        binding.btnFacilities.setOnClickListener {
+            isVisibleFab = !isVisibleFab
+            visibleFab(isVisibleFab)
+        }
+
+        binding.fabPolice.setOnClickListener {
+            isActivePolice = !isActivePolice
+            togglePolice(isActivePolice)
+        }
+    }
+
+    /*
+    private fun initShakeDetection() {
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        acceleration = 10f
+        currentAcceleration = SensorManager.GRAVITY_EARTH
+        lastAcceleration = SensorManager.GRAVITY_EARTH
+    }
+    */
 
     private fun initMap() {
         LocationHelper.locationInit(this)
@@ -105,61 +183,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
-
-
-    private fun initUi() {
-
-        // 귀가 모니터링
-        binding.btnMonitoring.setOnClickListener {
-            val intent = Intent(this, MonitoringActivity::class.java)
-            startActivity(intent)
-        }
-
-        // 신고/신고취소하기
-        binding.btnEmergencyReport.setOnClickListener {
-            if (isEmergency()) {
-                val eventId = (application as GaboApplication).eventId
-                // 신고 취소 (자동종료)
-                ApiSender.cancelEmergency(this@MainActivity, eventId)
-                (application as GaboApplication).isEmergency = false
-                updateUi()
-            } else {
-                // 신고화면 이동
-                val intent = Intent(this, ReportActivity::class.java)
-                emergencyLauncher.launch(intent)
-            }
-        }
-
-        // 설정
-        binding.btnSetting.setOnClickListener {
-            if (UserDeviceManager.isRegister(this)) {
-                val intent = Intent(this, DeviceSettingsActivity::class.java)
-                startActivity(intent)
-            } else {
-                enableBleAdapter()
-            }
-        }
-
-        // 안심시설 (지구대)
-        visibleFab(isVisibleFab)
-        togglePolice(isActivePolice)
-
-        binding.btnFacilities.setOnClickListener {
-            isVisibleFab = !isVisibleFab
-            visibleFab(isVisibleFab)
-        }
-
-        binding.fabPolice.setOnClickListener {
-            isActivePolice = !isActivePolice
-            togglePolice(isActivePolice)
-        }
-    }
-
-    // 신고 여부 반환
-    private fun isEmergency(): Boolean {
-        return (application as GaboApplication).isEmergency
-    }
-
     private fun visibleFab(visible: Boolean) {
         binding.fabPolice.visibility = if (visible) View.VISIBLE else View.GONE
     }
@@ -197,7 +220,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
-
+    // 신고 여부 반환
+    private fun isEmergency(): Boolean {
+        return (application as GaboApplication).isEmergency
+    }
 
     private fun checkPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -284,4 +310,53 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             startActivity(intent)
         }
     }
+
+    // region * 흔들기 감지 처리
+    /*
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            val currentTime = System.currentTimeMillis()
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            lastAcceleration = currentAcceleration
+            currentAcceleration = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            val delta: Float = currentAcceleration - lastAcceleration
+            acceleration = acceleration * 0.9f + delta
+
+            if (abs(acceleration) > shakeThreshold) {
+                if (shakeCount == 0 || (currentTime - lastShakeTime) > 2_000) {
+                    shakeCount = 1
+                } else {
+                    shakeCount++
+                }
+
+                Log.d("@!@", "shakeCount : $shakeCount")
+
+                lastShakeTime = currentTime
+                if (shakeCount >= 5) {
+                    handleEmergencyShake()
+                    shakeCount = 0
+                }
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // no code (정확도 변경 시 필요한 처리)
+    }
+
+    // 흔들기 감지 완료
+    private fun handleEmergencyShake() {
+        Log.d("@!@", "handleEmergencyShake : ${isEmergency()}")
+        if (isEmergency()) {
+            shakeCount = 0
+            return
+        }
+        val intent = Intent(this, ReportActivity::class.java)
+        emergencyLauncher.launch(intent)
+    }
+    */
+    // endregion
 }
