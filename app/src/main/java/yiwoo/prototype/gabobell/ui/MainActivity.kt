@@ -15,6 +15,8 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import yiwoo.prototype.gabobell.GaboApplication
@@ -33,6 +35,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private var isVisibleFab: Boolean = false
     private var isActivePolice: Boolean = false
     private lateinit var emergencyLauncher: ActivityResultLauncher<Intent>
+
+    private var neLocationLabel: Label? = null
+    private var swLocationLabel: Label? = null
 
     /*
     private lateinit var sensorManager: SensorManager
@@ -153,8 +158,62 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
                     updateCurrentLocationMarker(kakaoMap, latitude, longitude)
                 }
+                val centerPosition = kakaoMap.cameraPosition
+                updateBounds(kakaoMap, mapView, centerPosition!!)
+
+                //카메라 이동시 센터 포지션 값에 대한 ne, sw 좌표 변경
+                kakaoMap.setOnCameraMoveEndListener { map, cameraPosition, _ ->
+                    updateBounds(map, mapView, cameraPosition)
+                }
             }
         })
+    }
+
+    private fun updateBounds(kakaoMap: KakaoMap ,mapView: MapView, cameraPosition: CameraPosition) {
+        //카메라의 현재 위치 정보
+        val centerLat = cameraPosition.position.latitude
+        val centerLng = cameraPosition.position.longitude
+        Logger.d("centerPosition: $centerLat | $centerLng")
+
+        //카카오맵 화면 크기
+        val viewWidth = mapView.width
+        val viewHeight = mapView.height
+
+        val ne = screenToLatLng(kakaoMap, viewWidth, 0) // 우측 상단 (북동)
+        val sw = screenToLatLng(kakaoMap, 0, viewHeight) // 좌측 하단 (남서)
+
+        // 북동쪽과 남서쪽 좌표 출력
+        Logger.d("북동쪽 위도: ${ne?.latitude} | 북동쪽 경도: ${ne?.longitude}")
+        Logger.d("남서쪽 위도: ${sw?.latitude} | 남서쪽 경도: ${sw?.longitude}")
+
+        val labelLayer = kakaoMap.labelManager?.layer
+        if (neLocationLabel != null && swLocationLabel != null) {
+            neLocationLabel?.moveTo(ne)
+            swLocationLabel?.moveTo(sw)
+        } else {
+            neLocationLabel = labelLayer?.addLabel(
+                LabelOptions.from(ne)
+                    .setStyles(
+                        MonitoringActivity.setPinStyle(
+                            this,
+                            R.drawable.ne_test
+                        )
+                    )
+            )
+            swLocationLabel = labelLayer?.addLabel(
+                LabelOptions.from(sw)
+                    .setStyles(
+                        MonitoringActivity.setPinStyle(
+                            this,
+                            R.drawable.sw_test
+                        )
+                    )
+            )
+
+        }
+    }
+    private fun screenToLatLng(map: KakaoMap, x: Int, y: Int): LatLng? {
+        return map.fromScreenPoint(x.toDouble().toInt(), y.toDouble().toInt())
     }
 
     private fun initLauncher() {
