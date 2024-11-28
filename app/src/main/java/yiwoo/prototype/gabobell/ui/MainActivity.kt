@@ -64,6 +64,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             SensorManager.SENSOR_DELAY_NORMAL
         )
         */
+
+        updateUi()
     }
 
     override fun onPause() {
