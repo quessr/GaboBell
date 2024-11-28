@@ -9,7 +9,11 @@
     <string name="pop_network_error_description">네트워크에 연결할 수 없습니다.\n앱을 종료합니다.</string>
     <string name="pop_emergency_completed_title">알림</string>
     <string name="pop_emergency_completed_description">긴급신고가 완료되었습니다.</string>
+    <string name="pop_emergency_cancel_title">알림</string>
+    <string name="pop_emergency_cancel_description">긴급신고를 취소하시겠습니까?</string>
     <string name="pop_btn_confirm">확인</string>
+    <string name="pop_btn_yes">네</string>
+    <string name="pop_btn_no">아니오</string>
 
     <!--Main-->
     <string name="main_registered_device">등록기기</string>
