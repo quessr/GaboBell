@@ -7,6 +7,8 @@
     <!-- Popup -->
     <string name="pop_network_error_title">네트워크 에러</string>
     <string name="pop_network_error_description">네트워크에 연결할 수 없습니다.\n앱을 종료합니다.</string>
+    <string name="pop_emergency_completed_title">알림</string>
+    <string name="pop_emergency_completed_description">긴급신고가 완료되었습니다.</string>
     <string name="pop_btn_confirm">확인</string>
 
     <!--Main-->

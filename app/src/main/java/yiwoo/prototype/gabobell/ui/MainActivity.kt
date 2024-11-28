@@ -4,20 +4,23 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
-import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
+import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
+import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
@@ -28,10 +31,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private var currentLocationLabel: Label? = null
     private var isVisibleFab: Boolean = false
     private var isActivePolice: Boolean = false
+    private lateinit var emergencyLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initUi()
+        initLauncher()
         initMap()
         checkPermissions()
     }
@@ -72,6 +77,36 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         })
     }
 
+    private fun initLauncher() {
+        emergencyLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                // 신고 화면 -> 신고
+                updateUi()
+                // 신고 완료 팝업
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.pop_emergency_completed_title)
+                    .setMessage(R.string.pop_emergency_completed_description)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.pop_btn_confirm) { _, _ ->
+                    }
+                    .show()
+
+            } else if (it.resultCode == RESULT_CANCELED) {
+                // 신고 화면 -> 취소
+            }
+        }
+    }
+
+    private fun updateUi() {
+        if (isEmergency()) {
+            binding.btnEmergencyReport.text = "신고취소"
+        } else {
+            binding.btnEmergencyReport.text = "긴급신고"
+        }
+    }
+
+
+
     private fun initUi() {
 
         // 귀가 모니터링
@@ -80,10 +115,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             startActivity(intent)
         }
 
-        // 신고하기
+        // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
-            val intent = Intent(this, ReportActivity::class.java)
-            startActivity(intent)
+            if (isEmergency()) {
+                val eventId = (application as GaboApplication).eventId
+                // 신고 취소 (자동종료)
+                ApiSender.cancelEmergency(this@MainActivity, eventId)
+                (application as GaboApplication).isEmergency = false
+                updateUi()
+            } else {
+                // 신고화면 이동
+                val intent = Intent(this, ReportActivity::class.java)
+                emergencyLauncher.launch(intent)
+            }
         }
 
         // 설정
@@ -109,6 +153,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             isActivePolice = !isActivePolice
             togglePolice(isActivePolice)
         }
+    }
+
+    // 신고 여부 반환
+    private fun isEmergency(): Boolean {
+        return (application as GaboApplication).isEmergency
     }
 
     private fun visibleFab(visible: Boolean) {

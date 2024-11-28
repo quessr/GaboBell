@@ -9,7 +9,6 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.IBinder
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import retrofit2.Retrofit
@@ -29,7 +28,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     private var bleManager: BleManager? = null
     private var gaboApi: GaboAPI? = null
     private var countDownTimer: CountDownTimer? = null
-    private val timeLimit: Long = 5_000
+    private val timeLimit: Long = 6_000
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,96 +36,113 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         val retrofit: Retrofit = RetrofitModule.provideRetrofit(this)
         gaboApi = retrofit.create(GaboAPI::class.java)
         initUi()
-        initReceiver()
+        emergencyEffect(true)
+//        initReceiver()
+        initLauncher()
         bindService()
-
-        activityResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == RESULT_OK) {
-                    Toast.makeText(this, "미디어 파일이 등록되었습니다.", Toast.LENGTH_SHORT)
-                        .show()
-                } else if (it.resultCode == RESULT_CANCELED) {
-                    val errorMessage = it.data?.getStringExtra("onFailure")
-                    Toast.makeText(this, errorMessage ?: "미디어 파일 등록 실패", Toast.LENGTH_SHORT).show()
-                }
-            }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        emergencyEffect(false)
         countDownTimer?.cancel()
-        unregisterReceiver(emergencyReceiver)
+//        unregisterReceiver(emergencyReceiver)
+    }
+
+    private fun emergencyEffect(isPlay: Boolean) {
+        // TODO: 플래시, 사이렌 발생
     }
 
     private fun initUi() {
         // 타이머 동작
-
-        countDownTimer =
-            object : CountDownTimer(timeLimit, 1_000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    binding.reportCounter.text = (millisUntilFinished / 1_000).toString()
-                }
-
-                override fun onFinish() {
-                    reportEmergency()
-                }
+        countDownTimer = object : CountDownTimer(timeLimit, 1_000) {
+            override fun onTick(millisUntilFinished: Long) {
+                // 카운터 표기
+                binding.reportCounter.text = (millisUntilFinished / 1_000).toString()
             }
 
-        if (!isEmergency()) {
-            countDownTimer?.start()
+            override fun onFinish() {
+                // 타이머 종료 (= 신고하기)
+                reportEmergency()
+            }
         }
+        countDownTimer?.start()
 
+        // '즉시신고' 버튼
         binding.btnReport.setOnClickListener {
             //응답에대한 결과처리 해줘야함 onReceive
             reportEmergency()
         }
 
+        // 취소 버튼 (화면 종료)
         binding.btnCancellations.setOnClickListener {
-            cancelEmergency()
+            // cancelEmergency()
+            finish()
         }
 
-        uiEmergency()
+        // uiEmergency()
     }
 
-    private fun uiEmergency() {
-        if (isEmergency()) {
-            binding.btnReport.isEnabled = false
-            binding.btnCancellations.isEnabled = true
-            binding.reportCounter.text = "신고중"
-        } else {
-            binding.btnReport.isEnabled = true
-            binding.btnCancellations.isEnabled = false
-            binding.reportCounter.text = (timeLimit / 1_000).toString()
-        }
-    }
-
-    private fun initReceiver() {
-        val filter = IntentFilter().apply {
-            addAction(BleManager.BLE_REPORTE_EMERGENCY)
-            addAction(BleManager.BLE_CANCEL_REPORTE_EMERGENCY)
-        }
-        registerReceiver(emergencyReceiver, filter)
-    }
-
-
-    private val emergencyReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                BleManager.BLE_REPORTE_EMERGENCY, BleManager.BLE_CANCEL_REPORTE_EMERGENCY -> {
-                    uiEmergency()
+    private fun initLauncher() {
+        activityResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                // 미디어 등록 확인용 (임시주석)
+                /*
+                if (it.resultCode == RESULT_OK) {
+                    // Toast.makeText(this, "미디어 파일이 등록되었습니다.", Toast.LENGTH_SHORT).show()
+                } else if (it.resultCode == RESULT_CANCELED) {
+                    val errorMessage = it.data?.getStringExtra("onFailure")
+                    Toast.makeText(this, errorMessage ?: "미디어 파일 등록 실패", Toast.LENGTH_SHORT).show()
                 }
+                */
+
+                // MainActivity 측으로 신고 완료 알림
+                setResult(RESULT_OK)
+                finish()
             }
-        }
     }
+
+//    private fun uiEmergency() {
+//        if (isEmergency()) {
+//            binding.btnReport.isEnabled = false
+//            binding.btnCancellations.isEnabled = true
+//            binding.reportCounter.text = "신고중"
+//        } else {
+//            binding.btnReport.isEnabled = true
+//            binding.btnCancellations.isEnabled = false
+//            binding.reportCounter.text = (timeLimit / 1_000).toString()
+//        }
+//    }
+
+
+//    private fun initReceiver() {
+//        val filter = IntentFilter().apply {
+//            addAction(BleManager.BLE_REPORTE_EMERGENCY)
+//            addAction(BleManager.BLE_CANCEL_REPORTE_EMERGENCY)
+//        }
+//        registerReceiver(emergencyReceiver, filter)
+//    }
+//
+//
+//    private val emergencyReceiver = object : BroadcastReceiver() {
+//        override fun onReceive(context: Context?, intent: Intent?) {
+//            when (intent?.action) {
+//                BleManager.BLE_REPORTE_EMERGENCY, BleManager.BLE_CANCEL_REPORTE_EMERGENCY -> {
+//                    uiEmergency()
+//                }
+//            }
+//        }
+//    }
 
     private fun isConnected(): Boolean {
         return (application as GaboApplication).isConnected
     }
 
-    private fun isEmergency(): Boolean {
-        return (application as GaboApplication).isEmergency
-    }
+//    private fun isEmergency(): Boolean {
+//        return (application as GaboApplication).isEmergency
+//    }
 
+    // 신고 처리 (API 호출)
     private fun reportEmergency() {
         countDownTimer?.cancel()
         if (isConnected()) {
@@ -138,16 +154,17 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }
     }
 
-    private fun cancelEmergency() {
-        if (isConnected()) {
-            bleManager?.cmdEmergency(false)
-        } else {
-            sendEmergencyCancel()
-        }
-    }
+//    private fun cancelEmergency() {
+//        if (isConnected()) {
+//            bleManager?.cmdEmergency(false)
+//        } else {
+//            sendEmergencyCancel()
+//        }
+//    }
 
 
     // region * API (단말 미연결시 호출)
+    /*
     private fun sendEmergencyCancel() {
 //        ApiSender.reportEmergency(this@ReportActivity)
         val eventId = (application as GaboApplication).eventId
@@ -155,17 +172,28 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         (application as GaboApplication).isEmergency = false
         uiEmergency()
     }
+    */
 
     private fun sendEmergencyCreate() {
 
         ApiSender.reportEmergency(this) { eventId ->
             Logger.d("Received event ID in SomeActivity: $eventId")
 
-            tryMediaCapture(eventId)
+            (application as GaboApplication).isEmergency = true
+            sendEmergencyVideo(eventId)
         }
     }
 
-    private fun tryMediaCapture(eventId: Long) {
+    // 긴급 상황 동영상 전달
+    private fun sendEmergencyVideo(eventId: Long) {
+        // 원래는 설정 값에 의해서 '사진/동영상/미전송' 으로 구분되나,
+        // 영업용은 동영상으로 fixed 한다.
+        val intent = Intent(this, MediaCaptureActivity::class.java)
+        intent.putExtra("eventId", eventId)
+        intent.putExtra("mediaFormat",  UserSettingsManager.EmergencyFormatType.VIDEO.value)
+        activityResultLauncher.launch(intent)
+
+        /*
         val captureFormat = UserSettingsManager.getEmergencyFormat(this)
         if (captureFormat != UserSettingsManager.EmergencyFormatType.NONE) {
             val intent = Intent(this, MediaCaptureActivity::class.java)
@@ -173,9 +201,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
             intent.putExtra("mediaFormat", captureFormat.value)
             activityResultLauncher.launch(intent)
         }
-
-        (application as GaboApplication).isEmergency = true
-        uiEmergency()
+        */
     }
 
     // endregion
@@ -194,8 +220,10 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
                     Logger.e("Unable to initialize Bluetooth")
                     finish()
                 } else {
+                    // 기기와 연결되어 있는 경우
+                    // 신고 시 API 호출을 BleManager가 담당하고 호출 결과(eventId)를 수신하기 위해서
+                    // 아래와 같이 콜백은 등록한다.
                     service.setEventIdCallback(this@ReportActivity)
-                    Logger.d("ReportActivity onServiceConnected")
                 }
             }
         }
@@ -206,8 +234,10 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }
     }
 
+    // 신고 API 전송 완료 (via BleManager)
     override fun onEventId(eventId: Long) {
-        tryMediaCapture(eventId)
+        // 긴급상황(동영상) 촬영
+        sendEmergencyVideo(eventId)
     }
     // endregion
 }
