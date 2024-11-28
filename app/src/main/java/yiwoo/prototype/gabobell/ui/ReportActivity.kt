@@ -1,10 +1,8 @@
 package yiwoo.prototype.gabobell.ui
 
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -37,7 +35,6 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         gaboApi = retrofit.create(GaboAPI::class.java)
         initUi()
         emergencyEffect(true)
-//        initReceiver()
         initLauncher()
         bindService()
     }
@@ -46,7 +43,6 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         super.onDestroy()
         emergencyEffect(false)
         countDownTimer?.cancel()
-//        unregisterReceiver(emergencyReceiver)
     }
 
     private fun emergencyEffect(isPlay: Boolean) {
@@ -79,8 +75,6 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
             // cancelEmergency()
             finish()
         }
-
-        // uiEmergency()
     }
 
     private fun initLauncher() {
@@ -102,45 +96,9 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
             }
     }
 
-//    private fun uiEmergency() {
-//        if (isEmergency()) {
-//            binding.btnReport.isEnabled = false
-//            binding.btnCancellations.isEnabled = true
-//            binding.reportCounter.text = "신고중"
-//        } else {
-//            binding.btnReport.isEnabled = true
-//            binding.btnCancellations.isEnabled = false
-//            binding.reportCounter.text = (timeLimit / 1_000).toString()
-//        }
-//    }
-
-
-//    private fun initReceiver() {
-//        val filter = IntentFilter().apply {
-//            addAction(BleManager.BLE_REPORTE_EMERGENCY)
-//            addAction(BleManager.BLE_CANCEL_REPORTE_EMERGENCY)
-//        }
-//        registerReceiver(emergencyReceiver, filter)
-//    }
-//
-//
-//    private val emergencyReceiver = object : BroadcastReceiver() {
-//        override fun onReceive(context: Context?, intent: Intent?) {
-//            when (intent?.action) {
-//                BleManager.BLE_REPORTE_EMERGENCY, BleManager.BLE_CANCEL_REPORTE_EMERGENCY -> {
-//                    uiEmergency()
-//                }
-//            }
-//        }
-//    }
-
     private fun isConnected(): Boolean {
         return (application as GaboApplication).isConnected
     }
-
-//    private fun isEmergency(): Boolean {
-//        return (application as GaboApplication).isEmergency
-//    }
 
     // 신고 처리 (API 호출)
     private fun reportEmergency() {
@@ -154,31 +112,10 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         }
     }
 
-//    private fun cancelEmergency() {
-//        if (isConnected()) {
-//            bleManager?.cmdEmergency(false)
-//        } else {
-//            sendEmergencyCancel()
-//        }
-//    }
-
-
-    // region * API (단말 미연결시 호출)
-    /*
-    private fun sendEmergencyCancel() {
-//        ApiSender.reportEmergency(this@ReportActivity)
-        val eventId = (application as GaboApplication).eventId
-        ApiSender.cancelEmergency(this@ReportActivity, eventId)
-        (application as GaboApplication).isEmergency = false
-        uiEmergency()
-    }
-    */
-
+    // 신고 API 호출 (직접 호출)
     private fun sendEmergencyCreate() {
-
         ApiSender.reportEmergency(this) { eventId ->
             Logger.d("Received event ID in SomeActivity: $eventId")
-
             (application as GaboApplication).isEmergency = true
             sendEmergencyVideo(eventId)
         }
@@ -204,9 +141,6 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         */
     }
 
-    // endregion
-
-    // region * Bind
     private fun bindService() {
         val intent = Intent(this, BleManager::class.java)
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
@@ -239,5 +173,4 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
         // 긴급상황(동영상) 촬영
         sendEmergencyVideo(eventId)
     }
-    // endregion
 }
