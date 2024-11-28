@@ -22,7 +22,9 @@ import yiwoo.prototype.gabobell.module.RetrofitModule
 import android.media.MediaPlayer
 import android.media.AudioManager
 import android.media.AudioAttributes
+import androidx.lifecycle.lifecycleScope
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.helper.FlashUtil
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate),
     EventIdCallback {
@@ -34,12 +36,16 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     private var mediaPlayer: MediaPlayer? = null
     private lateinit var audioManager: AudioManager
+    private lateinit var flashUtil: FlashUtil
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
         val retrofit: Retrofit = RetrofitModule.provideRetrofit(this)
         gaboApi = retrofit.create(GaboAPI::class.java)
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        flashUtil = FlashUtil.getInstance(this@ReportActivity)
+
         initUi()
         emergencyEffect(true)
         initLauncher()
@@ -54,11 +60,10 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
     private fun emergencyEffect(isPlay: Boolean) {
         if (isPlay) {
+            flashUtil.startEmergencySignal(lifecycleScope)
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
-
-            // MediaPlayer 설정 및 시작
             mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -70,6 +75,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
                 start()
             }
         } else {
+            flashUtil.stopEmergencySignal()
             mediaPlayer?.apply {
                 if (isPlaying) {
                     stop()
