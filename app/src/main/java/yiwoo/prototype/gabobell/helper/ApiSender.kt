@@ -18,7 +18,8 @@ object  ApiSender {
 
     fun reportEmergency(
         context: Context,
-        uuid: String = UserSettingsManager.getUuid(context),
+        // uuid: String = UserSettingsManager.getUuid(context),
+        uuid: String = UserDataStore.getUUID(context),
         serviceType: String = "EMERGENCY",
         latitude: Double = 37.585057,
         longitude: Double = 126.885347,
@@ -33,6 +34,8 @@ object  ApiSender {
         )
 
         Logger.d("Request Body: $requestBody") // 요청 데이터 로그 출력
+        Logger.d("Request Body ==>  ${UserDataStore.getToken(context)}") // 요청 데이터 로그 출력
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = gaboApi.createEvent(requestBody)
@@ -90,6 +93,7 @@ object  ApiSender {
             )
         )
         Logger.d("Request Body: $requestBody") // 요청 데이터 로그 출력
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = gaboApi.updateEvent(eventId, requestBody)
