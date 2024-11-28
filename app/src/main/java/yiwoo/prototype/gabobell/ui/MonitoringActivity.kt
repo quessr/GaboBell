@@ -1,8 +1,11 @@
 package yiwoo.prototype.gabobell.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -21,7 +24,23 @@ import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 
 class MonitoringActivity :
     BaseActivity<ActivityMonitoringBinding>(ActivityMonitoringBinding::inflate) {
-//    var currentLatLng: LatLng? = null
+    //    var currentLatLng: LatLng? = null
+
+    private val searchAddressLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            Log.d("MonitoringActivity@@", "Result code: ${result.resultCode}")
+            if (result.resultCode == Activity.RESULT_OK) {
+                val data = result.data
+                val placeName = data?.getStringExtra("selected_place_name")
+                val isDeparture = data?.getBooleanExtra("is_departure", true) ?: true
+
+                if (isDeparture) {
+                    binding.etDeparture.setText(placeName) // 출발지 업데이트
+                } else {
+                    binding.etDestination.setText(placeName) // 도착지 업데이트
+                }
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,11 +48,18 @@ class MonitoringActivity :
         val mapView = MapView(this)
         binding.mapView.addView(mapView)
 
-        val intent = Intent(this, SearchAddressActivity::class.java)
-        listOf(binding.etDeparture, binding.etDestination).forEach { editText ->
+        listOf(
+            binding.etDeparture to true,
+            binding.etDestination to false
+        ).forEach { (editText, isDeparture) ->
             editText.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) {
-                    startActivity(intent)
+                    val intent = Intent(this, SearchAddressActivity::class.java).apply {
+                        putExtra("is_departure", isDeparture) // 출발지/도착지 구분값 전달
+
+                        Log.d("MonitoringActivity@@", "isDeparture: $isDeparture")
+                    }
+                    searchAddressLauncher.launch(intent)
                 }
             }
         }
