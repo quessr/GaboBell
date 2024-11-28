@@ -2,6 +2,7 @@ package yiwoo.prototype.gabobell.helper
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
@@ -45,7 +46,9 @@ object UserDataStore {
     // 토큰 가져오기
     fun getToken(context: Context): String {
         val sharedPreferences = getSharedPreferences(context)
-        return sharedPreferences.getString(TOKEN_KEY, "") ?: ""
+        val aaaa = sharedPreferences.getString(TOKEN_KEY, "") ?: ""
+        Log.d("@!@", ">>tt>>> $aaaa")
+        return aaaa
     }
 
     // UUID 가져오기

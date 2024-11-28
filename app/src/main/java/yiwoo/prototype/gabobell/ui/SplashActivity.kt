@@ -39,7 +39,7 @@ class SplashActivity : AppCompatActivity() {
         // 서비스 토큰 여부에 따라 화면 분기 (로그인 or 메인)
         val token = UserDataStore.getToken(this@SplashActivity)
         val target = if (token.isEmpty()) {
-             SignInActivity::class.java
+            SignInActivity::class.java
         } else {
             MainActivity::class.java
         }

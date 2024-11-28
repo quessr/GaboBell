@@ -19,6 +19,12 @@ import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import yiwoo.prototype.gabobell.module.RetrofitModule
+import android.media.MediaPlayer
+import android.media.AudioManager
+import android.media.AudioAttributes
+import androidx.lifecycle.lifecycleScope
+import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.helper.FlashUtil
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate),
     EventIdCallback {
@@ -28,11 +34,18 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     private var countDownTimer: CountDownTimer? = null
     private val timeLimit: Long = 6_000
     private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    private var mediaPlayer: MediaPlayer? = null
+    private lateinit var audioManager: AudioManager
+    private lateinit var flashUtil: FlashUtil
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val retrofit: Retrofit = RetrofitModule.provideRetrofit(this)
         gaboApi = retrofit.create(GaboAPI::class.java)
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        flashUtil = FlashUtil.getInstance(this@ReportActivity)
+
         initUi()
         emergencyEffect(true)
         initLauncher()
@@ -46,7 +59,31 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     }
 
     private fun emergencyEffect(isPlay: Boolean) {
-        // TODO: 플래시, 사이렌 발생
+        if (isPlay) {
+            flashUtil.startEmergencySignal(lifecycleScope)
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
+            mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                isLooping = true
+                start()
+            }
+        } else {
+            flashUtil.stopEmergencySignal()
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
+            }
+            mediaPlayer = null
+        }
     }
 
     private fun initUi() {

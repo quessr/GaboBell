@@ -67,10 +67,9 @@ object RetrofitModule {
     class AuthInterceptor(private val context: Context) : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val authToken = UserDataStore.getToken(context)
-            // TODO Token이 없는경우?
             val originalRequest = chain.request()
             val newRequest = originalRequest.newBuilder()
-                .addHeader("Authorization", authToken)
+                .addHeader("Authorization", "Bearer $authToken")
                 .build()
             return chain.proceed(newRequest)
         }
