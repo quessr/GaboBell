@@ -1,5 +1,7 @@
 package yiwoo.prototype.gabobell.ui.searchAddress
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -9,6 +11,7 @@ import yiwoo.prototype.gabobell.data.mapper.SearchAddressMapper.toSearchAddressM
 import yiwoo.prototype.gabobell.data.network.SearchAddressClient
 import yiwoo.prototype.gabobell.databinding.ActivitySearchAddressBinding
 import yiwoo.prototype.gabobell.ui.BaseActivity
+import yiwoo.prototype.gabobell.ui.MonitoringActivity
 import yiwoo.prototype.gabobell.ui.searchAddress.model.SearchAddressModel
 
 class SearchAddressActivity :
@@ -18,7 +21,15 @@ class SearchAddressActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val adapter = SearchAddressAdapter()
+        val adapter = SearchAddressAdapter { placeName ->
+            val isDeparture = intent.getBooleanExtra("is_departure", true)
+            val resultIntent = Intent().apply {
+                putExtra("selected_place_name", placeName)
+                putExtra("is_departure", isDeparture)
+            }
+            setResult(Activity.RESULT_OK, resultIntent)
+            finish()
+        }
         binding.rvAddressSearch.adapter = adapter
         binding.tvBtnSearch.setOnClickListener {
             searchQuery = binding.etDeparture.text.toString()

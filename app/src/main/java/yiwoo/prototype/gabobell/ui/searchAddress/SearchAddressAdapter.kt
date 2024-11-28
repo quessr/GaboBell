@@ -8,13 +8,13 @@ import androidx.recyclerview.widget.ListAdapter
 import yiwoo.prototype.gabobell.databinding.ItemSearchAddressBinding
 import yiwoo.prototype.gabobell.ui.searchAddress.model.SearchAddressModel
 
-class SearchAddressAdapter() :
+class SearchAddressAdapter( private val onPlaceSelected: (String) -> Unit) :
     ListAdapter<SearchAddressModel, SearchAddressViewHolder>(diffUtil) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchAddressViewHolder {
         val binding =
             ItemSearchAddressBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SearchAddressViewHolder(binding)
+        return SearchAddressViewHolder(binding, onPlaceSelected)
     }
 
     override fun onBindViewHolder(holder: SearchAddressViewHolder, position: Int) {
