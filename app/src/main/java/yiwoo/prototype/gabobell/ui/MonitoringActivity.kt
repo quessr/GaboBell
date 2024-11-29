@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -13,7 +11,7 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
-import com.kakao.vectormap.MapView
+import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
@@ -31,6 +29,8 @@ class MonitoringActivity :
     private var searchPlaceLatitude: Double = 0.0
     private var isDeparture: Boolean = true
     private var map: KakaoMap? = null
+    private var departureLocationLabel: Label? = null
+    private var destinationLocationLabel: Label? = null
 
     private val searchAddressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -153,14 +153,17 @@ class MonitoringActivity :
 
         val newLatLng = LatLng.from(searchPlaceLatitude, searchPlaceLongitude)
 
-        // 새 레이블 추가
-        map?.labelManager?.layer?.addLabel(
-            LabelOptions.from(newLatLng)
-                .setStyles(
-                    setPinStyle(this, R.drawable.marker_departure)
+        departureLocationLabel?.moveTo(newLatLng)
+            ?: // 새 레이블 추가
+            run {
+                departureLocationLabel = map?.labelManager?.layer?.addLabel(
+                    LabelOptions.from(newLatLng)
+                        .setStyles(
+                            setPinStyle(this, R.drawable.marker_departure)
+                        )
+                        .setTexts(LabelTextBuilder().setTexts("출발"))
                 )
-                .setTexts(LabelTextBuilder().setTexts("출발"))
-        )
+            }
     }
 
     private fun updateDestinationMarker() {
@@ -178,14 +181,18 @@ class MonitoringActivity :
 
         val newLatLng = LatLng.from(searchPlaceLatitude, searchPlaceLongitude)
 
-        // 새 레이블 추가
-        map?.labelManager?.layer?.addLabel(
-            LabelOptions.from(newLatLng)
-                .setStyles(
-                    setPinStyle(this, R.drawable.marker_destination)
+        destinationLocationLabel?.moveTo(newLatLng)
+            ?: // 새 레이블 추가
+            run {
+                destinationLocationLabel = map?.labelManager?.layer?.addLabel(
+                    LabelOptions.from(newLatLng)
+                        .setStyles(
+                            setPinStyle(this, R.drawable.marker_destination)
+                        )
+                        .setTexts(LabelTextBuilder().setTexts("도착"))
                 )
-                .setTexts(LabelTextBuilder().setTexts("도착"))
-        )
+            }
+
         Log.d("MonitoringActivity@@", "Departure marker updated: $newLatLng")
     }
 
