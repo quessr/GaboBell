@@ -24,7 +24,6 @@ import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 
 class MonitoringActivity :
     BaseActivity<ActivityMonitoringBinding>(ActivityMonitoringBinding::inflate) {
-    //    var currentLatLng: LatLng? = null
     private var searchPlaceLongitude: Double = 0.0
     private var searchPlaceLatitude: Double = 0.0
     private var isDeparture: Boolean = true
@@ -105,22 +104,13 @@ class MonitoringActivity :
 
                 // 현재 위치 가져오기
                 LocationHelper.getCurrentLocation(this@MonitoringActivity) { lat, lng ->
-                    val latitude = lat ?: 37.559984
-                    val longitude = lng ?: 126.9753071
+                    val latitude = lat ?: 0.0
+                    val longitude = lng ?: 0.0
 
                     val currentLatLng = LatLng.from(latitude, longitude)
 
                     // 레이블을 지도에 추가 (현재지점)
-                    kakaoMap.labelManager?.layer?.addLabel(
-                        LabelOptions.from(currentLatLng)
-                            .setStyles(
-                                setPinStyle(
-                                    this@MonitoringActivity,
-                                    R.drawable.marker_current
-                                )
-                            )
-                            .setTexts(LabelTextBuilder().setTexts("현재"))
-                    )
+                    addLabelToMap(currentLatLng, R.drawable.marker_current, "현재")
                 }
             }
         })
@@ -156,13 +146,7 @@ class MonitoringActivity :
         departureLocationLabel?.moveTo(newLatLng)
             ?: // 새 레이블 추가
             run {
-                departureLocationLabel = map?.labelManager?.layer?.addLabel(
-                    LabelOptions.from(newLatLng)
-                        .setStyles(
-                            setPinStyle(this, R.drawable.marker_departure)
-                        )
-                        .setTexts(LabelTextBuilder().setTexts("출발"))
-                )
+                departureLocationLabel = addLabelToMap(newLatLng, R.drawable.marker_departure, "출발")
             }
     }
 
@@ -184,16 +168,19 @@ class MonitoringActivity :
         destinationLocationLabel?.moveTo(newLatLng)
             ?: // 새 레이블 추가
             run {
-                destinationLocationLabel = map?.labelManager?.layer?.addLabel(
-                    LabelOptions.from(newLatLng)
-                        .setStyles(
-                            setPinStyle(this, R.drawable.marker_destination)
-                        )
-                        .setTexts(LabelTextBuilder().setTexts("도착"))
-                )
+                destinationLocationLabel =
+                    addLabelToMap(newLatLng, R.drawable.marker_destination, "도착")
             }
 
         Log.d("MonitoringActivity@@", "Departure marker updated: $newLatLng")
+    }
+
+    private fun addLabelToMap(position: LatLng, drawableResId: Int, text: String): Label? {
+        return map?.labelManager?.layer?.addLabel(
+            LabelOptions.from(position)
+                .setStyles(setPinStyle(this, drawableResId))
+                .setTexts(LabelTextBuilder().setTexts(text))
+        )
     }
 
 
