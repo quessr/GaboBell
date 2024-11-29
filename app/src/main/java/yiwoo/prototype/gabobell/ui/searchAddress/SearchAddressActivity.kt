@@ -38,13 +38,10 @@ class SearchAddressActivity :
             Log.d("SearchAddressActivity@@", "editText: $searchQuery")
 
             CoroutineScope(Dispatchers.Main).launch {
-//                Log.d("SearchAddressActivity@@", "searchAddress: ${document.address}")
                 val response = searchAddressClient.searchAddress(query = searchQuery)
                 val documents = response?.documents ?: emptyList()
                 val searchAddressModels: List<SearchAddressModel> =
                     documents.map {
-//                        searchPlaceLat = it.y
-//                        searchPlaceLon = it.x
                         it.toSearchAddressModel()
                     }
 

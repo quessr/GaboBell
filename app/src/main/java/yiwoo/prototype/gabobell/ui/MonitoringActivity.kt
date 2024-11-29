@@ -68,6 +68,11 @@ class MonitoringActivity :
         ).forEach { (editText, isDeparture) ->
             editText.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) {
+                    editText.clearFocus()
+
+                    // Activity의 포커스를 Window에 넘김
+                    currentFocus?.clearFocus()
+
                     val intent = Intent(this, SearchAddressActivity::class.java).apply {
                         putExtra("is_departure", isDeparture) // 출발지/도착지 구분값 전달
 
