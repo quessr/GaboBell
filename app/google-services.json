@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18511615720",
+    "project_id": "ansimi-business",
+    "storage_bucket": "ansimi-business.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18511615720:android:a81cc2b10f06fc786b5b5d",
+        "android_client_info": {
+          "package_name": "yiwoo.prototype.gabobell"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBADIS-VyyTcyuG9aejCZlzUActZ9PWzGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

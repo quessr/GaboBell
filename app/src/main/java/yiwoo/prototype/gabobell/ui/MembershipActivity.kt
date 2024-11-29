@@ -98,6 +98,7 @@ class MembershipActivity :
                                 val intent =
                                     Intent(this@MembershipActivity, MainActivity::class.java)
                                 startActivity(intent)
+                                finish()
                             },
                             onFailure = { error ->
                                 Log.d(

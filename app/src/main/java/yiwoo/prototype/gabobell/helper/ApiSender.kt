@@ -15,14 +15,22 @@ import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
 import yiwoo.prototype.gabobell.module.RetrofitModule
 
 object  ApiSender {
+    enum class Event(val serviceType: String) {
+        EMERGENCY("EMERGENCY"),
+        BELL_EMERGENCY("BELL_EMERGENCY"),
+        MONITORING("MONITORING")
+    }
 
-    fun reportEmergency(
+    fun createEvent(
         context: Context,
-        // uuid: String = UserSettingsManager.getUuid(context),
         uuid: String = UserDataStore.getUUID(context),
-        serviceType: String = "EMERGENCY",
+        serviceType: String = Event.EMERGENCY.serviceType,
+        // latitude, dstLatitude : 신고 - 현재위치, 모니터링 - 출발지 위치
         latitude: Double = 37.585057,
         longitude: Double = 126.885347,
+        // dstLatitude, dstLongitude : 모니터링만 사용하는 항목 - 도착지 위치
+        dstLatitude: Double = 0.0,
+        dstLongitude: Double = 0.0,
         eventIdCallback: ((Long) -> Unit)? = null
     ) {
 
@@ -30,7 +38,14 @@ object  ApiSender {
         val gaboApi = retrofit.create(GaboAPI::class.java)
 
         val requestBody = CreateEventRequest(
-            CreateEvent(userUuid = uuid, serviceType = serviceType, latitude = latitude, longitude = longitude)
+            CreateEvent(
+                userUuid = uuid,
+                serviceType = serviceType,
+                latitude = latitude,
+                longitude = longitude,
+                dstLatitude = dstLatitude,
+                dstLongitude = dstLongitude
+            )
         )
 
         Logger.d("Request Body: $requestBody") // 요청 데이터 로그 출력
@@ -50,8 +65,12 @@ object  ApiSender {
                         val latitude = it.data.createEvent.latitude
                         val longitude = it.data.createEvent.longitude
 
-                        (context.applicationContext as GaboApplication).eventId = eventId
-
+                        val app = (context.applicationContext as GaboApplication)
+                        if (serviceType == Event.MONITORING.serviceType) {
+                            app.monitorId = eventId
+                        } else {
+                            app.eventId = eventId
+                        }
                         withContext(Dispatchers.Main) {
                             eventIdCallback?.invoke(eventId)
                         }
@@ -78,7 +97,7 @@ object  ApiSender {
     }
 
 
-    fun cancelEmergency(context: Context, eventId: Long) {
+    fun cancelEvent(context: Context, eventId: Long) {
         if (eventId < 1) {
             return
         }

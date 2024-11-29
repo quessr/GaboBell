@@ -3,7 +3,10 @@ package yiwoo.prototype.gabobell.ui
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -15,10 +18,13 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
@@ -33,6 +39,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private var isVisibleFab: Boolean = false
     private var isActivePolice: Boolean = false
     private lateinit var emergencyLauncher: ActivityResultLauncher<Intent>
+
+    private var neLocationLabel: Label? = null
+    private var swLocationLabel: Label? = null
 
     /*
     private lateinit var sensorManager: SensorManager
@@ -51,10 +60,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         initMap()
         checkPermissions()
         // initShakeDetection()
+        initEmergencyStateReceiver()
     }
 
     override fun onResume() {
         super.onResume()
+        initEmergencyStateReceiver()
         binding.mapView.resume()
         /*
         shakeCount = 0
@@ -70,6 +81,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     override fun onPause() {
         super.onPause()
+        unregisterReceiver(emergencyStateReceiver)
         binding.mapView.pause()
         // sensorManager.unregisterListener(this@MainActivity)
     }
@@ -85,11 +97,27 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
             if (isEmergency()) {
-                val eventId = (application as GaboApplication).eventId
-                // 신고 취소 (자동종료)
-                ApiSender.cancelEmergency(this@MainActivity, eventId)
-                (application as GaboApplication).isEmergency = false
-                updateUi()
+                AlertDialog.Builder(this)
+                    .setTitle(R.string.pop_emergency_cancel_title)
+                    .setMessage(R.string.pop_emergency_cancel_description)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
+                        if ((application as GaboApplication).isConnected) {
+                            // 기기 연결 상태에서 신고 취소
+                            BleManager.instance?.cmdEmergency(false)
+                        } else {
+                            // 기기 미연결 상태에서 신고 취소
+                            val eventId = (application as GaboApplication).eventId
+                            ApiSender.cancelEvent(this@MainActivity, eventId)
+                            (application as GaboApplication).isEmergency = false
+                            updateUi()
+                        }
+                    }
+                    .setNegativeButton(R.string.pop_btn_no) { _, _ ->
+                        // no code
+                    }
+                    .show()
+
             } else {
                 // 신고화면 이동
                 val intent = Intent(this, ReportActivity::class.java)
@@ -131,6 +159,26 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     }
     */
 
+    private fun initEmergencyStateReceiver() {
+        val filter = IntentFilter().apply {
+            addAction(BleManager.BLE_REPORTE_EMERGENCY)
+            addAction(BleManager.BLE_CANCEL_REPORTE_EMERGENCY)
+        }
+        registerReceiver(emergencyStateReceiver, filter)
+    }
+
+    // 긴급 상태 수신 (신고, 신고취소)
+    private val emergencyStateReceiver = object : BroadcastReceiver() {
+        // 화면이 foreground 상태에서 신고/신고 취소 이벤트를 수신한다.
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                BleManager.BLE_REPORTE_EMERGENCY, BleManager.BLE_CANCEL_REPORTE_EMERGENCY -> {
+                    updateUi()
+                }
+            }
+        }
+    }
+
     private fun initMap() {
         LocationHelper.locationInit(this)
 
@@ -153,8 +201,62 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
                     updateCurrentLocationMarker(kakaoMap, latitude, longitude)
                 }
+                val centerPosition = kakaoMap.cameraPosition
+                updateBounds(kakaoMap, mapView, centerPosition!!)
+
+                //카메라 이동시 센터 포지션 값에 대한 ne, sw 좌표 변경
+                kakaoMap.setOnCameraMoveEndListener { map, cameraPosition, _ ->
+                    updateBounds(map, mapView, cameraPosition)
+                }
             }
         })
+    }
+
+    private fun updateBounds(kakaoMap: KakaoMap ,mapView: MapView, cameraPosition: CameraPosition) {
+        //카메라의 현재 위치 정보
+        val centerLat = cameraPosition.position.latitude
+        val centerLng = cameraPosition.position.longitude
+        Logger.d("centerPosition: $centerLat | $centerLng")
+
+        //카카오맵 화면 크기
+        val viewWidth = mapView.width
+        val viewHeight = mapView.height
+
+        val ne = screenToLatLng(kakaoMap, viewWidth, 0) // 우측 상단 (북동)
+        val sw = screenToLatLng(kakaoMap, 0, viewHeight) // 좌측 하단 (남서)
+
+        // 북동쪽과 남서쪽 좌표 출력
+        Logger.d("북동쪽 위도: ${ne?.latitude} | 북동쪽 경도: ${ne?.longitude}")
+        Logger.d("남서쪽 위도: ${sw?.latitude} | 남서쪽 경도: ${sw?.longitude}")
+
+        val labelLayer = kakaoMap.labelManager?.layer
+        if (neLocationLabel != null && swLocationLabel != null) {
+            neLocationLabel?.moveTo(ne)
+            swLocationLabel?.moveTo(sw)
+        } else {
+            neLocationLabel = labelLayer?.addLabel(
+                LabelOptions.from(ne)
+                    .setStyles(
+                        MonitoringActivity.setPinStyle(
+                            this,
+                            R.drawable.ne_test
+                        )
+                    )
+            )
+            swLocationLabel = labelLayer?.addLabel(
+                LabelOptions.from(sw)
+                    .setStyles(
+                        MonitoringActivity.setPinStyle(
+                            this,
+                            R.drawable.sw_test
+                        )
+                    )
+            )
+
+        }
+    }
+    private fun screenToLatLng(map: KakaoMap, x: Int, y: Int): LatLng? {
+        return map.fromScreenPoint(x.toDouble().toInt(), y.toDouble().toInt())
     }
 
     private fun initLauncher() {
