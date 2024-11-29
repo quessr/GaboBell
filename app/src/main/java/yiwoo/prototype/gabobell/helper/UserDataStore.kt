@@ -10,6 +10,7 @@ object UserDataStore {
     private const val TOKEN_KEY = "token"
     private const val UUID_KEY = "uuid"
     private const val PREFERENCE_NAME = "encrypted_preferences"
+    private const val PUSH_TOKEN_KEY = "push"
 
     private fun getSharedPreferences(context: Context): SharedPreferences {
         val masterKey = MasterKey.Builder(context)
@@ -43,12 +44,19 @@ object UserDataStore {
         }
     }
 
+    // FCM(Push) 토큰 저장하기
+    fun savePushToken(context: Context, token: String) {
+        val sharedPreferences = getSharedPreferences(context)
+        with(sharedPreferences.edit()) {
+            putString(PUSH_TOKEN_KEY, token)
+            commit()
+        }
+    }
+
     // 토큰 가져오기
     fun getToken(context: Context): String {
         val sharedPreferences = getSharedPreferences(context)
-        val aaaa = sharedPreferences.getString(TOKEN_KEY, "") ?: ""
-        Log.d("@!@", ">>tt>>> $aaaa")
-        return aaaa
+        return sharedPreferences.getString(TOKEN_KEY, "") ?: ""
     }
 
     // UUID 가져오기
@@ -56,6 +64,13 @@ object UserDataStore {
         val sharedPreferences = getSharedPreferences(context)
         return sharedPreferences.getString(UUID_KEY, "") ?: ""
     }
+
+    // FCM(Push) 토큰 가져오기
+    fun getPushToken(context: Context): String {
+        val sharedPreferences = getSharedPreferences(context)
+        return sharedPreferences.getString(PUSH_TOKEN_KEY, "") ?: ""
+    }
+
 
     // EncryptedSharedPreferences 제거하기
     fun removeToken(context: Context) {

@@ -4,6 +4,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.googleServices)
 }
 
 android {
@@ -88,5 +89,10 @@ dependencies {
     implementation("com.kakao.sdk:v2-all:2.20.0")
 
     implementation("com.kakao.maps.open:android:2.12.8")
+
+//Firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation("com.google.firebase:firebase-messaging:24.1.0")
+
 
 }

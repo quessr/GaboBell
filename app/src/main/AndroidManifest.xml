@@ -39,6 +39,7 @@
         android:maxSdkVersion="32" />
 
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".GaboApplication"
@@ -135,13 +136,22 @@
             android:name=".ble.BleManager"
             android:enabled="true"
             android:foregroundServiceType="connectedDevice|location" />
-                <receiver android:name=".ble.CommonReceiver"
-                    android:enabled="true"
-                    android:exported="false">
-                    <intent-filter>
-                        <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                    </intent-filter>
-                </receiver>
+
+        <service android:name=".service.FirebaseMessageService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".ble.CommonReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

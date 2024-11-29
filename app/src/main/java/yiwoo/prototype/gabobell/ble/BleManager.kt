@@ -640,6 +640,8 @@ class BleManager : Service() {
                 // 전역 상태 변경 및 신고 취소 API 호출
                 (application as GaboApplication).isEmergency = false
                 val eventId = (application as GaboApplication).eventId
+                // 신고 취소(상황해제) 푸시가 들어오면 이미 eventId 는 초기화(-1) 되므로 API 호출이 안되는게 맞다.
+                // ApiSender.cancelEmergency 에서 필터됨.
                 ApiSender.cancelEmergency(this@BleManager, eventId)
             }
 
