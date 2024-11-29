@@ -6,7 +6,7 @@ import yiwoo.prototype.gabobell.ui.searchAddress.model.SearchAddressModel
 
 class SearchAddressViewHolder(
     private val binding: ItemSearchAddressBinding,
-    private val onPlaceSelected: (String) -> Unit
+    private val onPlaceSelected: (String, Double, Double) -> Unit
 ) :
     RecyclerView.ViewHolder(binding.root) {
 
@@ -16,7 +16,7 @@ class SearchAddressViewHolder(
             tvAddressName.text = model.addressName
             tvAddressRoadName.text = model.addressRoadName
             tvBtnChoose.setOnClickListener {
-                onPlaceSelected(model.placeName)
+                onPlaceSelected(model.placeName, model.x, model.y)
             }
         }
     }

@@ -18,18 +18,16 @@ class SearchAddressActivity :
     BaseActivity<ActivitySearchAddressBinding>(ActivitySearchAddressBinding::inflate) {
     private val searchAddressClient = SearchAddressClient()
     private var searchQuery: String = ""
-    private var searchPlaceLat: Double = 0.0
-    private var searchPlaceLon: Double = 0.0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val adapter = SearchAddressAdapter { placeName ->
+        val adapter = SearchAddressAdapter { placeName, longitude, latitude ->
             val isDeparture = intent.getBooleanExtra("is_departure", true)
             val resultIntent = Intent().apply {
                 putExtra("selected_place_name", placeName)
                 putExtra("is_departure", isDeparture)
-                putExtra("search_place_lat", searchPlaceLat)
-                putExtra("search_place_long", searchPlaceLon)
+                putExtra("search_place_longitude", longitude)
+                putExtra("search_place_latitude", latitude)
             }
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
@@ -45,8 +43,8 @@ class SearchAddressActivity :
                 val documents = response?.documents ?: emptyList()
                 val searchAddressModels: List<SearchAddressModel> =
                     documents.map {
-                        searchPlaceLat = it.y
-                        searchPlaceLon = it.x
+//                        searchPlaceLat = it.y
+//                        searchPlaceLon = it.x
                         it.toSearchAddressModel()
                     }
 

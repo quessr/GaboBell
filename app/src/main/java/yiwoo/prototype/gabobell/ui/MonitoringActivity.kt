@@ -27,8 +27,9 @@ import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 class MonitoringActivity :
     BaseActivity<ActivityMonitoringBinding>(ActivityMonitoringBinding::inflate) {
     //    var currentLatLng: LatLng? = null
-    private var searchPlaceLat: Double = 0.0
-    private var searchPlaceLon: Double = 0.0
+    private var searchPlaceLongitude: Double = 0.0
+    private var searchPlaceLatitude: Double = 0.0
+    private var isDeparture: Boolean = true
     private var map: KakaoMap? = null
 
     private val searchAddressLauncher =
@@ -37,13 +38,13 @@ class MonitoringActivity :
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
                 val placeName = data?.getStringExtra("selected_place_name")
-                val isDeparture = data?.getBooleanExtra("is_departure", true) ?: true
-                searchPlaceLat = data?.getDoubleExtra("search_place_lat", 0.0) ?: 0.0
-                searchPlaceLon = data?.getDoubleExtra("search_place_long", 0.0) ?: 0.0
+                isDeparture = data?.getBooleanExtra("is_departure", true) ?: true
+                searchPlaceLongitude = data?.getDoubleExtra("search_place_longitude", 0.0) ?: 0.0
+                searchPlaceLatitude = data?.getDoubleExtra("search_place_latitude", 0.0) ?: 0.0
 
                 Log.d(
                     "MonitoringActivity@@",
-                    "searchPlaceLat: ${searchPlaceLat}, searchPlaceLon: $searchPlaceLon"
+                    "searchPlaceLongitude: ${searchPlaceLongitude}, searchPlaceLatitude: $searchPlaceLatitude"
                 )
 
                 if (isDeparture) {
@@ -57,8 +58,6 @@ class MonitoringActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        val mapView = MapView(this)
-//        binding.mapView.addView(mapView)
         val mapView = binding.mapView
 
         listOf(
@@ -82,7 +81,8 @@ class MonitoringActivity :
         mapView.start(object : MapLifeCycleCallback() {
             override fun onMapResumed() {
                 super.onMapResumed()
-                updateDepartureMarker()
+
+                if (isDeparture) updateDepartureMarker() else updateDestinationMarker()
 
                 Log.d("MonitoringActivity@@", "onMapResumed")
             }
@@ -102,39 +102,6 @@ class MonitoringActivity :
 
             override fun onMapReady(kakaoMap: KakaoMap) {
                 map = kakaoMap
-                // 마커가 표시될 위치
-                val departureLatLng = LatLng.from(37.5848659, 126.88598)
-                val destinationLatLng = LatLng.from(37.5810471, 126.8905417)
-
-
-                // 레이블을 지도에 추가 (출발지점)
-//                kakaoMap.labelManager?.layer?.addLabel(
-//                    LabelOptions.from(departureLatLng)
-//                        .setStyles(
-//                            setPinStyle(
-//                                this@MonitoringActivity,
-//                                R.drawable.marker_departure
-//                            )
-//                        )
-//                        .setTexts(
-//                            LabelTextBuilder().setTexts("출발")
-//                        )
-//                )
-
-
-                // 레이블을 지도에 추가 (도착지점)
-                kakaoMap.labelManager?.layer?.addLabel(
-                    LabelOptions.from(destinationLatLng)
-                        .setStyles(
-                            setPinStyle(
-                                this@MonitoringActivity,
-                                R.drawable.marker_destination
-                            )
-                        )
-                        .setTexts(
-                            LabelTextBuilder().setTexts("도착") // 여기에 원하는 텍스트 추가
-                        )
-                )
 
                 // 현재 위치 가져오기
                 LocationHelper.getCurrentLocation(this@MonitoringActivity) { lat, lng ->
@@ -163,10 +130,8 @@ class MonitoringActivity :
 
     private fun updateDepartureMarker() {
         // 검색된 좌표로 마커를 업데이트
-        val lat = searchPlaceLat
-        val lon = searchPlaceLon
 
-        if (lat == 0.0 && lon == 0.0) {
+        if (searchPlaceLongitude == 0.0 && searchPlaceLatitude == 0.0) {
             Log.d("MonitoringActivity@@", "Invalid coordinates for departure marker")
             return
         }
@@ -176,7 +141,7 @@ class MonitoringActivity :
             return
         }
 
-        val newLatLng = LatLng.from(lat, lon)
+        val newLatLng = LatLng.from(searchPlaceLatitude, searchPlaceLongitude)
 
         // 새 레이블 추가
         map?.labelManager?.layer?.addLabel(
@@ -185,6 +150,31 @@ class MonitoringActivity :
                     setPinStyle(this, R.drawable.marker_departure)
                 )
                 .setTexts(LabelTextBuilder().setTexts("출발"))
+        )
+    }
+
+    private fun updateDestinationMarker() {
+        // 검색된 좌표로 마커를 업데이트
+
+        if (searchPlaceLongitude == 0.0 && searchPlaceLatitude == 0.0) {
+            Log.d("MonitoringActivity@@", "Invalid coordinates for departure marker")
+            return
+        }
+
+        if (map == null) {
+            Log.d("MonitoringActivity@@", "KakaoMap is not ready yet. Cannot update marker.")
+            return
+        }
+
+        val newLatLng = LatLng.from(searchPlaceLatitude, searchPlaceLongitude)
+
+        // 새 레이블 추가
+        map?.labelManager?.layer?.addLabel(
+            LabelOptions.from(newLatLng)
+                .setStyles(
+                    setPinStyle(this, R.drawable.marker_destination)
+                )
+                .setTexts(LabelTextBuilder().setTexts("도착"))
         )
         Log.d("MonitoringActivity@@", "Departure marker updated: $newLatLng")
     }
