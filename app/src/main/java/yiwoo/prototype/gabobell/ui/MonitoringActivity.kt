@@ -127,6 +127,16 @@ class MonitoringActivity :
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.mapView.resume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.mapView.pause()
+    }
+
 
     private fun updateDepartureMarker() {
         // 검색된 좌표로 마커를 업데이트
