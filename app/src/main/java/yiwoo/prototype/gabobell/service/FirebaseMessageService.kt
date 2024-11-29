@@ -1,6 +1,5 @@
 package yiwoo.prototype.gabobell.service
 
-import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import yiwoo.prototype.gabobell.GaboApplication
@@ -12,9 +11,9 @@ class FirebaseMessageService: FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         // 획득한 토큰을 저장한다.
+        // Log.d("@!@", "FirebaseMessagingService onNewToken : $token")
 
-        Log.d("@!@", "FirebaseMessagingService onNewToken : $token")
-
+        // 기존 저장된 푸시 토큰
         val storedToken = UserDataStore.getPushToken(applicationContext)
         if (storedToken.isEmpty()) {
             // 최초 등록
@@ -31,14 +30,37 @@ class FirebaseMessageService: FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        val title = message.notification?.title
-        var body = message.notification?.body
+        // 푸시 페이로드 규격 정의 (24.11.29)
+        /*
+        // #eventStatus
+        "data": {
+            "type": "eventStatus",
+            "customData": {
+            "id": 23,
+            "serviceState": "종료",
+            "closureType": "자동 종료"
+            }
+        }
+        // #notification
+        "data": {
+            "type": "notification",
+            "customData": {
+            "title": "Emergency Alert",
+            "body": "This is an emergency message."
+            }
+        }
+        // #action
+        "data": {
+            "type": "action",
+            "customData": {
+            "action": "OPEN_DETAILS"
+        }
+        */
 
-        Log.d("@!@", "onMessageReceived : $title, $body")
-
-        // 임시 처리
-        if (body?.contains("Emergency_Cancel") == true) {
-            // 긴급신고 상황해제 (신고취소)
+        // 정의된 동작이 신고 상황 해제 밖에 없어서...
+        // 일단 eventStatus 타입으로 푸시가 들어오면 신고 취소로 보자.
+        if (message.data["type"] == "eventStatus") {
+            // 긴급신고 상황해제
             val app = (application as GaboApplication)
             app.isEmergency = false
             app.eventId = -1
@@ -46,5 +68,18 @@ class FirebaseMessageService: FirebaseMessagingService() {
                 BleManager.instance?.cmdEmergency(false)
             }
         }
+
+        // 테스트용 캠페인
+        /*
+        val body = message.notification?.body
+        if (body != null && body.contains("eventStatus")) {
+            val app = (application as GaboApplication)
+            app.isEmergency = false
+            app.eventId = -1
+            if (app.isConnected) {
+                BleManager.instance?.cmdEmergency(false)
+            }
+        }
+        */
     }
 }
