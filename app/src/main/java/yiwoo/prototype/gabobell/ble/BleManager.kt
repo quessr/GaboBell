@@ -633,7 +633,10 @@ class BleManager : Service() {
             if (cmd == 0xB2.toByte()) {
                 // 전역 상태 변경 및 신고 API 호출
                 (application as GaboApplication).isEmergency = true
-                ApiSender.reportEmergency(context = this@BleManager) { eventId ->
+                ApiSender.createEvent(
+                    context = this@BleManager,
+                    serviceType = ApiSender.Event.EMERGENCY.serviceType
+                ) { eventId ->
                     eventIdCallback?.onEventId(eventId)
                 }
             } else {
@@ -642,7 +645,7 @@ class BleManager : Service() {
                 val eventId = (application as GaboApplication).eventId
                 // 신고 취소(상황해제) 푸시가 들어오면 이미 eventId 는 초기화(-1) 되므로 API 호출이 안되는게 맞다.
                 // ApiSender.cancelEmergency 에서 필터됨.
-                ApiSender.cancelEmergency(this@BleManager, eventId)
+                ApiSender.cancelEvent(this@BleManager, eventId)
             }
 
             val intent = Intent(stateEmergency).apply {

@@ -151,7 +151,10 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
     // 신고 API 호출 (직접 호출)
     private fun sendEmergencyCreate() {
-        ApiSender.reportEmergency(this) { eventId ->
+        ApiSender.createEvent(
+            context = this@ReportActivity,
+            serviceType = ApiSender.Event.EMERGENCY.serviceType
+        ) { eventId ->
             Logger.d("Received event ID in SomeActivity: $eventId")
             (application as GaboApplication).isEmergency = true
             sendEmergencyVideo(eventId)

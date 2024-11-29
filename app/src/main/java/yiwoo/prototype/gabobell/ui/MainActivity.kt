@@ -108,7 +108,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                         } else {
                             // 기기 미연결 상태에서 신고 취소
                             val eventId = (application as GaboApplication).eventId
-                            ApiSender.cancelEmergency(this@MainActivity, eventId)
+                            ApiSender.cancelEvent(this@MainActivity, eventId)
                             (application as GaboApplication).isEmergency = false
                             updateUi()
                         }
