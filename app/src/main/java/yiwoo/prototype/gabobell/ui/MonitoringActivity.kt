@@ -11,6 +11,7 @@ import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
@@ -22,6 +23,7 @@ import yiwoo.prototype.gabobell.databinding.ActivityMonitoringBinding
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 
+
 class MonitoringActivity :
     BaseActivity<ActivityMonitoringBinding>(ActivityMonitoringBinding::inflate) {
     private var searchPlaceLongitude: Double = 0.0
@@ -30,6 +32,7 @@ class MonitoringActivity :
     private var map: KakaoMap? = null
     private var departureLocationLabel: Label? = null
     private var destinationLocationLabel: Label? = null
+    private var currentLocationLabel: Label? = null
 
     private val searchAddressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -47,9 +50,9 @@ class MonitoringActivity :
                 )
 
                 if (isDeparture) {
-                    binding.etDeparture.setText(placeName) // 출발지 업데이트
+                    binding.etDeparture.setText(placeName) // 출발지 텍스트 업데이트
                 } else {
-                    binding.etDestination.setText(placeName) // 도착지 업데이트
+                    binding.etDestination.setText(placeName) // 도착지 텍스트 업데이트
                 }
             }
         }
@@ -103,14 +106,18 @@ class MonitoringActivity :
                 map = kakaoMap
 
                 // 현재 위치 가져오기
-                LocationHelper.getCurrentLocation(this@MonitoringActivity) { lat, lng ->
-                    val latitude = lat ?: 0.0
-                    val longitude = lng ?: 0.0
+                LocationHelper.startLocation(this@MonitoringActivity) { latitude, longitude ->
 
                     val currentLatLng = LatLng.from(latitude, longitude)
+                    currentLocationLabel?.moveTo(currentLatLng) ?: run {
+                        currentLocationLabel =
+                            addLabelToMap(currentLatLng, R.drawable.marker_current, "현재")
+                    }
 
-                    // 레이블을 지도에 추가 (현재지점)
-                    addLabelToMap(currentLatLng, R.drawable.marker_current, "현재")
+                    // 현재위치 좌표에 따라 지도 카메라 업데이트
+                    val cameraUpdate =
+                        CameraUpdateFactory.newCenterPosition(currentLatLng)
+                    kakaoMap.moveCamera(cameraUpdate)
                 }
             }
         })
@@ -127,10 +134,8 @@ class MonitoringActivity :
         binding.mapView.pause()
     }
 
-
+    // 출발지 마커 업데이트
     private fun updateDepartureMarker() {
-        // 검색된 좌표로 마커를 업데이트
-
         if (searchPlaceLongitude == 0.0 && searchPlaceLatitude == 0.0) {
             Log.d("MonitoringActivity@@", "Invalid coordinates for departure marker")
             return
@@ -150,9 +155,8 @@ class MonitoringActivity :
             }
     }
 
+    // 도착지 마커 업데이트
     private fun updateDestinationMarker() {
-        // 검색된 좌표로 마커를 업데이트
-
         if (searchPlaceLongitude == 0.0 && searchPlaceLatitude == 0.0) {
             Log.d("MonitoringActivity@@", "Invalid coordinates for departure marker")
             return
@@ -182,7 +186,6 @@ class MonitoringActivity :
                 .setTexts(LabelTextBuilder().setTexts(text))
         )
     }
-
 
     companion object {
         fun setPinStyle(context: Context, drawableResId: Int): LabelStyles {
