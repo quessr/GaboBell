@@ -70,6 +70,7 @@ object  ApiSender {
                             app.monitorId = eventId
                         } else {
                             app.eventId = eventId
+                            app.isEmergency = true
                         }
                         withContext(Dispatchers.Main) {
                             eventIdCallback?.invoke(eventId)
@@ -126,7 +127,14 @@ object  ApiSender {
                         val closureType = it.data?.eventStatus?.closureType
                         val monitorUuid = it.data?.eventStatus?.monitorUuid
 
-                        (context.applicationContext as GaboApplication).eventId = -1
+                        // (context.applicationContext as GaboApplication).eventId = -1
+                        val app = (context.applicationContext as GaboApplication)
+                        if (eventId == app.eventId) {
+                            app.eventId = -1
+                            app.isEmergency = false
+                        } else if (eventId == app.monitorId) {
+                            app.monitorId = -1
+                        }
 
                         Logger.d(
                             "eventStatus: $eventStatus \n eventMessage: $eventMessage \n " +

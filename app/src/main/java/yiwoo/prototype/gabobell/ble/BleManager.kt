@@ -63,6 +63,8 @@ class BleManager : Service() {
 
     private lateinit var bluetoothStateReceiver: CommonReceiver
     private var isReceiverRegistered = false
+    private var isEmergencyViaApp = false
+
     fun setEventIdCallback(callback: EventIdCallback) {
         eventIdCallback = callback
     }
@@ -527,9 +529,11 @@ class BleManager : Service() {
 //        setCharacteristicNotification(notifyCharacteristic!!, true)
     }
 
+    // cmdEmergency 는 앱에서만 발생하는 메소드
     fun cmdEmergency(isRequest: Boolean) {
         if (isRequest) {
             Logger.d("[A2B] 0xA2_EMERGENCY_ON")
+            isEmergencyViaApp = true
             sendCommand(0x01, 0xA2.toByte(), null)
         } else {
             Logger.d("[A2B] 0xA3_EMERGENCY_OFF")
@@ -633,9 +637,19 @@ class BleManager : Service() {
             if (cmd == 0xB2.toByte()) {
                 // 전역 상태 변경 및 신고 API 호출
                 (application as GaboApplication).isEmergency = true
+
+                // isEmergencyViaApp 은 앱 내에서 cmdEmergency 발생시 true 가 된다.
+                // (방식이 맘에 안들지만 일단 가자.)
+                val serviceType = if (isEmergencyViaApp) {
+                    ApiSender.Event.EMERGENCY.serviceType
+                } else {
+                    ApiSender.Event.BELL_EMERGENCY.serviceType
+                }
+                isEmergencyViaApp = false
+
                 ApiSender.createEvent(
                     context = this@BleManager,
-                    serviceType = ApiSender.Event.EMERGENCY.serviceType
+                    serviceType = serviceType
                 ) { eventId ->
                     eventIdCallback?.onEventId(eventId)
                 }
@@ -659,6 +673,9 @@ class BleManager : Service() {
 
     // 긴급 구조 요청 처리 (0xB2)
     private fun handleEmergencyRequest() {
+        // 0xB2 는
+        // 앱에서 벨로 요청해서 수신되는 경우와
+        // 벨에서 직접 요청하는 경우를 구분해야 한다.
         Logger.d("긴급 구조 요청")
         handleEmergency(0xB2.toByte(), BLE_REPORTE_EMERGENCY)
     }
