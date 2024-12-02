@@ -6,10 +6,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.LatLngBounds
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
@@ -44,6 +47,9 @@ class MonitoringActivity :
     private var departureLocationLabel: Label? = null
     private var destinationLocationLabel: Label? = null
     private var currentLocationLabel: Label? = null
+
+    private var isDepartureMarkerUpdated = false
+    private var isDestinationMarkerUpdated = false
 
     private val searchAddressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -171,8 +177,8 @@ class MonitoringActivity :
             }
 
             // 현재위치 좌표에 따라 지도 카메라 업데이트
-            val cameraUpdate = CameraUpdateFactory.newCenterPosition(currentLatLng)
-            kakaoMap.moveCamera(cameraUpdate)
+//            val cameraUpdate = CameraUpdateFactory.newCenterPosition(currentLatLng)
+//            kakaoMap.moveCamera(cameraUpdate)
         }
     }
 
@@ -195,6 +201,9 @@ class MonitoringActivity :
             run {
                 departureLocationLabel = addLabelToMap(newLatLng, R.drawable.marker_departure, "출발")
             }
+
+        isDepartureMarkerUpdated = true
+        checkIfMarkersUpdated()
     }
 
     // 도착지 마커 업데이트
@@ -218,6 +227,9 @@ class MonitoringActivity :
                     addLabelToMap(newLatLng, R.drawable.marker_destination, "도착")
             }
 
+        isDestinationMarkerUpdated = true
+        checkIfMarkersUpdated()
+
         Log.d("MonitoringActivity@@", "Departure marker updated: $newLatLng")
     }
 
@@ -226,6 +238,40 @@ class MonitoringActivity :
             LabelOptions.from(position)
                 .setStyles(setPinStyle(this, drawableResId))
                 .setTexts(LabelTextBuilder().setTexts(text))
+        )
+    }
+
+    private fun checkIfMarkersUpdated() {
+        if (isDepartureMarkerUpdated && isDestinationMarkerUpdated) {
+            Log.d("MonitoringActivity", "Both markers have been updated.")
+            fitBoundsToShowMarkers() // 지도 카메라 업데이트
+        }
+    }
+
+    private fun fitBoundsToShowMarkers() {
+        if (map == null) {
+            Log.d("MonitoringActivity", "KakaoMap is not initialized.")
+            return
+        }
+
+        if (departureLatitude == 0.0 || departureLongitude == 0.0 ||
+            destinationLatitude == 0.0 || destinationLongitude == 0.0
+        ) {
+            Log.d("MonitoringActivity", "Invalid coordinates for fitting bounds.")
+            return
+        }
+
+        val departureLatLng = LatLng.from(departureLatitude, departureLongitude)
+        val destinationLatLng = LatLng.from(destinationLatitude, destinationLongitude)
+
+        val builder = LatLngBounds.Builder()
+        map?.moveCamera(
+            CameraUpdateFactory.fitMapPoints(
+                builder.include(departureLatLng)
+                    .include(destinationLatLng)
+                    .build(),
+                100
+            )
         )
     }
 
