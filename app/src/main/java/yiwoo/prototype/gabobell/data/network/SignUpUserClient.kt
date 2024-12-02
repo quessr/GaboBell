@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import yiwoo.prototype.gabobell.api.dto.request.SignUpRequest
 import yiwoo.prototype.gabobell.api.dto.request.UserDetails
 import yiwoo.prototype.gabobell.helper.ApiProvider
+import yiwoo.prototype.gabobell.helper.UserDataStore
 
 class SignUpUserClient(private val context: Context) {
     private val gaboApi = ApiProvider.provideGaboApi(context)
@@ -39,6 +40,7 @@ class SignUpUserClient(private val context: Context) {
         val terms = "true"
         val younger = "true"
         val userStatus = "ACTIVE"
+        val pushToken = UserDataStore.getPushToken(context)
 
         Log.d(
             "MembershipActivity@@",
@@ -59,7 +61,8 @@ class SignUpUserClient(private val context: Context) {
                             jachigu = district,
                             terms = terms,
                             younger = younger,
-                            userStatus = userStatus
+                            userStatus = userStatus,
+                            pushToken = pushToken
                         )
                     )
                 )

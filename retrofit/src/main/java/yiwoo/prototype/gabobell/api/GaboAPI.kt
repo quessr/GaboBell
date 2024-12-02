@@ -19,10 +19,12 @@ import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
 import yiwoo.prototype.gabobell.api.dto.UpdateEventResponse
 import yiwoo.prototype.gabobell.api.dto.request.CheckUserAccountRequest
 import yiwoo.prototype.gabobell.api.dto.request.LogInRequest
+import yiwoo.prototype.gabobell.api.dto.request.ModifyUserRequest
 import yiwoo.prototype.gabobell.api.dto.request.SignUpRequest
 import yiwoo.prototype.gabobell.api.dto.response.CheckUserAccountResponse
 import yiwoo.prototype.gabobell.api.dto.response.LogInResponse
 import yiwoo.prototype.gabobell.api.dto.response.PoliceResponse
+import yiwoo.prototype.gabobell.api.dto.response.ModifyUserResponse
 import yiwoo.prototype.gabobell.api.dto.response.SignUpResponse
 
 interface GaboAPI {
@@ -60,6 +62,15 @@ interface GaboAPI {
     suspend fun signUpUser(
         @Body signUpRequest: SignUpRequest
     ): Response<ApiResponse<SignUpResponse>>
+
+    // 회원 정보 수정
+    @PUT("users/{userId}")
+    suspend fun modifyUser(
+        @Path("userId")
+        userId: String,
+        @Body modifyUserRequest: ModifyUserRequest
+    ): Response<ApiResponse<ModifyUserResponse>>
+
 
     @POST("auth/user/login")
     suspend fun loginInUser(
