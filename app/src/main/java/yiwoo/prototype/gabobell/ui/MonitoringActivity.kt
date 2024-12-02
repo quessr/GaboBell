@@ -18,11 +18,13 @@ import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
+import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.databinding.ActivityMonitoringBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
+import yiwoo.prototype.gabobell.helper.UserDataStore
 import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 
 
@@ -86,6 +88,7 @@ class MonitoringActivity :
 
         setupAddressSelectionListeners()
         initMapView()
+        initUi()
         LocationHelper.locationInit(this)
     }
 
@@ -97,6 +100,15 @@ class MonitoringActivity :
     override fun onPause() {
         super.onPause()
         binding.mapView.pause()
+    }
+
+    private fun initUi() {
+        binding.btnStart.setOnClickListener {
+            startMonitoringCreate()
+        }
+        binding.btnFinish.setOnClickListener {
+            finishMonitoringEvent()
+        }
     }
 
     // 출발지, 도착지 editText 선택 -> 주소 검색 화면 이동
@@ -215,6 +227,40 @@ class MonitoringActivity :
                 .setStyles(setPinStyle(this, drawableResId))
                 .setTexts(LabelTextBuilder().setTexts(text))
         )
+    }
+
+
+    private fun startMonitoringCreate() {
+        ApiSender.createEvent(
+            uuid = UserDataStore.getUUID(this),
+            context = this@MonitoringActivity,
+            serviceType = ApiSender.Event.MONITORING.serviceType,
+            latitude = departureLatitude,
+            longitude = destinationLongitude,
+            dstLatitude = destinationLatitude,
+            dstLongitude = destinationLongitude
+        ) { monitoringId ->
+            Logger.d("Received monitoring ID in MonitoringActivity: $monitoringId")
+
+            binding.btnStart.isVisible = false
+            binding.btnFinish.isVisible = true
+        }
+    }
+
+    // backkey를 눌렀을때도 적용
+    private fun finishMonitoringEvent() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.pop_emergency_cancel_title)
+            .setMessage(R.string.pop_monitoring_finish_description)
+            .setCancelable(false)
+            .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
+                ApiSender.cancelEvent(this, (application as GaboApplication).monitorId)
+                finish()
+            }
+            .setNegativeButton(R.string.pop_btn_no) { _, _ ->
+                // no code
+            }
+            .show()
     }
 
     companion object {
