@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.LatLngBounds
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
 import com.kakao.vectormap.camera.CameraPosition
@@ -24,7 +25,9 @@ import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.api.dto.response.PoliceResultItem
 import yiwoo.prototype.gabobell.ble.BleManager
+import yiwoo.prototype.gabobell.data.network.PoliceClient
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
@@ -42,6 +45,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private var neLocationLabel: Label? = null
     private var swLocationLabel: Label? = null
+    private var bounds: LatLngBounds? = null
+    private var isPoliceActive: Boolean = false // 토글 상태를 저장
+    private val policeMarkers = mutableListOf<Label>() // 기존 라벨 관리 리스트
+    private var policeLabel: Label? = null
+    private var map: KakaoMap? = null
 
     /*
     private lateinit var sensorManager: SensorManager
@@ -201,16 +209,67 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
                     updateCurrentLocationMarker(kakaoMap, latitude, longitude)
                 }
-                val centerPosition = kakaoMap.cameraPosition
-                updateBounds(kakaoMap, mapView, centerPosition!!)
 
+                /**
+                 * getPosition 함수에 의해서 초기 좌표로 카메라가 설정되는 과정에서 카메라가 이동 되면서,
+                 * setOnCameraMoveEndListener 가 호출이 됨
+                 */
+//                val centerPosition = kakaoMap.cameraPosition
+//                updateBounds(kakaoMap, mapView, centerPosition!!)
                 //카메라 이동시 센터 포지션 값에 대한 ne, sw 좌표 변경
-                kakaoMap.setOnCameraMoveEndListener { map, cameraPosition, _ ->
+                map = kakaoMap
+                map!!.setOnCameraMoveEndListener { map, cameraPosition, _ ->
                     updateBounds(map, mapView, cameraPosition)
+                    if (isPoliceActive) {
+                        callPoliceApi(map)
+                    }
                 }
             }
         })
     }
+
+    private fun callPoliceApi(map: KakaoMap) {
+        bounds?.let { currentBounds ->
+            Logger.d("Police API 호출: ${currentBounds.southwest} ~ ${currentBounds.northeast}")
+            PoliceClient.getBoundsPolice(
+                this,
+                currentBounds.southwest.latitude, currentBounds.southwest.longitude,
+                currentBounds.northeast.latitude, currentBounds.northeast.longitude
+            ) { policeDataList ->
+                runOnUiThread {
+                    if (policeDataList != null) {
+                        addPoliceMaker(map, policeDataList)
+                    } else {
+                        Logger.e("지구대 리스트 조회 실패")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun addPoliceMaker(map: KakaoMap, policeDataList: List<PoliceResultItem>) {
+        Logger.d("policeMarkers : ${policeMarkers.size}")
+        //기존 마커 제거
+        policeMarkers.forEach { it.remove() }
+        policeMarkers.clear()
+        Logger.d("policeMarkers_clear : ${policeMarkers.size}")
+
+        //라벨 추가
+        val labelLayer = map.labelManager?.layer
+        for (police in policeDataList) {
+            val position = LatLng.from(police.latitude, police.longitude)
+            policeLabel = labelLayer?.addLabel(
+                LabelOptions.from(position).setStyles(
+                    MonitoringActivity.setPinStyle(
+                        this,
+                        R.drawable.police_maker
+                    )
+                )
+            )
+            policeLabel?.let { policeMarkers.add(it) }
+        }
+    }
+
 
     private fun updateBounds(kakaoMap: KakaoMap ,mapView: MapView, cameraPosition: CameraPosition) {
         //카메라의 현재 위치 정보
@@ -226,37 +285,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val sw = screenToLatLng(kakaoMap, 0, viewHeight) // 좌측 하단 (남서)
 
         // 북동쪽과 남서쪽 좌표 출력
-        Logger.d("북동쪽 위도: ${ne?.latitude} | 북동쪽 경도: ${ne?.longitude}")
-        Logger.d("남서쪽 위도: ${sw?.latitude} | 남서쪽 경도: ${sw?.longitude}")
+        Logger.d("북동쪽 위도: ${ne.latitude} | 북동쪽 경도: ${ne.longitude}")
+        Logger.d("남서쪽 위도: ${sw.latitude} | 남서쪽 경도: ${sw.longitude}")
 
-        val labelLayer = kakaoMap.labelManager?.layer
-        if (neLocationLabel != null && swLocationLabel != null) {
-            neLocationLabel?.moveTo(ne)
-            swLocationLabel?.moveTo(sw)
-        } else {
-            neLocationLabel = labelLayer?.addLabel(
-                LabelOptions.from(ne)
-                    .setStyles(
-                        MonitoringActivity.setPinStyle(
-                            this,
-                            R.drawable.ne_test
-                        )
-                    )
-            )
-            swLocationLabel = labelLayer?.addLabel(
-                LabelOptions.from(sw)
-                    .setStyles(
-                        MonitoringActivity.setPinStyle(
-                            this,
-                            R.drawable.sw_test
-                        )
-                    )
-            )
-
-        }
+        //LatLngBounds 객체 생성
+        val northeast = LatLng.from(ne.latitude, ne.longitude)
+        val southwest = LatLng.from(sw.latitude, sw.longitude)
+        bounds = LatLngBounds(northeast, southwest)
     }
-    private fun screenToLatLng(map: KakaoMap, x: Int, y: Int): LatLng? {
-        return map.fromScreenPoint(x.toDouble().toInt(), y.toDouble().toInt())
+    private fun screenToLatLng(map: KakaoMap, x: Int, y: Int): LatLng {
+        return map.fromScreenPoint(x.toDouble().toInt(), y.toDouble().toInt())!!
     }
 
     private fun initLauncher() {
@@ -293,12 +331,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private fun togglePolice(isActive: Boolean) {
         Log.d("@!@", ">>>togglePolice : $isActive")
+        isPoliceActive = isActive
         if (isActive) {
             binding.fabPolice.setBackgroundResource(R.color.pink)
             // TODO: 지구대 마커 표기
+            callPoliceApi(map!!)
         } else {
             binding.fabPolice.setBackgroundResource(R.color.black_op_66)
             // TODO: 지구대 마커 해제
+            policeMarkers.forEach { it.remove() }
+            policeMarkers.clear()
         }
     }
 
