@@ -14,6 +14,7 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
@@ -21,12 +22,14 @@ import com.kakao.vectormap.LatLngBounds
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.MapView
 import com.kakao.vectormap.camera.CameraPosition
+import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.api.dto.response.PoliceResultItem
 import yiwoo.prototype.gabobell.ble.BleManager
+import yiwoo.prototype.gabobell.constants.MapConstants
 import yiwoo.prototype.gabobell.data.network.PoliceClient
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
@@ -50,6 +53,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private val policeMarkers = mutableListOf<Label>() // 기존 라벨 관리 리스트
     private var policeLabel: Label? = null
     private var map: KakaoMap? = null
+    private var currentPosition: LatLng? = null
 
     /*
     private lateinit var sensorManager: SensorManager
@@ -156,6 +160,18 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             isActivePolice = !isActivePolice
             togglePolice(isActivePolice)
         }
+
+        //GPS, ZoomIn, ZoomOut
+        binding.zoomIn.setOnClickListener {
+            map?.moveCamera(CameraUpdateFactory.zoomIn())
+        }
+        binding.zoomOut.setOnClickListener {
+            map?.moveCamera(CameraUpdateFactory.zoomOut())
+        }
+        binding.moveCurrentLocation.setOnClickListener {
+            Logger.d("moveCurrentLocation : $currentPosition")
+            map?.moveCamera(CameraUpdateFactory.newCenterPosition(currentPosition))
+        }
     }
 
     /*
@@ -209,21 +225,31 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
                     updateCurrentLocationMarker(kakaoMap, latitude, longitude)
                 }
-
                 /**
                  * getPosition 함수에 의해서 초기 좌표로 카메라가 설정되는 과정에서 카메라가 이동 되면서,
-                 * setOnCameraMoveEndListener 가 호출이 됨
+                 *  setOnCameraMoveEndListener 가 호출이 됨
+                 * 카메라 이동시 센터 포지션 값에 대한 ne, sw 좌표 변경
                  */
-//                val centerPosition = kakaoMap.cameraPosition
-//                updateBounds(kakaoMap, mapView, centerPosition!!)
-                //카메라 이동시 센터 포지션 값에 대한 ne, sw 좌표 변경
                 map = kakaoMap
                 map!!.setOnCameraMoveEndListener { map, cameraPosition, _ ->
                     updateBounds(map, mapView, cameraPosition)
+
+                    //zoomLevel 값에 따른 마커 처리
+                    val zoomLevel = map.zoomLevel
+                    Logger.d("getZoomLevel : $zoomLevel")
                     if (isPoliceActive) {
-                        callPoliceApi(map)
+                        if (zoomLevel >= MapConstants.ZOOMLEVEL) {
+                            callPoliceApi(map)
+                        } else {
+                            //zoomLevel 이 13 미만(12 이하)일 경우 마커 clear
+                            policeMarkers.forEach { it.remove() }
+                            policeMarkers.clear()
+                        }
                     }
                 }
+
+                //회전 동작 고정(제스쳐)
+                map?.setGestureEnable(GestureType.Rotate, false)
             }
         })
     }
@@ -346,15 +372,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private fun updateCurrentLocationMarker(
         map: KakaoMap, latitude: Double, longitude: Double) {
-        val position = LatLng.from(latitude, longitude)
+//        val position = LatLng.from(latitude, longitude)
+        currentPosition = LatLng.from(latitude, longitude)
         val labelLayer = map.labelManager?.layer
         if (currentLocationLabel != null) {
             // 현재 위치 마커 이동
-            currentLocationLabel?.moveTo(position)
+            currentLocationLabel?.moveTo(currentPosition)
         } else {
             // 현재 위치 마커 생성
             currentLocationLabel = labelLayer?.addLabel(
-                LabelOptions.from(position)
+                LabelOptions.from(currentPosition)
                     .setStyles(
                         // TODO: 추후 공통 처리
                         MonitoringActivity.setPinStyle(
