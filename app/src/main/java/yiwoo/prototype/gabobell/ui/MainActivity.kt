@@ -7,6 +7,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +17,7 @@ import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
@@ -33,6 +37,7 @@ import yiwoo.prototype.gabobell.constants.MapConstants
 import yiwoo.prototype.gabobell.data.network.PoliceClient
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
+import yiwoo.prototype.gabobell.helper.FlashUtil
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
@@ -55,6 +60,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private var map: KakaoMap? = null
     private var currentPosition: LatLng? = null
 
+    private var mediaPlayer: MediaPlayer? = null
+    private lateinit var audioManager: AudioManager
+    private lateinit var flashUtil: FlashUtil
+
     /*
     private lateinit var sensorManager: SensorManager
     private var acceleration = 0f
@@ -67,6 +76,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        flashUtil = FlashUtil.getInstance(this@MainActivity)
+
         initUi()
         initLauncher()
         initMap()
@@ -123,6 +135,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                             ApiSender.cancelEvent(this@MainActivity, eventId)
                             (application as GaboApplication).isEmergency = false
                             updateUi()
+                            emergencyEffect(false)
                         }
                     }
                     .setNegativeButton(R.string.pop_btn_no) { _, _ ->
@@ -134,6 +147,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 // 신고화면 이동
                 val intent = Intent(this, ReportActivity::class.java)
                 emergencyLauncher.launch(intent)
+                emergencyEffect(true)
             }
         }
 
@@ -196,8 +210,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         // 화면이 foreground 상태에서 신고/신고 취소 이벤트를 수신한다.
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                BleManager.BLE_REPORTE_EMERGENCY, BleManager.BLE_CANCEL_REPORTE_EMERGENCY -> {
+                BleManager.BLE_REPORTE_EMERGENCY -> {
                     updateUi()
+                }
+                BleManager.BLE_CANCEL_REPORTE_EMERGENCY -> {
+                    updateUi()
+                    emergencyEffect(false)
                 }
             }
         }
@@ -339,6 +357,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
             } else if (it.resultCode == RESULT_CANCELED) {
                 // 신고 화면 -> 취소
+                emergencyEffect(false)
             }
         }
     }
@@ -390,6 +409,35 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                         )
                     )
             )
+        }
+    }
+
+    // 신고 사운드/플래시
+    private fun emergencyEffect(isPlay: Boolean) {
+        if (isPlay) {
+            flashUtil.startEmergencySignal(lifecycleScope)
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
+            mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                isLooping = true
+                start()
+            }
+        } else {
+            flashUtil.stopEmergencySignal()
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
+            }
+            mediaPlayer = null
         }
     }
 
