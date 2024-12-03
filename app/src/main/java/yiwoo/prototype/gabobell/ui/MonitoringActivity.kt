@@ -50,6 +50,7 @@ class MonitoringActivity :
 
     private var isDepartureMarkerUpdated = false
     private var isDestinationMarkerUpdated = false
+    private var isMonitoring: Boolean = false
 
     private val searchAddressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -110,7 +111,11 @@ class MonitoringActivity :
 
     private fun initUi() {
         binding.btnStart.setOnClickListener {
-            startMonitoringCreate()
+            if (departureLatitude == 0.0 || departureLongitude == 0.0 ||
+                destinationLatitude == 0.0 || destinationLongitude == 0.0
+            ) {
+                showErrorDialog()
+            } else startMonitoringCreate()
         }
         binding.btnFinish.setOnClickListener {
             finishMonitoringEvent()
@@ -125,17 +130,20 @@ class MonitoringActivity :
         ).forEach { (editText, isDeparture) ->
             editText.setOnFocusChangeListener { _, hasFocus ->
                 if (hasFocus) {
-                    editText.clearFocus()
+                    if (isMonitoring) {
+                        // 귀가 모니터링 실행 중일 때 알림 표시
+                        showMonitoringActiveDialog()
+                        editText.clearFocus() // 포커스 제거
+                    } else {
+                        editText.clearFocus()
+                        currentFocus?.clearFocus()
 
-                    // Activity의 포커스를 Window에 넘김
-                    currentFocus?.clearFocus()
-
-                    val intent = Intent(this, SearchAddressActivity::class.java).apply {
-                        putExtra("is_departure", isDeparture) // 출발지/도착지 구분값 전달
-
-                        Log.d("MonitoringActivity@@", "isDeparture: $isDeparture")
+                        val intent = Intent(this, SearchAddressActivity::class.java).apply {
+                            putExtra("is_departure", isDeparture) // 출발지/도착지 구분값 전달
+                            Log.d("MonitoringActivity@@", "isDeparture: $isDeparture")
+                        }
+                        searchAddressLauncher.launch(intent)
                     }
-                    searchAddressLauncher.launch(intent)
                 }
             }
         }
@@ -275,7 +283,6 @@ class MonitoringActivity :
         )
     }
 
-
     private fun startMonitoringCreate() {
         ApiSender.createEvent(
             uuid = UserDataStore.getUUID(this),
@@ -288,6 +295,7 @@ class MonitoringActivity :
         ) { monitoringId ->
             Logger.d("Received monitoring ID in MonitoringActivity: $monitoringId")
 
+            isMonitoring = true
             binding.btnStart.isVisible = false
             binding.btnFinish.isVisible = true
         }
@@ -301,11 +309,27 @@ class MonitoringActivity :
             .setCancelable(false)
             .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
                 ApiSender.cancelEvent(this, (application as GaboApplication).monitorId)
+                isMonitoring = false
                 finish()
             }
             .setNegativeButton(R.string.pop_btn_no) { _, _ ->
                 // no code
             }
+            .show()
+    }
+
+    private fun showErrorDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.pop_monitoring_setting_error_title)
+            .setPositiveButton(R.string.pop_btn_confirm) { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun showMonitoringActiveDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.pop_monitoring_running_title)
+            .setMessage(R.string.pop_monitoring_running_description)
+            .setPositiveButton(R.string.pop_btn_confirm) { dialog, _ -> dialog.dismiss() }
             .show()
     }
 

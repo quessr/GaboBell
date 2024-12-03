@@ -14,6 +14,10 @@
     <string name="pop_btn_confirm">확인</string>
     <string name="pop_btn_yes">네</string>
     <string name="pop_btn_no">아니오</string>
+    <string name="pop_monitoring_finish_description">귀가모니터링을 종료하시겠습니까?</string>
+    <string name="pop_monitoring_setting_error_title">출발지와 도착지를 설정해주세요.</string>
+    <string name="pop_monitoring_running_title">귀가모니터링 실행 중</string>
+    <string name="pop_monitoring_running_description">귀가 모니터링이 실행 중입니다. 출발지와 도착지를 변경할 수 없습니다.</string>
 
     <!--Main-->
     <string name="main_registered_device">등록기기</string>
@@ -69,8 +73,5 @@
     <string name="device_settings_disconnect">연결 해제</string>
     <string name="device_settings_device_deletion">기기 삭제</string>
     <string name="device_settings_reconnect">재연결</string>
-
-    <!--Monitoring-->
-    <string name="pop_monitoring_finish_description">귀가모니터링을 종료하시겠습니까?</string>
 
 </resources>
