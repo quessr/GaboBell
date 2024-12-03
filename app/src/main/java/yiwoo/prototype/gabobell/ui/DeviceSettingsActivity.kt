@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
@@ -87,6 +88,12 @@ class DeviceSettingsActivity :
             bleManager?.disconnect()
             UserDeviceManager.deleteDevice(this)
             Logger.d("연결 해제")
+            Toast.makeText(
+                this@DeviceSettingsActivity,
+                "기기 연결이 해제되었습니다.",
+                Toast.LENGTH_SHORT
+            ).show()
+            finish()
         }
     }
 

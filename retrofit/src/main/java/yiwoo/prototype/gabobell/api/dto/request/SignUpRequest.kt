@@ -16,4 +16,5 @@ data class UserDetails(
     val terms: String,
     val younger: String,
     val userStatus: String,
+    val pushToken: String
 )
