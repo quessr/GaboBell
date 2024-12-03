@@ -15,16 +15,11 @@ import yiwoo.prototype.gabobell.api.GaboAPI
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityReportBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
+import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
 import yiwoo.prototype.gabobell.module.RetrofitModule
-import android.media.MediaPlayer
-import android.media.AudioManager
-import android.media.AudioAttributes
-import androidx.lifecycle.lifecycleScope
-import yiwoo.prototype.gabobell.R
-import yiwoo.prototype.gabobell.helper.FlashUtil
 
 class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding::inflate),
     EventIdCallback {
@@ -40,6 +35,8 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
         val retrofit: Retrofit = RetrofitModule.provideRetrofit(this)
         gaboApi = retrofit.create(GaboAPI::class.java)
+        LocationHelper.locationInit(this)
+
         initUi()
         initLauncher()
         bindService()
@@ -116,13 +113,25 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
     // 신고 API 호출 (직접 호출)
     private fun sendEmergencyCreate() {
-        ApiSender.createEvent(
-            context = this@ReportActivity,
-            serviceType = ApiSender.Event.EMERGENCY.serviceType
-        ) { eventId ->
-            Logger.d("Received event ID in SomeActivity: $eventId")
-            (application as GaboApplication).isEmergency = true
-            sendEmergencyVideo(eventId)
+        LocationHelper.getCurrentLocation(this) { lat, lng ->
+            val locationLat: Double = lat
+            val locationLng: Double = lng
+            Logger.d("Emergency_currentLocation: $locationLat | $locationLng")
+            /**
+             * getCurrentLocation 함수는 비동기로 처리되기 때문에,
+             * 위치 값을 가져오기전 reportEmergency함수가 호출 될 경우 NullPointerException 발생
+             * 바동기 콜백 내부에서 reportEmergency 함수 호출
+             */
+            ApiSender.createEvent(
+                context = this@ReportActivity,
+                serviceType = ApiSender.Event.EMERGENCY.serviceType,
+                latitude = lat,
+                longitude = lng
+            ) { eventId ->
+                Logger.d("Received event ID in SomeActivity: $eventId")
+                (application as GaboApplication).isEmergency = true
+                sendEmergencyVideo(eventId)
+            }
         }
     }
 

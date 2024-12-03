@@ -25,7 +25,7 @@ object LocationHelper {
     }
 
     //최신 상태의 정확한 위치를 더 일관되게 가져온다.(현재 위치를 한 번 요청)
-    fun getCurrentLocation(context: Context, locationResult: (Double?, Double?) -> Unit) {
+    fun getCurrentLocation(context: Context, locationResult: (Double, Double) -> Unit) {
         /**
          * Task<Location> (addOnSuccessListener) -> 비동기 작업
          * 비동기로 동작하는 Task<Location> 객체를 반환

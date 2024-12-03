@@ -26,8 +26,10 @@ object  ApiSender {
         uuid: String = UserDataStore.getUUID(context),
         serviceType: String = Event.EMERGENCY.serviceType,
         // latitude, dstLatitude : 신고 - 현재위치, 모니터링 - 출발지 위치
-        latitude: Double = 37.585057,
-        longitude: Double = 126.885347,
+//        latitude: Double = 37.585057,
+        latitude: Double,
+//        longitude: Double = 126.885347,
+        longitude: Double,
         // dstLatitude, dstLongitude : 모니터링만 사용하는 항목 - 도착지 위치
         dstLatitude: Double = 0.0,
         dstLongitude: Double = 0.0,
@@ -80,7 +82,7 @@ object  ApiSender {
                             "eventStatus: $eventStatus \n eventMessage: $eventMessage \n " +
                                     "eventId: $eventId \n serviceType: $serviceType\n" +
                                     "eventAddress: $eventAddress \n " +
-                                    "latitude: $latitude \n evelongitudentAddress: $longitude"
+                                    "latitude: $latitude \n longitude: $longitude"
                         )
                     }
                 } else {

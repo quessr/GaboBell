@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.helper.ApiSender
+import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
 import yiwoo.prototype.gabobell.`interface`.EventIdCallback
@@ -647,11 +648,19 @@ class BleManager : Service() {
                 }
                 isEmergencyViaApp = false
 
-                ApiSender.createEvent(
-                    context = this@BleManager,
-                    serviceType = serviceType
-                ) { eventId ->
-                    eventIdCallback?.onEventId(eventId)
+                LocationHelper.getCurrentLocation(this) { lat, lng ->
+                    val locationLat: Double = lat
+                    val locationLng: Double = lng
+                    Logger.d("handleEmergency_currentLocation: $locationLat | $locationLng")
+
+                    ApiSender.createEvent(
+                        context = this@BleManager,
+                        serviceType = serviceType,
+                        latitude = lat,
+                        longitude = lng
+                    ) { eventId ->
+                        eventIdCallback?.onEventId(eventId)
+                    }
                 }
             } else {
                 // 전역 상태 변경 및 신고 취소 API 호출
