@@ -65,7 +65,7 @@ class BleManager : Service() {
     private var isReceiverRegistered = false
     private var isEmergencyViaApp = false
 
-    fun setEventIdCallback(callback: EventIdCallback) {
+    fun setEventIdCallback(callback: EventIdCallback?) {
         eventIdCallback = callback
     }
     inner class LocalBinder : Binder() {

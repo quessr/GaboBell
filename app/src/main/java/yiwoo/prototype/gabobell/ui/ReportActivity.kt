@@ -48,6 +48,7 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
+        BleManager.instance?.setEventIdCallback(null)
     }
 
     private fun initUi() {
