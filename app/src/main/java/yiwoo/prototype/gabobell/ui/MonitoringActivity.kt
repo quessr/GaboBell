@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -97,6 +98,7 @@ class MonitoringActivity :
         initMapView()
         initUi()
         LocationHelper.locationInit(this)
+        handleBackPressed()
     }
 
     override fun onResume() {
@@ -316,6 +318,24 @@ class MonitoringActivity :
                 // no code
             }
             .show()
+    }
+
+    private fun handleBackPressed() {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (isMonitoring) {
+                    finishMonitoringEvent()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+
+        }
+        this.onBackPressedDispatcher.addCallback(
+            this,
+            callback
+        )
     }
 
     private fun showErrorDialog() {
