@@ -390,7 +390,7 @@ class MonitoringActivity :
             context = this@MonitoringActivity,
             serviceType = ApiSender.Event.MONITORING.serviceType,
             latitude = departureLatitude,
-            longitude = destinationLongitude,
+            longitude = departureLongitude,
             dstLatitude = destinationLatitude,
             dstLongitude = destinationLongitude
         ) { monitoringId ->
