@@ -6,4 +6,94 @@
     </style>
 
     <style name="Theme.GaboBell" parent="Base.Theme.GaboBell" />
+
+    <!-- TextView -->
+    <style name="AnsimTextView" parent="@android:style/Widget.TextView">
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="AnsimTextView.Bold" parent="AnsimTextView">
+        <item name="android:fontFamily">@font/noto_sans_kr_bold</item>
+    </style>
+    <style name="AnsimTextView.Medium" parent="AnsimTextView">
+        <item name="android:fontFamily">@font/noto_sans_kr_medium</item>
+    </style>
+    <style name="AnsimTextView.Regular" parent="AnsimTextView">
+        <item name="android:fontFamily">@font/noto_sans_kr_regular</item>
+    </style>
+    <style name="AnsimTextView.Semibold" parent="AnsimTextView">
+        <item name="android:fontFamily">@font/noto_sans_kr_semibold</item>
+    </style>
+
+    <style name="AnsimTextView.Bold.White" parent="AnsimTextView.Bold">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="AnsimTextView.Medium.White" parent="AnsimTextView.Medium">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="AnsimTextView.Regular.White" parent="AnsimTextView.Regular">
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="AnsimTextView.Semibold.White" parent="AnsimTextView.Semibold">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <!-- LightGray = #3F3F3F -->
+    <style name="AnsimTextView.Regular.LightGray" parent="AnsimTextView.Regular">
+        <item name="android:textColor">@color/color_3f3f3f</item>
+    </style>
+    <style name="AnsimTextView.Semibold.LightGray" parent="AnsimTextView.Semibold">
+        <item name="android:textColor">@color/color_3f3f3f</item>
+    </style>
+
+    <!-- Gray = #505050 -->
+    <style name="AnsimTextView.Regular.Gray" parent="AnsimTextView.Regular">
+        <item name="android:textColor">@color/color_505050</item>
+    </style>
+    <style name="AnsimTextView.Semibold.Gray" parent="AnsimTextView.Semibold">
+        <item name="android:textColor">@color/color_505050</item>
+    </style>
+
+    <!-- EditText (회원가입, 주소검색) -->
+    <style name="AnsimEditText" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/color_3f3f3f</item>
+    </style>
+
+    <style name="AnsimEditText.Regular" parent="AnsimEditText">
+        <item name="android:fontFamily">@font/noto_sans_kr_regular</item>
+    </style>
+
+    <!-- Button -->
+    <style name="AnsimButton">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">@font/noto_sans_kr_semibold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="AnsimButton.Bottom" parent="AnsimButton">
+        <item name="android:textSize">16sp</item>
+        <item name="android:background">@drawable/btn_ansim_bottom_selector</item>
+    </style>
+
+    <style name="AnsimButton.Blue" parent="AnsimButton">
+        <item name="android:textSize">18sp</item>
+        <item name="android:background">@drawable/btn_ansim_blue_selector</item>
+    </style>
+
+    <!-- 팝업 내 확인/취소는 디자인이 동일하지만 분리해두자.-->
+    <style name="AnsimButton.Pop.Confirm" parent="AnsimButton">
+        <item name="android:textSize">18sp</item>
+        <item name="android:background">@drawable/btn_ansim_pop_confirm_selector</item>
+    </style>
+
+    <style name="AnsimButton.Pop.Cancel" parent="AnsimButton">
+        <item name="android:textSize">18sp</item>
+        <item name="android:background">@drawable/btn_ansim_pop_cancel_selector</item>
+    </style>
+
+    <style name="AnsimButton.Pop.Red" parent="AnsimButton">
+        <item name="android:textSize">18sp</item>
+        <item name="android:background">@drawable/btn_ansim_pop_red_selector</item>
+    </style>
+
 </resources>
