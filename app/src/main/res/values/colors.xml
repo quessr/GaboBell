@@ -17,13 +17,17 @@
     <color name="btn_kakao_pressed">#FAC001</color>
     <color name="btn_confirm_normal">#1370DE</color>
     <color name="btn_confirm_pressed">#094A99</color>
-    <color name="btn_cancel_normal">#1370DE</color>
-    <color name="btn_cancel_pressed">#094A99</color>
+    <color name="btn_cancel_normal">#FFFFFF</color>
+    <color name="btn_cancel_pressed">#606060</color>
+    <color name="btn_search_normal">#1370DE</color>
+    <color name="btn_search_pressed">#094A99</color>
+    <color name="btn_choose_normal">#8A8C8F</color>
+    <color name="btn_choose_pressed">#2B99C1</color>
     <color name="btn_emergency_normal">#ED1B23</color>
     <color name="btn_emergency_pressed">#B51319</color>
     <color name="bg_gray">#EDEDED</color>
     <color name="pop_title_bg">#18B8CA</color>
     <color name="pop_bg_gray">#F2F2F2</color>
-    <color name="bg_description">#DEE7F0</color>
+    <color name="bg_description">#B9C3FF</color>
 
 </resources>
