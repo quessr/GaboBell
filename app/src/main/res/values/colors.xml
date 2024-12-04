@@ -7,4 +7,23 @@
     <color name="pink">#DE85EF</color>
     <color name="blue_device_item">#CEDFEE</color>
     <color name="black_op_66">#66000000</color>
+
+
+    <color name="primary">#2B99C1</color>
+    <color name="secondary">#65BDDD</color>
+    <color name="btn_primary_normal">#4760F6</color>
+    <color name="btn_primary_pressed">#102EE2</color>
+    <color name="btn_kakao_normal">#FAE101</color>
+    <color name="btn_kakao_pressed">#FAC001</color>
+    <color name="btn_confirm_normal">#1370DE</color>
+    <color name="btn_confirm_pressed">#094A99</color>
+    <color name="btn_cancel_normal">#1370DE</color>
+    <color name="btn_cancel_pressed">#094A99</color>
+    <color name="btn_emergency_normal">#ED1B23</color>
+    <color name="btn_emergency_pressed">#B51319</color>
+    <color name="bg_gray">#EDEDED</color>
+    <color name="pop_title_bg">#18B8CA</color>
+    <color name="pop_bg_gray">#F2F2F2</color>
+    <color name="bg_description">#DEE7F0</color>
+
 </resources>
