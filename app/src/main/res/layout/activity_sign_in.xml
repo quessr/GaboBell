@@ -2,38 +2,78 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#EDEDED">
 
-    <LinearLayout
+    <!-- Welcome Text -->
+    <TextView
+        android:id="@+id/tv_welcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="83dp"
+        android:fontFamily="@font/noto_sans_kr_semibold"
+        android:gravity="center"
+        android:text="안전한 귀가길을 위한 필수 서비스\n&quot;안심벨&quot;에 오신걸 환영합니다."
+        android:textColor="#0055A4"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/podolli"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_welcome" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginBottom="72dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
+        <!-- 일반회원 -->
+        <Button
             android:id="@+id/btn_normal_log_in"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp"
-            android:background="@color/blue"
-            android:gravity="center"
-            android:text="일반 회원"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            style="@style/AnsimButton.Blue"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="30dp"
+            android:text="일반회원 가입" />
 
-        <TextView
+        <!-- 카카오 로그인 -->
+        <RelativeLayout
             android:id="@+id/btn_kakao_log_in"
-            android:layout_width="150dp"
-            android:layout_height="50dp"
-            android:background="#FFEB3B"
-            android:gravity="center"
-            android:text="카카오 로그인"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:background="@drawable/btn_kakao_selector">
+
+            <TextView
+                android:id="@+id/tv_kakao"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:fontFamily="@font/noto_sans_kr_semibold"
+                android:text="카카오톡 로그인"
+                android:textColor="#42200D"
+                android:textSize="18sp"></TextView>
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="29dp"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="12dp"
+                android:layout_toLeftOf="@id/tv_kakao"
+                android:src="@drawable/kakao_b" />
+
+        </RelativeLayout>
 
     </LinearLayout>
 

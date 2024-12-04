@@ -8,7 +8,6 @@
     <color name="blue_device_item">#CEDFEE</color>
     <color name="black_op_66">#66000000</color>
 
-
     <color name="primary">#2B99C1</color>
     <color name="secondary">#65BDDD</color>
     <color name="btn_primary_normal">#4760F6</color>
@@ -30,4 +29,10 @@
     <color name="pop_bg_gray">#F2F2F2</color>
     <color name="bg_description">#B9C3FF</color>
 
+    <!-- 임시 지정 -->
+    <color name="color_3f3f3f">#3F3F3F</color>
+    <color name="color_505050">#505050</color>
+    <color name="color_4760f6">#4760F6</color>
+    <color name="color_102ee2">#102EE2</color>
+    
 </resources>
