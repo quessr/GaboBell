@@ -28,11 +28,7 @@
     <color name="pop_title_bg">#18B8CA</color>
     <color name="pop_bg_gray">#F2F2F2</color>
     <color name="bg_description">#B9C3FF</color>
-
-    <!-- 임시 지정 -->
-    <color name="color_3f3f3f">#3F3F3F</color>
-    <color name="color_505050">#505050</color>
-    <color name="color_4760f6">#4760F6</color>
-    <color name="color_102ee2">#102EE2</color>
+    <color name="text_light_gray">#3F3F3F</color>
+    <color name="text_gray">#505050</color>
     
 </resources>

@@ -13,16 +13,13 @@
     </style>
 
     <style name="AnsimTextView.Bold" parent="AnsimTextView">
-        <item name="android:fontFamily">@font/noto_sans_kr_bold</item>
+        <item name="android:fontFamily">@font/roboto_bold</item>
     </style>
     <style name="AnsimTextView.Medium" parent="AnsimTextView">
-        <item name="android:fontFamily">@font/noto_sans_kr_medium</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
     </style>
     <style name="AnsimTextView.Regular" parent="AnsimTextView">
-        <item name="android:fontFamily">@font/noto_sans_kr_regular</item>
-    </style>
-    <style name="AnsimTextView.Semibold" parent="AnsimTextView">
-        <item name="android:fontFamily">@font/noto_sans_kr_semibold</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
     </style>
 
     <style name="AnsimTextView.Bold.White" parent="AnsimTextView.Bold">
@@ -34,39 +31,36 @@
     <style name="AnsimTextView.Regular.White" parent="AnsimTextView.Regular">
         <item name="android:textColor">@color/white</item>
     </style>
-    <style name="AnsimTextView.Semibold.White" parent="AnsimTextView.Semibold">
-        <item name="android:textColor">@color/white</item>
-    </style>
 
     <!-- LightGray = #3F3F3F -->
     <style name="AnsimTextView.Regular.LightGray" parent="AnsimTextView.Regular">
-        <item name="android:textColor">@color/color_3f3f3f</item>
+        <item name="android:textColor">@color/text_light_gray</item>
     </style>
-    <style name="AnsimTextView.Semibold.LightGray" parent="AnsimTextView.Semibold">
-        <item name="android:textColor">@color/color_3f3f3f</item>
+    <style name="AnsimTextView.Semibold.LightGray" parent="AnsimTextView.Bold">
+        <item name="android:textColor">@color/text_light_gray</item>
     </style>
 
     <!-- Gray = #505050 -->
     <style name="AnsimTextView.Regular.Gray" parent="AnsimTextView.Regular">
-        <item name="android:textColor">@color/color_505050</item>
+        <item name="android:textColor">@color/text_gray</item>
     </style>
-    <style name="AnsimTextView.Semibold.Gray" parent="AnsimTextView.Semibold">
-        <item name="android:textColor">@color/color_505050</item>
+    <style name="AnsimTextView.Semibold.Gray" parent="AnsimTextView.Bold">
+        <item name="android:textColor">@color/text_gray</item>
     </style>
 
     <!-- EditText (회원가입, 주소검색) -->
     <style name="AnsimEditText" parent="Widget.AppCompat.EditText">
-        <item name="android:textColor">@color/color_3f3f3f</item>
+        <item name="android:textColor">@color/text_light_gray</item>
     </style>
 
     <style name="AnsimEditText.Regular" parent="AnsimEditText">
-        <item name="android:fontFamily">@font/noto_sans_kr_regular</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
     </style>
 
     <!-- Button -->
     <style name="AnsimButton">
         <item name="android:textColor">@color/white</item>
-        <item name="android:fontFamily">@font/noto_sans_kr_semibold</item>
+        <item name="android:fontFamily">@font/roboto_bold</item>
         <item name="android:gravity">center</item>
     </style>
 
