@@ -22,8 +22,12 @@ import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
 import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.data.network.GpsTracksClient
 import yiwoo.prototype.gabobell.databinding.ActivityMonitoringBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
@@ -52,6 +56,8 @@ class MonitoringActivity :
     private var isDepartureMarkerUpdated = false
     private var isDestinationMarkerUpdated = false
     private var isMonitoring: Boolean = false
+
+    private val gpsTracksClient = GpsTracksClient(this)
 
     private val searchAddressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -300,6 +306,28 @@ class MonitoringActivity :
             isMonitoring = true
             binding.btnStart.isVisible = false
             binding.btnFinish.isVisible = true
+
+            CoroutineScope(Dispatchers.IO).launch {
+                trackUserLocation(monitoringId)
+            }
+        }
+    }
+
+    private suspend fun trackUserLocation(monitoringId: Long) {
+        LocationHelper.startLocation(this@MonitoringActivity) { latitude, longitude ->
+            val currentTime = System.currentTimeMillis().toString()
+            CoroutineScope(Dispatchers.IO).launch {
+                gpsTracksClient.gasTracks(
+                    monitoringId = monitoringId,
+                    latitude = latitude.toLong(),
+                    longitude = longitude.toLong(),
+                    trackTime = currentTime,
+                    onSuccess = { Logger.d("Location successfully sent: Lat=$latitude, Lng=$longitude") },
+                    onFailure = { errorMessage ->
+                        Logger.e("Failed to send location: $errorMessage")
+                    }
+                )
+            }
         }
     }
 
@@ -312,6 +340,7 @@ class MonitoringActivity :
             .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
                 ApiSender.cancelEvent(this, (application as GaboApplication).monitorId)
                 isMonitoring = false
+                LocationHelper.stopLocation()
                 finish()
             }
             .setNegativeButton(R.string.pop_btn_no) { _, _ ->

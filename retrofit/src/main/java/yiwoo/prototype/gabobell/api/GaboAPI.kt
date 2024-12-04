@@ -18,6 +18,7 @@ import yiwoo.prototype.gabobell.api.dto.CreateEventResponse
 import yiwoo.prototype.gabobell.api.dto.UpdateEventRequest
 import yiwoo.prototype.gabobell.api.dto.UpdateEventResponse
 import yiwoo.prototype.gabobell.api.dto.request.CheckUserAccountRequest
+import yiwoo.prototype.gabobell.api.dto.request.GpsTracksRequest
 import yiwoo.prototype.gabobell.api.dto.request.LogInRequest
 import yiwoo.prototype.gabobell.api.dto.request.ModifyUserRequest
 import yiwoo.prototype.gabobell.api.dto.request.SignUpRequest
@@ -85,4 +86,9 @@ interface GaboAPI {
         @Query("neLat") neLat: Double,
         @Query("neLng") neLng: Double
     ): Response<PoliceResponse>
+
+    @POST("gps-tracks")
+    suspend fun gpsTracks(
+        @Body gpsTracksRequest: GpsTracksRequest
+    ): Response<ApiResponse<String>>
 }
