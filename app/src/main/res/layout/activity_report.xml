@@ -2,71 +2,99 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/black">
 
     <TextView
-        android:id="@+id/report_title"
+        android:id="@+id/tv_title"
+        style="@style/AnsimTextView.Bold.White"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="30dp"
-        android:text="@string/report_report_screen"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/report_counter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginBottom="120dp"
-        android:text="5"
-        android:textSize="80sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="224dp"
+        android:text="긴급상황이 발생했습니다."
+        android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tv_subtitle"
+        style="@style/AnsimTextView.Bold.White"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="6dp"
+        android:text="잘못 누른 경우 5초안에 취소해 주시기 바랍니다."
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/report_counter">
+        app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
-        <Button
-            android:id="@+id/btn_cancellations"
-            android:layout_width="120dp"
-            android:layout_height="80dp"
-            android:background="@color/red"
-            android:text="@string/report_cancellation"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btn_report"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout
+        android:id="@+id/tv_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="59dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_subtitle">
 
-        <Button
-            android:id="@+id/btn_report"
-            android:layout_width="120dp"
-            android:layout_height="80dp"
-            android:background="@color/blue"
-            android:text="@string/report_report"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btn_cancellations"
-            app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            style="@style/AnsimTextView.Bold.White"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="긴급신고까지"
+            android:textSize="15sp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/report_counter"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="5"
+            android:textColor="#FFFF64"
+            android:textSize="64sp" />
 
+        <TextView
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:text="초"
+            android:textColor="#FFFF64"
+            android:textSize="64sp" />
+
+        <TextView
+            style="@style/AnsimTextView.Bold.White"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="남았습니다."
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_report"
+        style="@style/AnsimButton.Pop.Red"
+        android:layout_width="136dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="43dp"
+        android:text="즉시 신고"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_content" />
+
+    <Button
+        android:id="@+id/btn_cancellations"
+        style="@style/AnsimButton.Pop.Confirm"
+        android:layout_width="136dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="30dp"
+        android:text="취소"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_report" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
