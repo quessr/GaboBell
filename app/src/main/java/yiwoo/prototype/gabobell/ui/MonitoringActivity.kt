@@ -15,6 +15,8 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.LatLngBounds
 import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.MapView
+import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
@@ -27,7 +29,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
+import yiwoo.prototype.gabobell.api.dto.response.PoliceResultItem
+import yiwoo.prototype.gabobell.constants.MapConstants
 import yiwoo.prototype.gabobell.data.network.GpsTracksClient
+import yiwoo.prototype.gabobell.data.network.PoliceClient
 import yiwoo.prototype.gabobell.databinding.ActivityMonitoringBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
@@ -56,6 +61,10 @@ class MonitoringActivity :
     private var isDepartureMarkerUpdated = false
     private var isDestinationMarkerUpdated = false
     private var isMonitoring: Boolean = false
+
+    private var bounds: LatLngBounds? = null
+    private val policeMarkers = mutableListOf<Label>()
+    private var policeLabel: Label? = null
 
     private val gpsTracksClient = GpsTracksClient(this)
 
@@ -177,6 +186,19 @@ class MonitoringActivity :
 
             override fun onMapReady(kakaoMap: KakaoMap) {
                 setupKakaoMap(kakaoMap)
+
+                kakaoMap.setOnCameraMoveEndListener { map, cameraPosition, _ ->
+                    updateBounds(map, mapView, cameraPosition)
+
+                    val zoomLevel = map.zoomLevel
+                    if (zoomLevel >= MapConstants.ZOOMLEVEL) {
+                        callPoliceApi(map)
+                    } else {
+                        //zoomLevel 이 13 미만(12 이하)일 경우 마커 clear
+                        policeMarkers.forEach { it.remove() }
+                        policeMarkers.clear()
+                    }
+                }
             }
         })
     }
@@ -290,6 +312,77 @@ class MonitoringActivity :
             )
         )
     }
+
+    // 지구대
+    private fun callPoliceApi(map: KakaoMap) {
+        bounds?.let { currentBounds ->
+            Logger.d("Police API 호출: ${currentBounds.southwest} ~ ${currentBounds.northeast}")
+            PoliceClient.getBoundsPolice(
+                this,
+                currentBounds.southwest.latitude, currentBounds.southwest.longitude,
+                currentBounds.northeast.latitude, currentBounds.northeast.longitude
+            ) { policeDataList ->
+                runOnUiThread {
+                    if (policeDataList != null) {
+                        addPoliceMaker(map, policeDataList)
+                    } else {
+                        Logger.e("지구대 리스트 조회 실패")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun addPoliceMaker(map: KakaoMap, policeDataList: List<PoliceResultItem>) {
+        Logger.d("policeMarkers : ${policeMarkers.size}")
+        //기존 마커 제거
+        policeMarkers.forEach { it.remove() }
+        policeMarkers.clear()
+        Logger.d("policeMarkers_clear : ${policeMarkers.size}")
+
+        //라벨 추가
+        val labelLayer = map.labelManager?.layer
+        for (police in policeDataList) {
+            val position = LatLng.from(police.latitude, police.longitude)
+            policeLabel = labelLayer?.addLabel(
+                LabelOptions.from(position).setStyles(
+                    MonitoringActivity.setPinStyle(
+                        this,
+                        R.drawable.police_maker
+                    )
+                )
+            )
+            policeLabel?.let { policeMarkers.add(it) }
+        }
+    }
+
+    private fun updateBounds(kakaoMap: KakaoMap, mapView: MapView, cameraPosition: CameraPosition) {
+        //카메라의 현재 위치 정보
+        val centerLat = cameraPosition.position.latitude
+        val centerLng = cameraPosition.position.longitude
+        Logger.d("centerPosition: $centerLat | $centerLng")
+
+        //카카오맵 화면 크기
+        val viewWidth = mapView.width
+        val viewHeight = mapView.height
+
+        val ne = screenToLatLng(kakaoMap, viewWidth, 0) // 우측 상단 (북동)
+        val sw = screenToLatLng(kakaoMap, 0, viewHeight) // 좌측 하단 (남서)
+
+        // 북동쪽과 남서쪽 좌표 출력
+        Logger.d("북동쪽 위도: ${ne.latitude} | 북동쪽 경도: ${ne.longitude}")
+        Logger.d("남서쪽 위도: ${sw.latitude} | 남서쪽 경도: ${sw.longitude}")
+
+        //LatLngBounds 객체 생성
+        val northeast = LatLng.from(ne.latitude, ne.longitude)
+        val southwest = LatLng.from(sw.latitude, sw.longitude)
+        bounds = LatLngBounds(northeast, southwest)
+    }
+
+    private fun screenToLatLng(map: KakaoMap, x: Int, y: Int): LatLng {
+        return map.fromScreenPoint(x.toDouble().toInt(), y.toDouble().toInt())!!
+    }
+
 
     private fun startMonitoringCreate() {
         ApiSender.createEvent(
