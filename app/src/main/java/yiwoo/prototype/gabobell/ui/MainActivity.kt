@@ -12,6 +12,8 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
@@ -51,14 +53,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private var isActivePolice: Boolean = false
     private lateinit var emergencyLauncher: ActivityResultLauncher<Intent>
 
-    private var neLocationLabel: Label? = null
-    private var swLocationLabel: Label? = null
     private var bounds: LatLngBounds? = null
     private var isPoliceActive: Boolean = false // 토글 상태를 저장
     private val policeMarkers = mutableListOf<Label>() // 기존 라벨 관리 리스트
     private var policeLabel: Label? = null
     private var map: KakaoMap? = null
     private var currentPosition: LatLng? = null
+    private var isFirstLocationUpdate = true    // 카메라 처음 위치 업데이트 여부를 확인
 
     private var mediaPlayer: MediaPlayer? = null
     private lateinit var audioManager: AudioManager
@@ -82,7 +83,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         initUi()
         initLauncher()
         initMap()
-        checkPermissions()
+        Handler(Looper.getMainLooper()).postDelayed({
+            // 맵이 보여지기 전에 mapView.pause() 가 호출되면 맵이 출력되지 않아서
+            // 권한 요청을 늦췄다.
+            checkPermissions()
+        }, 1_000)
+
         // initShakeDetection()
         initEmergencyStateReceiver()
     }
@@ -108,6 +114,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         unregisterReceiver(emergencyStateReceiver)
         binding.mapView.pause()
         // sensorManager.unregisterListener(this@MainActivity)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Logger.d("===> onDestroy")
+        LocationHelper.stopLocation()
     }
 
     private fun initUi() {
@@ -235,14 +247,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             }
         }, object : KakaoMapReadyCallback() {
             override fun getPosition(): LatLng {
+                Logger.d("===> getPosition")
                 // TODO: 초기 맵 위치
-                return LatLng.from(37.58376, 126.8867)
+                return LatLng.from(37.566535, 126.9779692)
             }
 
             override fun onMapReady(kakaoMap: KakaoMap) {
-                LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
-                    updateCurrentLocationMarker(kakaoMap, latitude, longitude)
-                }
+                Logger.d("===> onMapReady")
                 /**
                  * getPosition 함수에 의해서 초기 좌표로 카메라가 설정되는 과정에서 카메라가 이동 되면서,
                  *  setOnCameraMoveEndListener 가 호출이 됨
@@ -472,25 +483,21 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
-    /*
-    private fun startLocation() {
-        LocationHelper.locationInit(this)
-        LocationHelper.startLocation(this) { lat, lng ->
-            val locationLat: Double? = lat
-            val locationLng: Double? = lng
-            Logger.d("LatLng: $locationLat | $locationLng")
-        }
-    }
-    */
-
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val allGranted = permissions.all { it.value } // 모든 권한이 승인되었는지 확인
         if (allGranted) {
             Logger.d("모든 권한이 허용됨")
-            //모든 권한 허용 후 gps 추적 시작 (확인용)
-            // startLocation()
+            if (map != null) {
+                LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
+                    updateCurrentLocationMarker(map!!, latitude, longitude)
+                    if (isFirstLocationUpdate) {
+                        map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(latitude, longitude)))
+                        isFirstLocationUpdate = false // 첫 위치 업데이트 이후로는 카메라 이동하지 않음
+                    }
+                }
+            }
         } else {
             Logger.d("일부 권한이 거부됨")
             // TODO: 권한 거부에 대한 시나리오는 추후 반영

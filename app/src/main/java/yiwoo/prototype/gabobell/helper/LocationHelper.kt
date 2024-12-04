@@ -100,5 +100,6 @@ object LocationHelper {
         locationCallback?.let {
             fusedLocationProviderClient.removeLocationUpdates(it)
         }
+        locationCallback = null
     }
 }
