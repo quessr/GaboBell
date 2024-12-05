@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,21 +9,33 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clTitleContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="30dp"
+        android:layout_height="60dp"
+        android:background="@color/primary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/tvTitleMonitoring"
+            style="@style/AnsimTextView.Bold.White"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="귀가모니터링"
-            android:textSize="20sp"
+            android:textSize="26sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginEnd="19dp"
+            android:background="@drawable/btn_close_selector"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
@@ -31,8 +44,8 @@
             android:background="@color/black_op_66"
             android:gravity="center"
             android:text="종료"
-            android:visibility="gone"
             android:textColor="@color/white"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -41,84 +54,99 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clDeparture"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="20dp"
+        android:layout_height="40dp"
+        android:background="@color/secondary"
         app:layout_constraintTop_toBottomOf="@id/clTitleContainer">
 
         <TextView
             android:id="@+id/tvDeparture"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center"
             android:text="출발지"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/etDeparture"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
             android:id="@+id/etDeparture"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
+            android:layout_width="320dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="20dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginEnd="11dp"
+            android:layout_marginBottom="3dp"
+            android:background="@color/white"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="10dp"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tvDeparture"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="dmc" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clDestination"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="30dp"
+        android:layout_height="40dp"
+        android:background="@color/secondary"
         app:layout_constraintTop_toBottomOf="@id/clDeparture">
 
         <TextView
             android:id="@+id/tvDestination"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center"
             android:text="도착지"
+            android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/etDestination"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
             android:id="@+id/etDestination"
-            android:layout_width="300dp"
-            android:layout_height="wrap_content"
+            android:layout_width="320dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="20dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="11dp"
+            android:layout_marginBottom="6dp"
+            android:background="@color/white"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="10dp"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tvDestination"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="dmc" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.kakao.vectormap.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:layout_margin="30dp"
-        android:layout_marginTop="10dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/btnStart"
         app:layout_constraintTop_toBottomOf="@id/clDestination" />
 
     <Button
         android:id="@+id/btnStart"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="16dp"
-        android:background="@color/blue"
+        android:layout_height="44dp"
+        android:background="@drawable/btn_ansim_bottom_selector"
         android:text="시작하기"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mapView"
-        app:layout_goneMarginBottom="20dp" />
+        tools:layout_editor_absoluteX="0dp" />
 
     <Button
-        android:visibility="gone"
         android:id="@+id/btnFinish"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -128,6 +156,7 @@
         android:background="@color/red"
         android:text="종료하기"
         android:textColor="@color/white"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/mapView"
         app:layout_goneMarginBottom="20dp" />

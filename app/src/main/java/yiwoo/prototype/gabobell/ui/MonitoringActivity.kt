@@ -137,6 +137,9 @@ class MonitoringActivity :
         binding.btnFinish.setOnClickListener {
             finishMonitoringEvent()
         }
+        binding.btnClose.setOnClickListener {
+            finish()
+        }
     }
 
     // 출발지, 도착지 editText 선택 -> 주소 검색 화면 이동
@@ -346,7 +349,7 @@ class MonitoringActivity :
             val position = LatLng.from(police.latitude, police.longitude)
             policeLabel = labelLayer?.addLabel(
                 LabelOptions.from(position).setStyles(
-                    MonitoringActivity.setPinStyle(
+                    setPinStyle(
                         this,
                         R.drawable.police_maker
                     )
