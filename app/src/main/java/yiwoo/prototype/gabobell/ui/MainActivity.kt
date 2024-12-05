@@ -317,7 +317,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 LabelOptions.from(position).setStyles(
                     MonitoringActivity.setPinStyle(
                         this,
-                        R.drawable.police_maker
+                        R.drawable.police_marker
                     )
                 )
             )
@@ -418,7 +418,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                         // TODO: 추후 공통 처리
                         MonitoringActivity.setPinStyle(
                             this@MainActivity,
-                            R.drawable.marker_current
+                            R.drawable.current_marker
                         )
                     )
             )

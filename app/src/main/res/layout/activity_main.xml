@@ -50,40 +50,41 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        tools:background="#ff3366" />
 
     <ImageButton
         android:id="@+id/moveCurrentLocation"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="70dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="84dp"
+        android:layout_marginEnd="8dp"
         android:background="#DCDCDC"
-        android:src="@drawable/baseline_gps_fixed_24"
+        android:src="@drawable/btn_map_current_selector"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <ImageButton
         android:id="@+id/zoomIn"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
         android:background="#DCDCDC"
-        android:src="@drawable/baseline_add_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/moveCurrentLocation" />
+        android:src="@drawable/btn_map_zoomin_selector"
+        app:layout_constraintEnd_toEndOf="@id/moveCurrentLocation"
+        app:layout_constraintStart_toStartOf="@id/moveCurrentLocation"
+        app:layout_constraintTop_toBottomOf="@id/moveCurrentLocation" />
 
     <ImageButton
         android:id="@+id/zoomOut"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
         android:background="#DCDCDC"
-        android:src="@drawable/baseline_minus_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/zoomIn" />
+        android:src="@drawable/btn_map_zoomout_selector"
+        app:layout_constraintEnd_toEndOf="@id/zoomIn"
+        app:layout_constraintStart_toStartOf="@id/zoomIn"
+        app:layout_constraintTop_toBottomOf="@id/zoomIn" />
 
     <ImageView
         android:id="@+id/btn_emergency_report"
