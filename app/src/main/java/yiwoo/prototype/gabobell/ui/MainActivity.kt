@@ -375,9 +375,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private fun updateUi() {
         if (isEmergency()) {
-            binding.btnEmergencyReport.text = "신고취소"
+            // binding.btnEmergencyReport.text = "신고취소"
+            binding.btnEmergencyReport.setBackgroundResource(R.drawable.btn_emergency_cancel_selector)
         } else {
-            binding.btnEmergencyReport.text = "긴급신고"
+            binding.btnEmergencyReport.setBackgroundResource(R.drawable.btn_emergency_selector)
         }
     }
 
@@ -386,15 +387,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     }
 
     private fun togglePolice(isActive: Boolean) {
-        Log.d("@!@", ">>>togglePolice : $isActive")
         isPoliceActive = isActive
         if (isActive) {
-            binding.fabPolice.setBackgroundResource(R.color.pink)
-            // TODO: 지구대 마커 표기
+            // binding.fabPolice.setBackgroundResource(R.color.pink)
+            binding.fabPolice.isSelected = true
+            // 지구대 마커 표기
             callPoliceApi(map!!)
         } else {
-            binding.fabPolice.setBackgroundResource(R.color.black_op_66)
-            // TODO: 지구대 마커 해제
+//            binding.fabPolice.setBackgroundResource(R.color.black_op_66)
+            binding.fabPolice.isSelected = false
+            // 지구대 마커 해제
             policeMarkers.forEach { it.remove() }
             policeMarkers.clear()
         }
