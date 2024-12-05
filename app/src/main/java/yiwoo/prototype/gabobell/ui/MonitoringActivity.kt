@@ -214,7 +214,7 @@ class MonitoringActivity :
             val currentLatLng = LatLng.from(latitude, longitude)
             currentLocationLabel?.moveTo(currentLatLng) ?: run {
                 currentLocationLabel =
-                    addLabelToMap(currentLatLng, R.drawable.marker_current, "현재")
+                    addLabelToMap(currentLatLng, R.drawable.current_marker)
             }
 
             // 현재위치 좌표에 따라 지도 카메라 업데이트
@@ -240,7 +240,7 @@ class MonitoringActivity :
         departureLocationLabel?.moveTo(newLatLng)
             ?: // 새 레이블 추가
             run {
-                departureLocationLabel = addLabelToMap(newLatLng, R.drawable.marker_departure, "출발")
+                departureLocationLabel = addLabelToMap(newLatLng, R.drawable.departure_marker)
             }
 
         isDepartureMarkerUpdated = true
@@ -265,7 +265,7 @@ class MonitoringActivity :
             ?: // 새 레이블 추가
             run {
                 destinationLocationLabel =
-                    addLabelToMap(newLatLng, R.drawable.marker_destination, "도착")
+                    addLabelToMap(newLatLng, R.drawable.destination_marker)
             }
 
         isDestinationMarkerUpdated = true
@@ -274,11 +274,10 @@ class MonitoringActivity :
         Log.d("MonitoringActivity@@", "Departure marker updated: $newLatLng")
     }
 
-    private fun addLabelToMap(position: LatLng, drawableResId: Int, text: String): Label? {
+    private fun addLabelToMap(position: LatLng, drawableResId: Int): Label? {
         return map?.labelManager?.layer?.addLabel(
             LabelOptions.from(position)
                 .setStyles(setPinStyle(this, drawableResId))
-                .setTexts(LabelTextBuilder().setTexts(text))
         )
     }
 
@@ -351,7 +350,7 @@ class MonitoringActivity :
                 LabelOptions.from(position).setStyles(
                     setPinStyle(
                         this,
-                        R.drawable.police_maker
+                        R.drawable.police_marker
                     )
                 )
             )
