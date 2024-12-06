@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -18,7 +19,7 @@ import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
@@ -43,6 +44,7 @@ import yiwoo.prototype.gabobell.helper.FlashUtil
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
+import yiwoo.prototype.gabobell.ui.popup.CustomPopup
 
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
     // SensorEventListener {
@@ -75,6 +77,25 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private val shakeThreshold = 30.0f  // 흔들기 감지 임계값
     */
 
+    private val permissionsAndy12 = arrayOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.CAMERA,
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
+
+    private val permissionsAndy11 = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.CAMERA,
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
+
+    // 권한 요청 필요한지?
+    private var isNecessaryToRequestPermission = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -83,11 +104,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         initUi()
         initLauncher()
         initMap()
-        Handler(Looper.getMainLooper()).postDelayed({
-            // 맵이 보여지기 전에 mapView.pause() 가 호출되면 맵이 출력되지 않아서
-            // 권한 요청을 늦췄다.
-            checkPermissions()
-        }, 1_000)
+
+        if (checkPermissions()) {
+            isNecessaryToRequestPermission = false
+        } else {
+            Handler(Looper.getMainLooper()).postDelayed({
+                // 맵이 보여지기 전에 mapView.pause() 가 호출되면 맵이 출력되지 않아서
+                // 권한 요청을 늦췄다.
+                requestPermissions()
+            }, 1_000)
+        }
 
         // initShakeDetection()
         initEmergencyStateReceiver()
@@ -133,11 +159,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
             if (isEmergency()) {
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.pop_emergency_cancel_title)
-                    .setMessage(R.string.pop_emergency_cancel_description)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
+
+                CustomPopup(this@MainActivity)
+                    .setMessage(getString(R.string.pop_emergency_cancel_description))
+                    .setConfirmButtonText(getString(R.string.pop_btn_yes))
+                    .setOnOkClickListener {
                         if ((application as GaboApplication).isConnected) {
                             // 기기 연결 상태에서 신고 취소
                             BleManager.instance?.cmdEmergency(false)
@@ -150,7 +176,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                             emergencyEffect(false)
                         }
                     }
-                    .setNegativeButton(R.string.pop_btn_no) { _, _ ->
+                    .setCancelButtonText(getString(R.string.pop_btn_no))
+                    .setOnCancelClickListener {
                         // no code
                     }
                     .show()
@@ -254,6 +281,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
             override fun onMapReady(kakaoMap: KakaoMap) {
                 Logger.d("===> onMapReady")
+
+                if (!isNecessaryToRequestPermission) {
+                    startLocation()
+                }
+
                 /**
                  * getPosition 함수에 의해서 초기 좌표로 카메라가 설정되는 과정에서 카메라가 이동 되면서,
                  *  setOnCameraMoveEndListener 가 호출이 됨
@@ -358,12 +390,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 // 신고 화면 -> 신고
                 updateUi()
                 // 신고 완료 팝업
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.pop_emergency_completed_title)
-                    .setMessage(R.string.pop_emergency_completed_description)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.pop_btn_confirm) { _, _ ->
-                    }
+                CustomPopup(this@MainActivity)
+                    .setMessage(getString(R.string.pop_emergency_completed_description))
                     .show()
 
             } else if (it.resultCode == RESULT_CANCELED) {
@@ -459,29 +487,26 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         return (application as GaboApplication).isEmergency
     }
 
-    private fun checkPermissions() {
+    private fun checkPermissions(): Boolean
+    =  hasPermissions(
+        this@MainActivity,
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) permissionsAndy12 else permissionsAndy11
+    )
+
+    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
+        return permissions.all { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requestPermissions() {
+        Log.d("@!@", "requestPermissions")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             //android 12 이상
-            requestMultiplePermissions.launch(
-                arrayOf(
-                    Manifest.permission.BLUETOOTH_SCAN,
-                    Manifest.permission.BLUETOOTH_CONNECT,
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-            )
+            requestMultiplePermissions.launch(permissionsAndy12)
         } else {
             //android 11 이하
-            requestMultiplePermissions.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-            )
+            requestMultiplePermissions.launch(permissionsAndy11)
         }
     }
 
@@ -491,14 +516,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val allGranted = permissions.all { it.value } // 모든 권한이 승인되었는지 확인
         if (allGranted) {
             Logger.d("모든 권한이 허용됨")
+            Log.d("@!@", "allGranted")
             if (map != null) {
-                LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
-                    updateCurrentLocationMarker(map!!, latitude, longitude)
-                    if (isFirstLocationUpdate) {
-                        map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(latitude, longitude)))
-                        isFirstLocationUpdate = false // 첫 위치 업데이트 이후로는 카메라 이동하지 않음
-                    }
-                }
+                startLocation()
             }
         } else {
             Logger.d("일부 권한이 거부됨")
@@ -506,6 +526,17 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             finish()
         }
     }
+
+    private fun startLocation() {
+        LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
+            updateCurrentLocationMarker(map!!, latitude, longitude)
+            if (isFirstLocationUpdate) {
+                map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(latitude, longitude)))
+                isFirstLocationUpdate = false // 첫 위치 업데이트 이후로는 카메라 이동하지 않음
+            }
+        }
+    }
+
 
     //블루투스 활성화 요청 콜백
     private var requestBluetooth = registerForActivityResult(

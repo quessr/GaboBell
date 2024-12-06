@@ -138,7 +138,11 @@ class MonitoringActivity :
             finishMonitoringEvent()
         }
         binding.btnClose.setOnClickListener {
-            finish()
+            if (isMonitoring) {
+                finishMonitoringEvent()
+            } else {
+                finish()
+            }
         }
     }
 
