@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
-    android:background="@color/blue_device_item">
+    android:background="@color/bg_gray">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -17,40 +16,51 @@
 
         <TextView
             android:id="@+id/tvPlaceName"
+            style="@style/AnsimTextView.Medium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:textSize="13sp"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="전북 익산시 부송동 100" />
 
         <TextView
-            android:id="@+id/tvAddressName"
+            android:id="@+id/tvAddressRoadName"
+            style="@style/AnsimTextView.Medium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="13sp"
             app:layout_constraintTop_toBottomOf="@id/tvPlaceName"
-            tools:text="전북 익산시 부송동 100" />
+            tools:text="전북 익산시 망산길 11-17" />
 
         <TextView
-            android:id="@+id/tvAddressRoadName"
+            android:id="@+id/tvAddressName"
+            style="@style/AnsimTextView.Medium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/tvAddressName"
-            tools:text="전북 익산시 망산길 11-17" />
+            android:textSize="13sp"
+            app:layout_constraintTop_toBottomOf="@id/tvAddressRoadName"
+            tools:text="전북 익산시 부송동 100" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <TextView
-        android:id="@+id/tvBtnChoose"
-        android:layout_width="80dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="20dp"
-        android:background="@color/blue"
-        android:gravity="center"
-        android:text="선택"
-        android:textColor="@color/white"
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvBtnChoose"
+            style="@style/AnsimTextView.Bold.White"
+            android:layout_width="80dp"
+            android:layout_height="40dp"
+            android:background="@drawable/btn_search_address_choose_selector"
+            android:gravity="center"
+            android:text="선택"
+            android:textSize="14sp" />
+    </androidx.cardview.widget.CardView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

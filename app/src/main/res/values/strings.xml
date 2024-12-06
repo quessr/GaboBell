@@ -76,4 +76,8 @@
     <string name="device_settings_device_deletion">기기 삭제</string>
     <string name="device_settings_reconnect">재연결</string>
 
+    <!--SearchAddress-->
+    <string name="address_road_name">(도로명) %1$s</string>
+    <string name="address_name">(지번) %1$s</string>
+
 </resources>
