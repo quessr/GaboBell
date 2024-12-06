@@ -84,4 +84,10 @@ class CustomPopup(context: Context): Dialog(context) {
         binding.btnConfirm.text = text
         return this
     }
+
+    // 취소 버튼 텍스트 변경
+    fun setCancelButtonText(text: String): CustomPopup {
+        binding.btnCancel.text = text
+        return this
+    }
 }

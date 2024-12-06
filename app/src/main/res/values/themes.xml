@@ -41,6 +41,10 @@
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/text_gray</item>
     </style>
+    <style name="AnsimTextView.Popup.Message.Bold.Gray" parent="AnsimTextView.Bold">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_gray</item>
+    </style>
 
     <!-- LightGray = #3F3F3F -->
     <style name="AnsimTextView.Regular.LightGray" parent="AnsimTextView.Regular">

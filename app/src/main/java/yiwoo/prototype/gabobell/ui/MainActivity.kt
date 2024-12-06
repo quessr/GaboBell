@@ -19,7 +19,6 @@ import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.kakao.vectormap.GestureType
@@ -45,6 +44,7 @@ import yiwoo.prototype.gabobell.helper.FlashUtil
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
+import yiwoo.prototype.gabobell.ui.popup.CustomPopup
 
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
     // SensorEventListener {
@@ -159,11 +159,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
             if (isEmergency()) {
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.pop_emergency_cancel_title)
-                    .setMessage(R.string.pop_emergency_cancel_description)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
+
+                CustomPopup(this@MainActivity)
+                    .setMessage(getString(R.string.pop_emergency_cancel_description))
+                    .setConfirmButtonText(getString(R.string.pop_btn_yes))
+                    .setOnOkClickListener {
                         if ((application as GaboApplication).isConnected) {
                             // 기기 연결 상태에서 신고 취소
                             BleManager.instance?.cmdEmergency(false)
@@ -176,7 +176,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                             emergencyEffect(false)
                         }
                     }
-                    .setNegativeButton(R.string.pop_btn_no) { _, _ ->
+                    .setCancelButtonText(getString(R.string.pop_btn_no))
+                    .setOnCancelClickListener {
                         // no code
                     }
                     .show()
@@ -389,12 +390,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 // 신고 화면 -> 신고
                 updateUi()
                 // 신고 완료 팝업
-                AlertDialog.Builder(this)
-                    .setTitle(R.string.pop_emergency_completed_title)
-                    .setMessage(R.string.pop_emergency_completed_description)
-                    .setCancelable(false)
-                    .setPositiveButton(R.string.pop_btn_confirm) { _, _ ->
-                    }
+                CustomPopup(this@MainActivity)
+                    .setMessage(getString(R.string.pop_emergency_completed_description))
                     .show()
 
             } else if (it.resultCode == RESULT_CANCELED) {
