@@ -10,17 +10,15 @@ object PopupManager {
         context: Context,
         title: String,
 //        message: String,
-        message: CharSequence,
+        message: String,
         btnText: String,
         onOkClick: (() -> Unit)? = null,
-        onCloseClick: (() -> Unit)? = null
     ) {
-        CustomPopup(context)
+        CustomPopup.Builder(context)
             .setTitle(title)
             .setMessage(message)
-            .setConfirmButtonText(btnText)
-            .setOnOkClickListener(View.OnClickListener { onOkClick?.invoke() })
-            .setOnCloseClickListener(View.OnClickListener { onCloseClick?.invoke() })
+            .setOnCancelClickListener(btnText, View.OnClickListener { onOkClick?.invoke() })
+            .build()
             .show()
     }
 }

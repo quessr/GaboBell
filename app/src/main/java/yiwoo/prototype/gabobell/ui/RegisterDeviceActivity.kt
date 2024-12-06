@@ -1,12 +1,10 @@
 package yiwoo.prototype.gabobell.ui
 
 import android.Manifest
-import android.app.AlertDialog
 import android.bluetooth.le.ScanResult
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.ServiceConnection
@@ -17,10 +15,12 @@ import android.os.IBinder
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityRegisterDeviceBinding
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
+import yiwoo.prototype.gabobell.ui.popup.CustomPopup
 
 class RegisterDeviceActivity :
     BaseActivity<ActivityRegisterDeviceBinding>(ActivityRegisterDeviceBinding::inflate) {
@@ -89,18 +89,17 @@ class RegisterDeviceActivity :
                 }
                 BleManager.BLE_SCAN_NOT_FOUND -> {
                     Logger.d("bleScanReceiver_BLE_SCAN_NOT_FOUND")
-                    val builder = AlertDialog.Builder(this@RegisterDeviceActivity)
-                    builder.setTitle("SCAN FAIL")
-                        .setMessage("디바이스를 찾지 못했습니다.\n스캔 재시도")
-                        .setPositiveButton("네",
-                            DialogInterface.OnClickListener { dialog, which ->
-                        upDateUI()
-                    })
-                    builder.setNegativeButton("아니오",
-                        DialogInterface.OnClickListener { dialog, which ->
-                        finish()
-                    })
-                    builder.show()
+                    CustomPopup.Builder(this@RegisterDeviceActivity)
+                        .setTitle(getString(R.string.pop_emergency_completed_title))
+                        .setMessage(getString(R.string.register_device_not_found))
+                        .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
+                            upDateUI()
+                        }
+                        .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
+                            finish()
+                        }
+                        .build()
+                        .show()
                 }
             }
         }

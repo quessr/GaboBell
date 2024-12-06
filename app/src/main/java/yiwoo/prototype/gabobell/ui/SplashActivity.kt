@@ -6,11 +6,11 @@ import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.helper.NetworkUtil
 import yiwoo.prototype.gabobell.helper.UserDataStore
+import yiwoo.prototype.gabobell.ui.popup.CustomPopup
 
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,13 +56,13 @@ class SplashActivity : AppCompatActivity() {
         }
     }
     private fun showNetworkError() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.pop_network_error_title)
-            .setMessage(R.string.pop_network_error_description)
-            .setCancelable(false)
-            .setPositiveButton(R.string.pop_btn_confirm) { _, _ ->
+        CustomPopup.Builder(this)
+            .setTitle(getString(R.string.pop_network_error_title))
+            .setMessage(getString(R.string.pop_network_error_description))
+            .setOnOkClickListener(getString(R.string.pop_btn_confirm)) {
                 finish()
             }
+            .build()
             .show()
     }
 }

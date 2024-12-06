@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.kakao.vectormap.KakaoMap
@@ -22,7 +21,6 @@ import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import com.kakao.vectormap.label.LabelStyle
 import com.kakao.vectormap.label.LabelStyles
-import com.kakao.vectormap.label.LabelTextBuilder
 import com.kakao.vectormap.label.LabelTextStyle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +36,7 @@ import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDataStore
+import yiwoo.prototype.gabobell.ui.popup.CustomPopup
 import yiwoo.prototype.gabobell.ui.searchAddress.SearchAddressActivity
 
 
@@ -432,19 +431,19 @@ class MonitoringActivity :
 
     // backkey를 눌렀을때도 적용
     private fun finishMonitoringEvent() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.pop_emergency_cancel_title)
-            .setMessage(R.string.pop_monitoring_finish_description)
-            .setCancelable(false)
-            .setPositiveButton(R.string.pop_btn_yes) { _, _ ->
+        CustomPopup.Builder(this)
+            .setTitle(getString(R.string.pop_emergency_cancel_title))
+            .setMessage(getString(R.string.pop_monitoring_finish_description))
+            .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
                 ApiSender.cancelEvent(this, (application as GaboApplication).monitorId)
                 isMonitoring = false
                 LocationHelper.stopLocation()
                 finish()
             }
-            .setNegativeButton(R.string.pop_btn_no) { _, _ ->
+            .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
                 // no code
             }
+            .build()
             .show()
     }
 
@@ -467,17 +466,24 @@ class MonitoringActivity :
     }
 
     private fun showErrorDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.pop_monitoring_setting_error_title)
-            .setPositiveButton(R.string.pop_btn_confirm) { dialog, _ -> dialog.dismiss() }
+        CustomPopup.Builder(this)
+            .setTitle(getString(R.string.pop_emergency_completed_title))
+            .setMessage(getString(R.string.pop_monitoring_setting_error_title))
+            .setOnOkClickListener(getString(R.string.pop_btn_confirm)) {
+                //no code
+            }
+            .build()
             .show()
     }
 
     private fun showMonitoringActiveDialog() {
-        AlertDialog.Builder(this)
-            .setTitle(R.string.pop_monitoring_running_title)
-            .setMessage(R.string.pop_monitoring_running_description)
-            .setPositiveButton(R.string.pop_btn_confirm) { dialog, _ -> dialog.dismiss() }
+        CustomPopup.Builder(this)
+            .setTitle(getString(R.string.pop_monitoring_running_title))
+            .setMessage(getString(R.string.pop_monitoring_running_description))
+            .setOnOkClickListener(getString(R.string.pop_btn_confirm)) {
+                //no code
+            }
+            .build()
             .show()
     }
 
