@@ -11,8 +11,8 @@ class GpsTracksClient(private val context: Context) {
 
     suspend fun gasTracks(
         monitoringId: Long,
-        latitude: Long,
-        longitude: Long,
+        latitude: Double,
+        longitude: Double,
         trackTime: String,
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit

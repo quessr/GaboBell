@@ -414,8 +414,8 @@ class MonitoringActivity :
             CoroutineScope(Dispatchers.IO).launch {
                 gpsTracksClient.gasTracks(
                     monitoringId = monitoringId,
-                    latitude = latitude.toLong(),
-                    longitude = longitude.toLong(),
+                    latitude = latitude,
+                    longitude = longitude,
                     trackTime = currentTime,
                     onSuccess = { Logger.d("Location successfully sent: Lat=$latitude, Lng=$longitude") },
                     onFailure = { errorMessage ->
