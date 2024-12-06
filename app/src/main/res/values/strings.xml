@@ -18,6 +18,8 @@
     <string name="pop_monitoring_setting_error_title">출발지와 도착지를 설정해주세요.</string>
     <string name="pop_monitoring_running_title">귀가모니터링 실행 중</string>
     <string name="pop_monitoring_running_description">귀가 모니터링이 실행 중입니다. 출발지와 도착지를 변경할 수 없습니다.</string>
+    <string name="pop_sign_message">안심이 서비스 회원 가입이 성공적으로 완료되었습니다.\n안심벨 기기설정을 통해 세부설정이 가능합니다.</string>
+    <string name="pop_register_message">연결하시겠습니까?</string>
 
     <!--Main-->
     <string name="main_registered_device">등록기기</string>
