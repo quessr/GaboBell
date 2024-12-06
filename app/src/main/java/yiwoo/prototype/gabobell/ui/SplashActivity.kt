@@ -22,7 +22,7 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         // 버전 네임 표기
-        findViewById<TextView>(R.id.tv_version).text = getVersionName()
+        findViewById<TextView>(R.id.tv_version).text = "Ver ${getVersionName()}"
 
         if (!NetworkUtil.isAvailable(this@SplashActivity)) {
             // 네트워크 에러
