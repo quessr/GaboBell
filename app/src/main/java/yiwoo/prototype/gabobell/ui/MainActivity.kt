@@ -159,11 +159,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
             if (isEmergency()) {
-
-                CustomPopup(this@MainActivity)
+                CustomPopup.Builder(this)
+                    .setTitle(getString(R.string.pop_emergency_completed_title))
                     .setMessage(getString(R.string.pop_emergency_cancel_description))
-                    .setConfirmButtonText(getString(R.string.pop_btn_yes))
-                    .setOnOkClickListener {
+//                    .setConfirmButtonText(getString(R.string.pop_btn_yes))
+                    .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
                         if ((application as GaboApplication).isConnected) {
                             // 기기 연결 상태에서 신고 취소
                             BleManager.instance?.cmdEmergency(false)
@@ -176,10 +176,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                             emergencyEffect(false)
                         }
                     }
-                    .setCancelButtonText(getString(R.string.pop_btn_no))
-                    .setOnCancelClickListener {
+                    .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
                         // no code
                     }
+                    .build()
                     .show()
 
             } else {
@@ -390,8 +390,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 // 신고 화면 -> 신고
                 updateUi()
                 // 신고 완료 팝업
-                CustomPopup(this@MainActivity)
+                CustomPopup.Builder(this)
+                    .setTitle(getString(R.string.pop_emergency_completed_title))
                     .setMessage(getString(R.string.pop_emergency_completed_description))
+                    .build()
                     .show()
 
             } else if (it.resultCode == RESULT_CANCELED) {

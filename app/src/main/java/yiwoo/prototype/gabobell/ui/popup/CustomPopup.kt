@@ -11,6 +11,7 @@ import yiwoo.prototype.gabobell.databinding.CustomPopupBinding
 class CustomPopup(context: Context): Dialog(context) {
     private var binding: CustomPopupBinding = CustomPopupBinding.inflate(layoutInflater)
 
+    private var isVisibleCloseButton: Boolean = false
     private var onConfirmClickListener: View.OnClickListener? = null
     private var onCancelClickListener: View.OnClickListener? = null
     private var onCloseClickListener: View.OnClickListener? = null
@@ -47,47 +48,89 @@ class CustomPopup(context: Context): Dialog(context) {
         }
     }
 
-    // 제목 설정
-    fun setTitle(title: String): CustomPopup {
-//        this.title = title
-        binding.popupTitle.text = title
-        return this
-    }
+    //Builder 클래스 정의
+    class Builder(private val context: Context) {
+        private var title: String? = null
+        private var message: String? = null
+        private var btnConfirmText: String? = null
+        private var btnCancelText: String? = null
+        private var needCloseButton: Boolean = false
+        private var onConfirmClickListener: View.OnClickListener? = null
+        private var onCancelClickListener: View.OnClickListener? = null
 
-    // 메시지 설정
-    fun setMessage(message: CharSequence): CustomPopup {
-        binding.alertDetail.text = message
-        return this
-    }
+        //device popup
+        private var deviceId: String? = null
+        private var deviceMessage: String? = null
 
-    // 버튼 클릭 리스너 설정
-    fun setOnOkClickListener(listener: View.OnClickListener): CustomPopup {
-        this.onConfirmClickListener = listener
-        return this
-    }
+        //device Id 설정
+        fun setDeviceId(deviceId: String): Builder {
+            this.deviceId = deviceId
+            return this
+        }
+        fun setDeviceMessage(deviceMessage: String): Builder{
+         this.deviceMessage = deviceMessage
+         return this
+        }
 
-    fun setOnCancelClickListener(listener: View.OnClickListener): CustomPopup {
-        this.onCancelClickListener = listener
-        binding.btnCancel.visibility = View.VISIBLE
-        return this
-    }
+        // 제목 설정
+        fun setTitle(title: String): Builder {
+            this.title = title
+            return this
+        }
 
-    // 닫기 버튼 설정 (X 버튼)
-    fun setOnCloseClickListener(listener: View.OnClickListener): CustomPopup {
-        this.onCloseClickListener = listener
-        binding.btnClose.visibility = View.VISIBLE
-        return this
-    }
+        // 메시지 설정
+        fun setMessage(message: String): Builder {
+            this.message = message
+            return this
+        }
 
-    // 확인 버튼 텍스트 변경
-    fun setConfirmButtonText(text: String): CustomPopup {
-        binding.btnConfirm.text = text
-        return this
-    }
+        // 버튼 클릭 리스너 설정
+        fun setOnOkClickListener(btnText: String, listener: View.OnClickListener): Builder {
+            this.btnConfirmText = btnText
+            this.onConfirmClickListener = listener
+            return this
+        }
 
-    // 취소 버튼 텍스트 변경
-    fun setCancelButtonText(text: String): CustomPopup {
-        binding.btnCancel.text = text
-        return this
+        fun setOnCancelClickListener(btnText: String, listener: View.OnClickListener): Builder {
+            this.btnCancelText = btnText
+            this.onCancelClickListener = listener
+            return this
+        }
+
+        // 닫기 버튼 설정 (X 버튼)
+        fun setOnCloseClickListener(isVisible: Boolean): Builder {
+            this.needCloseButton = isVisible
+            return this
+        }
+
+        fun build(): CustomPopup {
+            val popup = CustomPopup(context)
+            popup.binding.popupTitle.text = title
+            popup.binding.alertDetail.text = message
+            popup.isVisibleCloseButton = needCloseButton
+            popup.onConfirmClickListener = onConfirmClickListener
+            popup.onCancelClickListener = onCancelClickListener
+
+            //device popup
+            if (!deviceId.isNullOrEmpty()) {
+                popup.binding.deviceIdArea.visibility = View.VISIBLE
+                popup.binding.alertDetail.visibility = View.GONE
+                popup.binding.deviceId.text = deviceId
+            }
+            if (!deviceMessage.isNullOrEmpty()) {
+                popup.binding.deviceMessage.visibility = View.VISIBLE
+                popup.binding.deviceMessage.text = deviceMessage
+            }
+
+            if (!btnConfirmText.isNullOrEmpty()) {
+                popup.binding.btnConfirm.text = btnConfirmText
+            }
+            if (!btnCancelText.isNullOrEmpty()) {
+                popup.binding.btnCancel.visibility = View.VISIBLE
+                popup.binding.btnCancel.text = btnCancelText
+            }
+            popup.binding.btnClose.visibility = if(this.needCloseButton) View.VISIBLE else View.GONE
+            return popup
+        }
     }
 }

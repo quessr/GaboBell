@@ -60,6 +60,42 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/titleArea">
 
+
+                <LinearLayout
+                    android:id="@+id/deviceIdArea"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:layout_marginHorizontal="35dp"
+                    android:layout_marginTop="47dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:background="@drawable/ansim_pop_deviceid_bg"
+                    android:gravity="center"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/deviceId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        style="@style/AnsimTextView.Popup.Message.Bold.Gray"
+                        android:text="0000" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/deviceMessage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toBottomOf="@id/deviceIdArea"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/btnArea"
+                    android:text="연결하시겠습니까?"
+                    style="@style/AnsimTextView.Popup.Message.Bold.Gray"
+                    android:visibility="gone"/>
+
                 <TextView
                     android:id="@+id/alertDetail"
                     style="@style/AnsimTextView.Popup.Message.Bold.Gray"
@@ -73,16 +109,17 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <LinearLayout
+                    android:id="@+id/btnArea"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="47dp"
+                    android:layout_marginTop="74dp"
                     android:layout_marginBottom="22dp"
                     android:gravity="center_horizontal"
                     android:orientation="horizontal"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/alertDetail">
+                    app:layout_constraintTop_toBottomOf="@id/deviceIdArea">
 
                     <Button
                         android:id="@+id/btnCancel"

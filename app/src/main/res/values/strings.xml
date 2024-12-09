@@ -50,6 +50,7 @@
     <string name="register_device_registration_cancellation">등록 취소</string>
     <string name="register_device_finding_the_device">기기를 찾고 있습니다...</string>
     <string name="register_device_connection">연결</string>
+    <string name="register_device_not_found">기기를 찾지 못했습니다\n스캔 재시도</string>
 
     <!--DeviceSettings-->
     <string name="device_settings_connection_completed">연결 완료</string>
