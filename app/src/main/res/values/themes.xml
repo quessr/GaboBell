@@ -100,9 +100,15 @@
         <item name="android:background">@drawable/btn_ansim_pop_cancel_selector</item>
     </style>
 
+    <!-- 신고 화면 -->
     <style name="AnsimButton.Pop.Red" parent="AnsimButton">
         <item name="android:textSize">18sp</item>
         <item name="android:background">@drawable/btn_ansim_pop_red_selector</item>
+    </style>
+
+    <style name="AnsimButton.Pop.Blue" parent="AnsimButton">
+        <item name="android:textSize">18sp</item>
+        <item name="android:background">@drawable/btn_ansim_pop_blue_selector</item>
     </style>
 
 </resources>
