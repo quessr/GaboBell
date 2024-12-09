@@ -44,13 +44,21 @@
     <string name="report_details_action">액션</string>
 
     <!--RegisterDevice-->
+    <string name="register_device_title">안심벨 기기 설정</string>
     <string name="register_device_registration">기기등록</string>
-    <string name="register_device_scan">스캔</string>
-    <string name="register_device_scan_cancellation">스캔 취소</string>
+<!--    <string name="register_device_scan">스캔</string>-->
+    <string name="register_device_scan">안심벨 등록</string>
+<!--    <string name="register_device_scan_cancellation">스캔 취소</string>-->
+    <string name="register_device_scan_cancellation">스캔 중지</string>
     <string name="register_device_registration_cancellation">등록 취소</string>
     <string name="register_device_finding_the_device">기기를 찾고 있습니다...</string>
     <string name="register_device_connection">연결</string>
     <string name="register_device_not_found">기기를 찾지 못했습니다\n스캔 재시도</string>
+    <string name="register_device_message1">1. 안심벨의 긴급신고와 플래시 버튼을 동시에 3초간 누릅니다.</string>
+    <string name="register_device_message2">2. 전원이 켜지면서 부저음과 동시에 녹색등이 점멸하면서 페어링 대기 상태가 됩니다.</string>
+    <string name="register_device_message3">3. 휴대폰과 안심벨 기기를 가까이 근접시킵니다.</string>
+    <string name="register_device_message4">4. 안심벨 기기 설정에서 등록을 누릅니다.</string>
+    <string name="register_device_message5">5. 페어링이 완료되면 부저음이 울리고 청색등이 점멸합니다.</string>
 
     <!--DeviceSettings-->
     <string name="device_settings_connection_completed">연결 완료</string>

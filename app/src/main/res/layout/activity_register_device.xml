@@ -3,86 +3,129 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <TextView
-        android:id="@+id/register_device_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="30dp"
-        android:text="@string/register_device_registration"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:layout_height="match_parent"
+    android:background="@color/bg_gray">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_device_item"
+        android:id="@+id/register_title_area"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="30dp"
-        android:background="@color/blue_device_item"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/register_device_title">
+        android:layout_height="60dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/primary">
 
         <TextView
-            android:id="@+id/tv_device_name"
+            android:id="@+id/register_device_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="@string/register_device_title"
+            android:textSize="26sp"
+            android:theme="@style/AnsimTextView.Bold.White"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="GBSOS-XXX-1234" />
-
-        <Button
-            android:id="@+id/btn_connection"
-            android:layout_width="80dp"
-            android:layout_height="50dp"
-            android:layout_marginEnd="30dp"
-            android:background="@color/blue"
-            android:text="@string/register_device_connection"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageButton
+            android:id="@+id/btn_close"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="19dp"
+            android:background="@color/primary"
+            android:src="@drawable/btn_close_selector" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/ansimi_bell_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/register_title_area"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="98dp"
+        android:src="@drawable/ansimi_bell"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ansimi_bell_img"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginTop="106dp">
+
+        <TextView
+            android:id="@+id/message1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            style="@style/AnsimTextView.Semibold.Gray"
+            android:text="@string/register_device_message1"/>
+
+        <TextView
+            android:id="@+id/message2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="12sp"
+            style="@style/AnsimTextView.Semibold.Gray"
+            android:text="@string/register_device_message2"/>
+
+        <TextView
+            android:id="@+id/message3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="12sp"
+            style="@style/AnsimTextView.Semibold.Gray"
+            android:text="@string/register_device_message3"/>
+
+        <TextView
+            android:id="@+id/message4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="12sp"
+            style="@style/AnsimTextView.Semibold.Gray"
+            android:text="@string/register_device_message4"/>
+
+        <TextView
+            android:id="@+id/message5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textSize="12sp"
+            style="@style/AnsimTextView.Semibold.Gray"
+            android:text="@string/register_device_message5"/>
+
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/btn_scan"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginBottom="30dp"
-        android:background="@color/blue"
+        android:layout_height="44dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:text="@string/register_device_scan"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        style="@style/AnsimButton.Bottom" />
 
     <Button
         android:id="@+id/btn_scan_cancel"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginBottom="30dp"
-        android:background="@color/red"
-        android:text="@string/register_device_scan_cancellation"
-        android:textColor="@color/white"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_loading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        android:text="기기를 찾고 있습니다..."
-        android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="44dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/register_device_scan_cancellation"
+        style="@style/AnsimButton.Bottom"
+        android:visibility="gone" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

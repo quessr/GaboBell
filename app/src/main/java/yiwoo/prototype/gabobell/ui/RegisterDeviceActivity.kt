@@ -51,26 +51,18 @@ class RegisterDeviceActivity :
         binding.btnScan.setOnClickListener {
             startScan()
         }
-        binding.btnConnection.setOnClickListener {
-            startConnect()
-        }
         binding.btnScanCancel.setOnClickListener {
             stopScan()
-            binding.tvLoading.isVisible = false
+        }
+
+        binding.btnClose.setOnClickListener {
+            finish()
         }
     }
 
     private fun upDateUI() {
         binding.btnScan.isVisible = true
         binding.btnScanCancel.isVisible = false
-        binding.tvLoading.isVisible = false
-    }
-
-    private fun showDevice(deviceName: String) {
-        Logger.d("onDeviceFound : $deviceName")
-        binding.tvLoading.isVisible = false
-        binding.clDeviceItem.isVisible = true
-        binding.tvDeviceName.text = deviceName
     }
     // endregion
 
@@ -115,7 +107,17 @@ class RegisterDeviceActivity :
                 Logger.d("bleScanReceiver_PERMISSION_GRANTED")
             }
             Logger.d("bleScanReceiver_onDeviceFounded")
-            showDevice(device.name)
+
+            CustomPopup.Builder(this)
+                .setTitle(getString(R.string.pop_emergency_completed_title))
+                .setDeviceId(device.name)
+                .setDeviceMessage(getString(R.string.pop_register_message))
+                .setOnOkClickListener(getString(R.string.register_device_connection)) {
+                    startConnect()
+                }
+                .build()
+                .show()
+
             deviceAddress = device.address
             deviceName = device.name
             Logger.d("bleScanReceiver_result : $result")
@@ -212,7 +214,6 @@ class RegisterDeviceActivity :
             bleManager?.startBleScan()
         }
 
-        binding.tvLoading.isVisible = true
         binding.btnScan.isVisible = false
         binding.btnScanCancel.isVisible = true
 
