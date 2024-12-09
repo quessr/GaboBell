@@ -17,6 +17,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -117,6 +118,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
         // initShakeDetection()
         initEmergencyStateReceiver()
+        handleBackPressed()
     }
 
     override fun onResume() {
@@ -258,6 +260,28 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 }
             }
         }
+    }
+
+    private fun handleBackPressed() {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                CustomPopup.Builder(this@MainActivity)
+                    .setTitle(getString(R.string.pop_emergency_completed_title))
+                    .setMessage("앱을 종료하시겠습니까?")
+                    .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
+                        finish()
+                    }
+                    .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
+                        // no code
+                    }
+                    .build()
+                    .show()
+            }
+        }
+        this.onBackPressedDispatcher.addCallback(
+            this,
+            callback
+        )
     }
 
     private fun initMap() {

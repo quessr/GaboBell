@@ -88,7 +88,7 @@
 
     <Button
         android:id="@+id/btn_cancellations"
-        style="@style/AnsimButton.Pop.Confirm"
+        style="@style/AnsimButton.Pop.Blue"
         android:layout_width="136dp"
         android:layout_height="60dp"
         android:layout_marginTop="30dp"
