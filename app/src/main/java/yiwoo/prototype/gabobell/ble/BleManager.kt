@@ -716,9 +716,9 @@ class BleManager : Service() {
 
         // data1 처리
         val statusMessage1 = when (data1) {
-            0x01.toByte() -> "충전 중"
+            0x01.toByte() -> "충전중"
             0x02.toByte() -> "완충"
-            0x03.toByte() -> "충전 중"
+            0x03.toByte() -> "충전필요"
             0x04.toByte() -> "기타"
             else -> "알 수 없는 상태"
         }
@@ -733,9 +733,8 @@ class BleManager : Service() {
         Logger.d("상태 응답 data2: $statusMessage2")
 
         // data3 처리
-        val version = (data3 - 0x10).toString(16) // 0x12 -> 1.2, 0x13 -> 1.3, ...
-        val statusMessage3 = "v1.$version"
-        Logger.d("상태 응답 data3: $statusMessage3")
+        val version = convertHexToVersion(data3)
+        Logger.d("상태 응답 data3: $version")
 
         // data4 처리
         val statusMessage4 = when (data4) {
@@ -749,7 +748,7 @@ class BleManager : Service() {
         val intent = Intent(BLE_STATUS_UPDATE).apply {
             putExtra("status_charging", statusMessage1)
             putExtra("status_bell", statusMessage2)
-            putExtra("status_version", statusMessage3)
+            putExtra("status_version", version)
             putExtra("status_led", statusMessage4)
         }
         sendBroadcast(intent)
@@ -770,6 +769,13 @@ class BleManager : Service() {
         sendBroadcast(intent)
     }
 // endregion
+
+    private fun convertHexToVersion(hex: Byte): String {
+        val intHex = hex.toInt() and 0xFF
+        val major = (intHex shr 4) // 상위 4비트 추출
+        val minor = (intHex and 0x0F) // 하위 4비트 추출
+        return "$major.$minor"
+    }
 
     companion object {
         //외부에서 서비스 클래스 인스턴스 사용

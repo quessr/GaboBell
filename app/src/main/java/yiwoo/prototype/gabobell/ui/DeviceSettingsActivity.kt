@@ -5,12 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import yiwoo.prototype.gabobell.GaboApplication
+import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
-import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
 
 class DeviceSettingsActivity :
@@ -22,8 +21,18 @@ class DeviceSettingsActivity :
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 BleManager.BLE_STATUS_UPDATE -> handleStatusUpdate(intent)
-                BleManager.BLE_LED_SETTING_CHANGED -> handleLedSettingChanged(intent)
-                BleManager.BLE_BELL_SETTING_CHANGED -> handleBellSettingChanged(intent)
+
+                // 안심벨 기기 설정은
+                // 안심벨을 통해 신고를 했을 때의 동작을 설정하는 부분으로 판단된다.
+                // 1. 무음 모드 : 벨에 직접 설정한다.
+                // 2. 메시지 : (미구현)
+                // 3. 5초 지연 : Pref 에 설정 (벨로 신고시 5초 뒤에 API 를 호출한다.)
+                // 4. 손전등 : Pref 에 설정 (신고시 플래시 동작)
+
+                // LED 상태가 변하는 것은 큰 의미가 없다. (설정값에 영향을 미치지 않는다.)
+                // BleManager.BLE_LED_SETTING_CHANGED -> handleLedSettingChanged(intent)
+                // 벨 사운드 상태가 변하는 것은 큰 의미가 없다. (설정값에 영향을 미치지 않는다.)
+                // BleManager.BLE_BELL_SETTING_CHANGED -> handleBellSettingChanged(intent)
             }
         }
     }
@@ -34,25 +43,33 @@ class DeviceSettingsActivity :
         val versionStatus = intent.getStringExtra("status_version") ?: "버전 알 수 없음"
         val ledStatus = intent.getStringExtra("status_led") ?: "LED 상태 알 수 없음"
 
-        binding.tvBatteryStatusData.text = chargingStatus
-        binding.tvBellData.text = bellStatus.substringAfter(" ")
-        binding.tvFwVersionData.text = versionStatus
-        binding.tvLedData.text = ledStatus.substringAfter(" ")
-    }
+        // 베터리
+        val resource = when (chargingStatus) {
+            "충전중" -> R.drawable.batterry_status_charging
+            "완충" -> R.drawable.batterry_status_maximum
+            "충전필요" -> R.drawable.batterry_status_minimum
+            "기타" -> R.drawable.batterry_status_normal
+            else -> R.drawable.batterry_status_normal
+        }
+        binding.ivBatteryStatus.setBackgroundResource(resource)
 
-    private fun handleLedSettingChanged(intent: Intent) {
-        val isLedOn = intent.getStringExtra("status_led") ?: "LED 상태 알 수 없음"
-        binding.tvLedData.text = isLedOn
-    }
+        // 펌웨어 버전
+        binding.tvVersion.text = "버전 $versionStatus"
 
-    private fun handleBellSettingChanged(intent: Intent) {
-        val isBellOn = intent.getStringExtra("status_bell") ?: "BELL 상태 알 수 없음"
-        binding.tvBellData.text = isBellOn
+        // LED
+        binding.toggleLed.isSelected = ledStatus == "LED On"
+
+        // 벨 (무음모드)
+        binding.toggleSound.isSelected = bellStatus == "벨 On"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bleManager = BleManager.instance
+
+        // 화면 진입 시, 안심벨 상태 정보 요청
+        bleManager?.cmdGetStatus()
+
         initUi()
         updateUi()
 
@@ -65,29 +82,43 @@ class DeviceSettingsActivity :
     }
 
     private fun initUi() {
-        binding.tvDeviceName.text = UserDeviceManager.getDeviceName(this)
 
-        binding.btnStatusCheck.setOnClickListener {
-            bleManager?.cmdGetStatus()
-        }
+        binding.ivBatteryStatus.setBackgroundResource(R.drawable.batterry_status_disconnect)
 
-        binding.btnBellOn.setOnClickListener {
-            bleManager?.cmdBellSetting(BleManager.BellCommand.ON)
-        }
-        binding.btnBellOff.setOnClickListener {
-            bleManager?.cmdBellSetting(BleManager.BellCommand.OFF)
+        binding.toggleSound.setOnClickListener {
+            it.isSelected = !it.isSelected
         }
 
-        binding.btnLedOn.setOnClickListener {
-            bleManager?.cmdLedSetting(true)
+        binding.toggleDelay.setOnClickListener {
+
         }
-        binding.btnLedOff.setOnClickListener {
-            bleManager?.cmdLedSetting(false)
+
+        binding.toggleLed.setOnClickListener {
+
         }
-        binding.btnSettingsDisconnect.setOnClickListener {
+
+        binding.btnSave.setOnClickListener {
+            // 최종 설정 정보 저장
+            // 무음모드
+            if (binding.toggleSound.isSelected) {
+                bleManager?.cmdBellSetting(BleManager.BellCommand.ON)
+            } else {
+                bleManager?.cmdBellSetting(BleManager.BellCommand.OFF)
+            }
+
+            // 메시지
+
+            // 5초 지연
+
+            // 손전등
+
+            finish()
+
+        }
+
+        binding.btnDisconnect.setOnClickListener {
             bleManager?.disconnect()
             UserDeviceManager.deleteDevice(this)
-            Logger.d("연결 해제")
             Toast.makeText(
                 this@DeviceSettingsActivity,
                 "기기 연결이 해제되었습니다.",
@@ -99,11 +130,21 @@ class DeviceSettingsActivity :
 
     private fun updateUi() {
         if ((application as GaboApplication).isConnected) {
-            binding.btnDisconnectStatus.visibility = View.GONE
-        } else {
-            binding.btnConnectStatus.visibility = View.GONE
-        }
+            binding.ivBellConnection.setBackgroundResource(R.drawable.bell_connected)
+            binding.toggleSound.isEnabled = true
+            binding.toggleMessage.isEnabled = true
+            binding.toggleDelay.isEnabled = true
+            binding.toggleLed.isEnabled = true
+            binding.btnSave.isEnabled = true
 
-        bleManager?.cmdGetStatus()
+        } else {
+            binding.ivBellConnection.setBackgroundResource(R.drawable.bell_disconnected)
+            binding.ivBatteryStatus.setBackgroundResource(R.drawable.batterry_status_disconnect)
+            binding.toggleSound.isEnabled = false
+            binding.toggleMessage.isEnabled = false
+            binding.toggleDelay.isEnabled = false
+            binding.toggleLed.isEnabled = false
+            binding.btnSave.isEnabled = false
+        }
     }
 }
