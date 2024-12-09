@@ -11,6 +11,7 @@ import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityDeviceSettingsBinding
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
+import yiwoo.prototype.gabobell.helper.UserSettingsManager
 
 class DeviceSettingsActivity :
     BaseActivity<ActivityDeviceSettingsBinding>(ActivityDeviceSettingsBinding::inflate) {
@@ -66,12 +67,10 @@ class DeviceSettingsActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bleManager = BleManager.instance
-
-        // 화면 진입 시, 안심벨 상태 정보 요청
-        bleManager?.cmdGetStatus()
-
         initUi()
         updateUi()
+        // 화면 진입 시, 안심벨 상태 정보 요청
+        bleManager?.cmdGetStatus()
 
         val filter = IntentFilter().apply {
             addAction(BleManager.BLE_STATUS_UPDATE)
@@ -83,6 +82,11 @@ class DeviceSettingsActivity :
 
     private fun initUi() {
 
+        binding.toggleSound.isSelected = false
+        binding.toggleMessage.isSelected = UserSettingsManager.getEmergencyMessage(this@DeviceSettingsActivity)
+        binding.toggleDelay.isSelected = UserSettingsManager.getEmergencyDelay(this@DeviceSettingsActivity)
+        binding.toggleLed.isSelected = UserSettingsManager.getEmergencyFlash(this@DeviceSettingsActivity)
+
         binding.ivBatteryStatus.setBackgroundResource(R.drawable.batterry_status_disconnect)
 
         binding.toggleSound.setOnClickListener {
@@ -90,11 +94,11 @@ class DeviceSettingsActivity :
         }
 
         binding.toggleDelay.setOnClickListener {
-
+            it.isSelected = !it.isSelected
         }
 
         binding.toggleLed.setOnClickListener {
-
+            it.isSelected = !it.isSelected
         }
 
         binding.btnSave.setOnClickListener {
@@ -105,15 +109,26 @@ class DeviceSettingsActivity :
             } else {
                 bleManager?.cmdBellSetting(BleManager.BellCommand.OFF)
             }
-
             // 메시지
-
+            UserSettingsManager.setEmergencyMessage(
+                this@DeviceSettingsActivity,
+                binding.toggleMessage.isSelected
+            )
             // 5초 지연
-
+            UserSettingsManager.setEmergencyDelay(
+                this@DeviceSettingsActivity,
+                binding.toggleDelay.isSelected
+            )
             // 손전등
-
+            UserSettingsManager.setEmergencyFlash(
+                this@DeviceSettingsActivity,
+                binding.toggleLed.isSelected
+            )
             finish()
+        }
 
+        binding.btnClose.setOnClickListener {
+            finish()
         }
 
         binding.btnDisconnect.setOnClickListener {
@@ -129,22 +144,18 @@ class DeviceSettingsActivity :
     }
 
     private fun updateUi() {
-        if ((application as GaboApplication).isConnected) {
+        val isConnected = (application as GaboApplication).isConnected
+        if (isConnected) {
             binding.ivBellConnection.setBackgroundResource(R.drawable.bell_connected)
-            binding.toggleSound.isEnabled = true
-            binding.toggleMessage.isEnabled = true
-            binding.toggleDelay.isEnabled = true
-            binding.toggleLed.isEnabled = true
-            binding.btnSave.isEnabled = true
-
         } else {
             binding.ivBellConnection.setBackgroundResource(R.drawable.bell_disconnected)
             binding.ivBatteryStatus.setBackgroundResource(R.drawable.batterry_status_disconnect)
-            binding.toggleSound.isEnabled = false
-            binding.toggleMessage.isEnabled = false
-            binding.toggleDelay.isEnabled = false
-            binding.toggleLed.isEnabled = false
-            binding.btnSave.isEnabled = false
+
         }
+        binding.toggleSound.isEnabled = isConnected
+        binding.toggleMessage.isEnabled = isConnected
+        binding.toggleDelay.isEnabled = isConnected
+        binding.toggleLed.isEnabled = isConnected
+        binding.btnSave.isEnabled = isConnected
     }
 }

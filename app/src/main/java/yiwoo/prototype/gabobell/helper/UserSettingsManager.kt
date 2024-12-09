@@ -7,6 +7,10 @@ object UserSettingsManager {
     // private const val KEY_USER = "user"
     private const val KEY_EMERGENCY_FORMAT = "emergency_format"
 
+    private const val KEY_EMERGENCY_SMS = "emergency_sms"
+    private const val KEY_EMERGENCY_DELAY = "emergency_delay"
+    private const val KEY_EMERGENCY_FLASH = "emergency_flash"
+
     /*
     private val apiInfo: Array<Pair<String, String>> = arrayOf(
         "283697cc-8e00-40da-947f-058ece8af8aa" to "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVHlwZSI6IlVTRVIiLCJqdGkiOiJkNjM3N2VjODdmNDQ0ODBkYjhmZjI3MmVjZGJkYzQ4Nzk3NjgiLCJpc3MiOiJZSVdPTy1BUEliYzlkY2QzZWQ5Iiwic3ViIjoidXNlcjAxIiwiaWF0IjoxNzI5MjE2Njk4LCJleHAiOjE3MzE4MDg2OTh9.wx106Tadiy5tyAA3lquMHJKcJApPVSPPknKk_DnZIs0",
@@ -56,5 +60,29 @@ object UserSettingsManager {
             return
         }
         PreferenceManager(context).setInt(KEY_EMERGENCY_FORMAT, type)
+    }
+
+    fun getEmergencyMessage(context: Context): Boolean {
+        return PreferenceManager(context).getBoolean(KEY_EMERGENCY_SMS, false)
+    }
+
+    fun setEmergencyMessage(context: Context, value: Boolean) {
+        PreferenceManager(context).setBoolean(KEY_EMERGENCY_SMS, value)
+    }
+
+    fun getEmergencyDelay(context: Context): Boolean {
+        return PreferenceManager(context).getBoolean(KEY_EMERGENCY_DELAY, false)
+    }
+
+    fun setEmergencyDelay(context: Context, value: Boolean) {
+        PreferenceManager(context).setBoolean(KEY_EMERGENCY_DELAY, value)
+    }
+
+    fun getEmergencyFlash(context: Context): Boolean {
+        return PreferenceManager(context).getBoolean(KEY_EMERGENCY_FLASH, false)
+    }
+
+    fun setEmergencyFlash(context: Context, value: Boolean) {
+        PreferenceManager(context).setBoolean(KEY_EMERGENCY_FLASH, value)
     }
 }
