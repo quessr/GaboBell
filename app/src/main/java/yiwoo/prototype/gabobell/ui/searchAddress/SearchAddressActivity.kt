@@ -45,20 +45,6 @@ class SearchAddressActivity :
             }
 
             tvBtnSearch.setOnClickListener {
-//                searchQuery = binding.etSearchAddress.text.toString()
-//                Log.d("SearchAddressActivity@@", "editText: $searchQuery")
-//
-//                CoroutineScope(Dispatchers.Main).launch {
-//                    val response = searchAddressClient.searchAddress(query = searchQuery)
-//                    val documents = response?.documents ?: emptyList()
-//                    val searchAddressModels: List<SearchAddressModel> =
-//                        documents.map {
-//                            it.toSearchAddressModel()
-//                        }
-//
-//                    Log.d("SearchAddressActivity", "documents: $documents")
-//                    searchAddressAdapter.submitList(searchAddressModels)
-//                }
                 searchAddress()
             }
 
@@ -72,7 +58,7 @@ class SearchAddressActivity :
                     if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
                         searchAddress()
                         return@setOnKeyListener true
-                    }  else false
+                    } else false
                 }
             }
         }
