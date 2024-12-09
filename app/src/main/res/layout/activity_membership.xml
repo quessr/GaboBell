@@ -1,360 +1,406 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    android:background="@color/bg_gray">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clTitleContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="30dp">
+        android:layout_height="60dp"
+        android:background="@color/primary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/tvTitleMembership"
+            android:id="@+id/tvTitleSearchAddresss"
+            style="@style/AnsimTextView.Bold.White"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="회원 가입"
-            android:textSize="40sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- 아이디-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clUserId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/tvTitleMembership">
-
-            <TextView
-                android:id="@+id/tvUserIdTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="아이디"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilUserId"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                app:counterEnabled="false"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvUserIdTitle"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietUserId"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!--TextView
-                android:id="@+id/tvUserId"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:gravity="center_vertical"
-                android:textSize="24sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvUserIdTitle"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="user01" /-->
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- 패스워드-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clUserPw"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clUserId">
-
-            <TextView
-                android:id="@+id/tvUserPwTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="패스워드"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilUserPw"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                app:counterEnabled="false"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvUserPwTitle"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietUserPw"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textPassword"/>
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!--        닉네임-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clNickname"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clUserPw">
-
-            <TextView
-                android:id="@+id/tvNicknameTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="닉네임"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilNickname"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="ex. useruser"
-
-                app:counterEnabled="false"
-                app:counterMaxLength="10"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvNicknameTitle"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietNickname"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!--    전화번호-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clPhoneNumber"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clNickname">
-
-            <TextView
-                android:id="@+id/tvPhoneNumberTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="전화번호"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilPhoneNumber"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="ex. 01012345678"
-
-                app:counterEnabled="false"
-                app:counterMaxLength="10"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvPhoneNumberTitle"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietPhoneNumber"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <!--    생년월일-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clBirthDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clPhoneNumber">
-
-            <TextView
-                android:id="@+id/tvBirthDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="생년월일"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilBirthDate"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="ex. 0506"
-
-                app:counterEnabled="false"
-                app:counterMaxLength="4"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvBirthDate"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietBirthDate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <!--    성별-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clGender"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clBirthDate">
-
-            <TextView
-                android:id="@+id/tvGender"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="성별"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilGender"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="ex. M/F"
-
-                app:counterEnabled="false"
-                app:counterMaxLength="4"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvGender"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietGender"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <!--    내/외국인-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clNationality"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clGender">
-
-            <TextView
-                android:id="@+id/tvNationality"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="내/외국인"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilNationality"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="ex. local/foreigner"
-
-                app:counterEnabled="false"
-                app:counterMaxLength="4"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvNationality"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietNationality"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!--    자치구-->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clDistrict"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:layout_constraintTop_toBottomOf="@id/clNationality">
-
-            <TextView
-                android:id="@+id/tvDistrict"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="자치구"
-                android:textSize="30sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilDistrict"
-                android:layout_width="200dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:hint="ex. 마포구"
-
-                app:counterEnabled="false"
-                app:counterMaxLength="4"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvDistrict"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietDistrict"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <TextView
-            android:id="@+id/tv_btn_register"
-            android:layout_width="200dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="40dp"
-            android:layout_marginBottom="50dp"
-            android:background="@color/blue"
             android:gravity="center"
-            android:text="가입하기"
-            android:textColor="@color/white"
-            android:textSize="20sp"
+            android:text="@string/membership_title"
+            android:textSize="26sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/clDistrict" />
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageButton
+            android:id="@+id/btnClose"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginEnd="19dp"
+            android:background="@drawable/btn_close_selector"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+
+    <TextView
+        android:id="@+id/tvSubTitle"
+        style="@style/AnsimTextView.Medium.White"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="@color/secondary"
+        android:gravity="center"
+        android:text="@string/membership_sub_title"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@id/clTitleContainer" />
+
+    <!-- 아이디-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clUserId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/tvSubTitle">
+
+        <TextView
+            android:id="@+id/tvUserIdTitle"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="@string/membership_id"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etUserId"
+            style="@style/AnsimTextView.Medium"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:padding="10dp"
+            android:textSize="14sp"
+            app:counterEnabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvUserIdTitle"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 패스워드-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clUserPw"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/clUserId">
+
+        <TextView
+            android:id="@+id/tvUserPwTitle"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="@string/membership_password"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etUserPw"
+            style="@style/AnsimTextView.Medium"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:padding="10dp"
+            android:textSize="14sp"
+            app:counterEnabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvUserPwTitle"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--        닉네임(회원명)-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clNickname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/clUserPw">
+
+        <TextView
+            android:id="@+id/tvNicknameTitle"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="@string/membership_nickname"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etNickname"
+            style="@style/AnsimTextView.Medium"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:padding="10dp"
+            android:textSize="14sp"
+            app:counterEnabled="false"
+            app:counterMaxLength="10"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvNicknameTitle"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    생년월일-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clBirthDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/clNickname">
+
+        <TextView
+            android:id="@+id/tvBirthDate"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="생년월 (필수)"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etBirthDate"
+            style="@style/AnsimTextView.Medium"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:hint="@string/membership_birth_date_hint"
+            android:padding="10dp"
+            android:textSize="14sp"
+            app:counterEnabled="false"
+            app:counterMaxLength="4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvBirthDate"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    성별-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/clBirthDate"
+        tools:layout_editor_absoluteX="-16dp">
+
+        <TextView
+            android:id="@+id/tvGender"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="성별"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etGender"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:hint="ex. M/F"
+            android:padding="10dp"
+            app:counterEnabled="false"
+            app:counterMaxLength="4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvGender"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    전화번호(휴대폰번호)-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clPhoneNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/clGender">
+
+        <TextView
+            android:id="@+id/tvPhoneNumberTitle"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="@string/membership_phone_numbser"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etPhoneNumber"
+            style="@style/AnsimTextView.Medium"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:hint="@string/membership_phone_numbser_hint"
+            android:padding="10dp"
+            android:textSize="14sp"
+            app:counterEnabled="false"
+            app:counterMaxLength="10"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvPhoneNumberTitle"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    내/외국인(국적)-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clNationality"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/clPhoneNumber">
+
+        <TextView
+            android:id="@+id/tvNationality"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="국적"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etNationality"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:hint="ex. local/foreigner"
+            android:padding="10dp"
+            app:counterEnabled="false"
+            app:counterMaxLength="4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@id/tvNationality"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/ivDashLine"
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="24dp"
+        android:layerType="software"
+        android:src="@drawable/memership_dash_line"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/clNationality" />
+
+    <!--        거주지 관리구청-->
+    <TextView
+        android:id="@+id/tvTitleDistrict"
+        style="@style/AnsimTextView.Bold"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="21dp"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivDashLine"
+        tools:text="거주지 관리구청 (필수)" />
+
+    <!--    자치구-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clDistrict"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitleDistrict">
+
+        <TextView
+            android:id="@+id/tvDistrict"
+            style="@style/AnsimTextView.Bold"
+            android:layout_width="108dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:text="@string/membership_district"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/etDistrict"
+            style="@style/AnsimTextView.Medium"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="22dp"
+            android:background="@color/white"
+            android:hint="@string/membership_district_hint"
+            android:padding="10dp"
+            android:textSize="14sp"
+            app:counterEnabled="false"
+            app:counterMaxLength="4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tvDistrict"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--가입하기 버튼-->
+    <TextView
+        android:id="@+id/tv_btn_register"
+        style="@style/AnsimTextView.Bold.White"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/btn_ansim_bottom_selector"
+        android:gravity="center"
+        android:text="가입하기"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
 

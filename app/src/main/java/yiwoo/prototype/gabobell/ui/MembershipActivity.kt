@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.data.network.LogInUserClient
 import yiwoo.prototype.gabobell.data.network.SignUpUserClient
 import yiwoo.prototype.gabobell.databinding.ActivityMembershipBinding
@@ -27,39 +29,41 @@ class MembershipActivity :
     }
 
     private fun initUi() {
+        initTexts()
+        
         if (userName.isEmpty()) {
             // 일반회원
             binding.clUserPw.visibility = View.VISIBLE
-            binding.tietUserId.isEnabled = true
-            binding.tietUserId.setText("")
+            binding.etUserId.isEnabled = true
+            binding.etUserId.setText("")
 
         } else {
             // 카카오
             binding.clUserPw.visibility = View.GONE
-            binding.tietUserId.isEnabled = false
-            binding.tietUserId.setText(userName)
+            binding.etUserPw.isEnabled = false
+            binding.etUserPw.setText(userName)
         }
 
         binding.tvBtnRegister.setOnClickListener {
             // 카카오 경우 ID/PW 를 동일하게 설정한다. (임시방편)
             val password = if (userName.isEmpty()) {
-                binding.tilUserPw.editText?.text.toString()
+                binding.etUserPw.text.toString()
             } else {
-                binding.tilUserId.editText?.text.toString()
+                binding.etUserId.text.toString()
             }
 
             // 모든 입력 필드의 값이 비어있지 않은지 확인
-            val userId = binding.tilUserId.editText?.text.toString()
-            val nickname = binding.tilNickname.editText?.text.toString() 
-            val phoneNumber = binding.tilPhoneNumber.editText?.text.toString()
-            val birthDate = binding.tilBirthDate.editText?.text.toString()
-            val gender = binding.tilGender.editText?.text.toString()
-            val nationality = binding.tilNationality.editText?.text.toString()
-            val district = binding.tilDistrict.editText?.text.toString()
+            val userId = binding.etUserId.text.toString()
+            val nickname = binding.etNickname.text.toString()
+            val phoneNumber = binding.etPhoneNumber.text.toString()
+            val birthDate = binding.etBirthDate.text.toString()
+//            val gender = binding.etGender.text.toString()
+//            val nationality = binding.etNationality.text.toString()
+            val district = binding.etDistrict.text.toString()
 
-            if (userId.isEmpty() || password.isEmpty() || nickname.isEmpty() || 
-                phoneNumber.isEmpty() || birthDate.isEmpty() || gender.isEmpty() ||
-                nationality.isEmpty() || district.isEmpty()) {
+            if (userId.isEmpty() || password.isEmpty() || nickname.isEmpty() ||
+                phoneNumber.isEmpty() || birthDate.isEmpty() || district.isEmpty()
+            ) {
                 Toast.makeText(this@MembershipActivity, "모든 항목을 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -70,13 +74,24 @@ class MembershipActivity :
                 "nickname" to nickname,
                 "phoneNumber" to phoneNumber,
                 "birthDate" to birthDate,
-                "gender" to gender,
-                "nationality" to nationality,
+//                "gender" to gender,
+//                "nationality" to nationality,
                 "district" to district
             )
             // 회원가입
             signup(userDetails)
         }
+    }
+
+    private fun initTexts() {
+        binding.tvBirthDate.text = HtmlCompat.fromHtml(
+            getString(R.string.membership_birth_date),
+            HtmlCompat.FROM_HTML_MODE_LEGACY
+        )
+        binding.tvTitleDistrict.text = HtmlCompat.fromHtml(
+            getString(R.string.membership_title_district),
+            HtmlCompat.FROM_HTML_MODE_LEGACY
+        )
     }
 
     private fun signup(userDetails: Map<String, String>) {
