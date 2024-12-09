@@ -80,6 +80,7 @@
 
     <style name="AnsimButton.Bottom" parent="AnsimButton">
         <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/roboto_medium</item>
         <item name="android:background">@drawable/btn_ansim_bottom_selector</item>
     </style>
 

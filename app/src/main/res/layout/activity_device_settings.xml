@@ -318,22 +318,22 @@
 
     <Button
         android:id="@+id/btn_disconnect"
+        style="@style/AnsimButton"
         android:layout_width="match_parent"
         android:layout_height="44dp"
-        style="@style/AnsimButton"
-        android:text="기기해제"
-        android:layout_marginTop="16dp"
-        android:background="#9e9e9e"
         android:layout_marginHorizontal="18dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/btn_bell_release"
+        android:text="기기해제"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cv_battery_group"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cv_battery_group" />
 
 
     <!-- 저장 버튼 -->
     <Button
         android:id="@+id/btn_save"
-        style="@style/AnsimTextView.Medium.White"
+        style="@style/AnsimButton.Bottom"
         android:layout_width="match_parent"
         android:layout_height="44dp"
         android:background="@drawable/btn_ansim_bottom_selector"
