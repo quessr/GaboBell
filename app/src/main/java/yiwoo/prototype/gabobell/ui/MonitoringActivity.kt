@@ -9,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
@@ -219,6 +220,9 @@ class MonitoringActivity :
                 currentLocationLabel =
                     addLabelToMap(currentLatLng, R.drawable.current_marker)
             }
+
+            //회전 동작 고정(제스쳐)
+            map?.setGestureEnable(GestureType.Rotate, false)
 
             // 현재위치 좌표에 따라 지도 카메라 업데이트
 //            val cameraUpdate = CameraUpdateFactory.newCenterPosition(currentLatLng)
