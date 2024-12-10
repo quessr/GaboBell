@@ -95,11 +95,12 @@
     <string name="membership_id">아이디</string>
     <string name="membership_password">패스워드</string>
     <string name="membership_nickname">회원명</string>
-    <string name="membership_birth_date">생년월 <![CDATA[<font color="#ED1B23">(필수)</font>]]></string>
+    <string name="membership_birth_date">생년월</string>
     <string name="membership_birth_date_hint">ex. 8510</string>
     <string name="membership_phone_numbser">휴대폰번호</string>
     <string name="membership_phone_numbser_hint">ex. 01012345678</string>
-    <string name="membership_title_district">거주지 관리구청 <![CDATA[<font color="#ED1B23">(필수)</font>]]></string>
+    <string name="membership_title_district">거주지 관리구청</string>
     <string name="membership_district">관리구청</string>¬
     <string name="membership_district_hint">ex. 마포구</string>¬
+    <string name="membership_register">가입하기</string>¬
 </resources>

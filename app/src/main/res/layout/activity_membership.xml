@@ -80,6 +80,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="22dp"
             android:background="@color/white"
+            android:inputType="text"
             android:padding="10dp"
             android:textSize="14sp"
             app:counterEnabled="false"
@@ -156,6 +157,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="22dp"
             android:background="@color/white"
+            android:inputType="text"
             android:padding="10dp"
             android:textSize="14sp"
             app:counterEnabled="false"
@@ -180,7 +182,7 @@
             android:layout_width="108dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="22dp"
-            android:text="생년월 (필수)"
+            android:text="@string/membership_birth_date"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -345,10 +347,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="22dp"
         android:layout_marginTop="21dp"
+        android:text="@string/membership_district"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivDashLine"
-        tools:text="거주지 관리구청 (필수)" />
+        app:layout_constraintTop_toBottomOf="@id/ivDashLine" />
 
     <!--    자치구-->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -379,6 +381,7 @@
             android:layout_marginEnd="22dp"
             android:background="@color/white"
             android:hint="@string/membership_district_hint"
+            android:inputType="text"
             android:padding="10dp"
             android:textSize="14sp"
             app:counterEnabled="false"
@@ -398,7 +401,7 @@
         android:layout_marginTop="40dp"
         android:background="@drawable/btn_ansim_bottom_selector"
         android:gravity="center"
-        android:text="가입하기"
+        android:text="@string/membership_register"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"

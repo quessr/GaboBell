@@ -29,8 +29,6 @@ class MembershipActivity :
     }
 
     private fun initUi() {
-        initTexts()
-        
         if (userName.isEmpty()) {
             // 일반회원
             binding.clUserPw.visibility = View.VISIBLE
@@ -81,17 +79,6 @@ class MembershipActivity :
             // 회원가입
             signup(userDetails)
         }
-    }
-
-    private fun initTexts() {
-        binding.tvBirthDate.text = HtmlCompat.fromHtml(
-            getString(R.string.membership_birth_date),
-            HtmlCompat.FROM_HTML_MODE_LEGACY
-        )
-        binding.tvTitleDistrict.text = HtmlCompat.fromHtml(
-            getString(R.string.membership_title_district),
-            HtmlCompat.FROM_HTML_MODE_LEGACY
-        )
     }
 
     private fun signup(userDetails: Map<String, String>) {
