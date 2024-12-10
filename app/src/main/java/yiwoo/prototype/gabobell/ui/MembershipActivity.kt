@@ -14,6 +14,7 @@ import yiwoo.prototype.gabobell.data.network.LogInUserClient
 import yiwoo.prototype.gabobell.data.network.SignUpUserClient
 import yiwoo.prototype.gabobell.databinding.ActivityMembershipBinding
 import yiwoo.prototype.gabobell.helper.UserDataStore
+import yiwoo.prototype.gabobell.ui.popup.CustomPopup
 
 class MembershipActivity :
     BaseActivity<ActivityMembershipBinding>(ActivityMembershipBinding::inflate) {
@@ -66,6 +67,16 @@ class MembershipActivity :
                 return@setOnClickListener
             }
 
+            if (!birthDate.matches(Regex("\\d{4}"))) {
+                Toast.makeText(this@MembershipActivity, "생년월은 4자리 숫자로 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!phoneNumber.matches(Regex("\\d{11}"))) {
+                Toast.makeText(this@MembershipActivity, "휴대폰번호는 11자리 숫자로 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val userDetails = mapOf(
                 "username" to userId,
                 "password" to password,
@@ -113,6 +124,13 @@ class MembershipActivity :
                 },
                 onFailure = { error ->
                     Log.d("MembershipActivity@@", "onFailure error: $error")
+                    CoroutineScope(Dispatchers.Main).launch {
+                        CustomPopup.Builder(this@MembershipActivity)
+                            .setTitle("알림")
+                            .setMessage("회원가입 실패하였습니다.")
+                            .build()
+                            .show()
+                    }
                 })
         }
     }
