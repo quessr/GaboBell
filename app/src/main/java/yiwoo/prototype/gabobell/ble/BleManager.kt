@@ -20,9 +20,13 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
 import android.os.Handler
@@ -31,9 +35,13 @@ import android.os.Looper
 import android.os.ParcelUuid
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.helper.ApiSender
+import yiwoo.prototype.gabobell.helper.FlashUtil
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
 import yiwoo.prototype.gabobell.helper.UserDeviceManager
@@ -66,6 +74,13 @@ class BleManager : Service() {
     private var isReceiverRegistered = false
     private var isEmergencyViaApp = false
 
+    private lateinit var audioManager: AudioManager
+    private var mediaPlayer: MediaPlayer? = null
+    private lateinit var flashUtil: FlashUtil
+    private val serviceScope = CoroutineScope(Dispatchers.Main) // Main 스레드에서 실행
+
+
+
     fun setEventIdCallback(callback: EventIdCallback?) {
         eventIdCallback = callback
     }
@@ -87,6 +102,9 @@ class BleManager : Service() {
         Logger.d("onStartCommand")
         instance = this
         initialize()
+
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        flashUtil = FlashUtil.getInstance(applicationContext)
 
         val notification = createNotification()
         startForeground(1, notification)
@@ -646,6 +664,12 @@ class BleManager : Service() {
                 } else {
                     ApiSender.Event.BELL_EMERGENCY.serviceType
                 }
+
+                // TODO: emergencyEffect 가 MainActivity 와 코드 중복 (추후 정리 필요)
+                if(!isEmergencyViaApp) {
+                    emergencyEffect(true)
+                }
+
                 isEmergencyViaApp = false
 
                 LocationHelper.getCurrentLocation(this) { lat, lng ->
@@ -669,6 +693,9 @@ class BleManager : Service() {
                 // 신고 취소(상황해제) 푸시가 들어오면 이미 eventId 는 초기화(-1) 되므로 API 호출이 안되는게 맞다.
                 // ApiSender.cancelEmergency 에서 필터됨.
                 ApiSender.cancelEvent(this@BleManager, eventId)
+
+                // 효과 해제
+                emergencyEffect(false)
             }
 
             val intent = Intent(stateEmergency).apply {
@@ -775,6 +802,34 @@ class BleManager : Service() {
         val major = (intHex shr 4) // 상위 4비트 추출
         val minor = (intHex and 0x0F) // 하위 4비트 추출
         return "$major.$minor"
+    }
+
+    private fun emergencyEffect(isPlay: Boolean) {
+        if (isPlay) {
+            flashUtil.startEmergencySignal(serviceScope)
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
+            mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                isLooping = true
+                start()
+            }
+        } else {
+            flashUtil.stopEmergencySignal()
+            mediaPlayer?.apply {
+                if (isPlaying) {
+                    stop()
+                }
+                release()
+            }
+            mediaPlayer = null
+        }
     }
 
     companion object {
