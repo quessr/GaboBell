@@ -365,6 +365,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         policeMarkers.clear()
         Logger.d("policeMarkers_clear : ${policeMarkers.size}")
 
+        if (!isActivePolice) {
+            return
+        }
+
         //라벨 추가
         val labelLayer = map.labelManager?.layer
         for (police in policeDataList) {
