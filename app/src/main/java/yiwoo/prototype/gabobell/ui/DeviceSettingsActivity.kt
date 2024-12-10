@@ -57,9 +57,6 @@ class DeviceSettingsActivity :
         // 펌웨어 버전
         binding.tvVersion.text = "버전 $versionStatus"
 
-        // LED
-        binding.toggleLed.isSelected = ledStatus == "LED On"
-
         // 벨 (무음모드)
         binding.toggleSound.isSelected = bellStatus == "벨 On"
     }
@@ -90,6 +87,10 @@ class DeviceSettingsActivity :
         binding.ivBatteryStatus.setBackgroundResource(R.drawable.batterry_status_disconnect)
 
         binding.toggleSound.setOnClickListener {
+            it.isSelected = !it.isSelected
+        }
+
+        binding.toggleMessage.setOnClickListener {
             it.isSelected = !it.isSelected
         }
 
