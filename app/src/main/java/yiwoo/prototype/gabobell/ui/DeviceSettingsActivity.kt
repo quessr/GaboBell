@@ -142,6 +142,7 @@ class DeviceSettingsActivity :
         binding.btnDisconnect.setOnClickListener {
             bleManager?.disconnect()
             UserDeviceManager.deleteDevice(this)
+            (application as GaboApplication).isConnected = false
             Toast.makeText(
                 this@DeviceSettingsActivity,
                 "기기 연결이 해제되었습니다.",

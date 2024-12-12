@@ -69,6 +69,8 @@ class MonitoringActivity :
 
     private val gpsTracksClient = GpsTracksClient(this)
 
+    private var isFirstLocationUpdate = true    // 카메라 처음 위치 업데이트 여부를 확인
+
     private val searchAddressLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             Log.d("MonitoringActivity@@", "Result code: ${result.resultCode}")
@@ -109,6 +111,8 @@ class MonitoringActivity :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        isFirstLocationUpdate = true
 
         setupAddressSelectionListeners()
         initMapView()
@@ -254,6 +258,11 @@ class MonitoringActivity :
 
         // 현재 위치 가져오기
         LocationHelper.startLocation(this@MonitoringActivity) { latitude, longitude ->
+            if(isFirstLocationUpdate) {
+                // 카메라 움직인다.
+                map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(latitude, longitude)))
+                isFirstLocationUpdate = false
+            }
             locationCallback(latitude, longitude)
         }
     }
