@@ -84,9 +84,10 @@ class FirebaseMessageService: FirebaseMessagingService() {
             app.eventId = -1
             if (app.isConnected) {
                 BleManager.instance?.cmdEmergency(false)
-            } else {
-                sendBroadcast(Intent(BLE_CANCEL_REPORTE_EMERGENCY))
+                BleManager.instance?.stopEmergencyEffect()
             }
+
+            sendBroadcast(Intent(BLE_CANCEL_REPORTE_EMERGENCY))
         }
 
         // 테스트용 캠페인

@@ -262,6 +262,8 @@ class BleManager : Service() {
             gatt.close()
             bleGatt = null
         }
+
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Logger.d("StopForeground_Service")
             instance = null
@@ -279,6 +281,7 @@ class BleManager : Service() {
                 isReceiverRegistered = false
             }
         }
+        */
     }
 
     // region * GATT
@@ -811,6 +814,10 @@ class BleManager : Service() {
         val major = (intHex shr 4) // 상위 4비트 추출
         val minor = (intHex and 0x0F) // 하위 4비트 추출
         return "$major.$minor"
+    }
+
+    fun stopEmergencyEffect() {
+        emergencyEffect(false)
     }
 
     private fun emergencyEffect(isPlay: Boolean) {
