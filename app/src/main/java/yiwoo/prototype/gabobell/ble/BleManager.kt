@@ -112,7 +112,12 @@ class BleManager : Service() {
         if (!isReceiverRegistered) {
             bluetoothStateReceiver = CommonReceiver()
             val filter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-            registerReceiver(bluetoothStateReceiver, filter)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(bluetoothStateReceiver, filter, RECEIVER_EXPORTED)
+            } else {
+                registerReceiver(bluetoothStateReceiver, filter)
+            }
+
             isReceiverRegistered = true
         }
 

@@ -36,8 +36,13 @@ class RegisterDeviceActivity :
 
     override fun onResume() {
         super.onResume()
-        registerReceiver(gattUpdateReceiver, makeGattUpdateIntentFilter())
-        registerReceiver(bleScanReceiver, bleScanIntentFilter())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(gattUpdateReceiver, makeGattUpdateIntentFilter(), RECEIVER_EXPORTED)
+            registerReceiver(bleScanReceiver, bleScanIntentFilter(), RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(gattUpdateReceiver, makeGattUpdateIntentFilter())
+            registerReceiver(bleScanReceiver, bleScanIntentFilter())
+        }
     }
 
     override fun onPause() {

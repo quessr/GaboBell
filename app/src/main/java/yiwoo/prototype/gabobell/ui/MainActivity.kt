@@ -243,7 +243,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             addAction(BleManager.BLE_REPORTE_EMERGENCY)
             addAction(BleManager.BLE_CANCEL_REPORTE_EMERGENCY)
         }
-        registerReceiver(emergencyStateReceiver, filter)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(emergencyStateReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(emergencyStateReceiver, filter)
+        }
     }
 
     // 긴급 상태 수신 (신고, 신고취소)

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import yiwoo.prototype.gabobell.GaboApplication
@@ -74,7 +75,13 @@ class DeviceSettingsActivity :
             addAction(BleManager.BLE_LED_SETTING_CHANGED)
             addAction(BleManager.BLE_BELL_SETTING_CHANGED)
         }
-        registerReceiver(statusUpdateReceiver, filter)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(statusUpdateReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(statusUpdateReceiver, filter)
+        }
+
     }
 
     private fun initUi() {
