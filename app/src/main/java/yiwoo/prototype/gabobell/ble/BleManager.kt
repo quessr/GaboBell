@@ -33,6 +33,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.ParcelUuid
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
@@ -65,8 +66,6 @@ class BleManager : Service() {
     private var permissionGranted: Boolean = true
 
     private var byteArrayValue: ByteArray? = null
-
-    private val valueList = mutableListOf<String>()
 
     private var eventIdCallback: EventIdCallback? = null
 
@@ -656,60 +655,65 @@ class BleManager : Service() {
 
     private fun handleEmergency(cmd: Byte, stateEmergency: String) {
         val valueHex = String.format("0x%02X", cmd.toInt() and 0xFF)
-        valueList.add(valueHex)
-        if (valueList.size == 3) {
-            if (cmd == 0xB2.toByte()) {
-                // 전역 상태 변경 및 신고 API 호출
-                (application as GaboApplication).isEmergency = true
+        if (cmd == 0xB2.toByte()) {
 
-                // isEmergencyViaApp 은 앱 내에서 cmdEmergency 발생시 true 가 된다.
-                // (방식이 맘에 안들지만 일단 가자.)
-                val serviceType = if (isEmergencyViaApp) {
-                    ApiSender.Event.EMERGENCY.serviceType
-                } else {
-                    ApiSender.Event.BELL_EMERGENCY.serviceType
-                }
+            // 이미 신고 중인 상태냐?
+            if ((application as GaboApplication).isEmergency)
+                return
 
-                // TODO: emergencyEffect 가 MainActivity 와 코드 중복 (추후 정리 필요)
-                if(!isEmergencyViaApp) {
-                    emergencyEffect(true)
-                }
+            // 전역 상태 변경 및 신고 API 호출
+            (application as GaboApplication).isEmergency = true
 
-                isEmergencyViaApp = false
-
-                LocationHelper.getCurrentLocation(this) { lat, lng ->
-                    val locationLat: Double = lat
-                    val locationLng: Double = lng
-                    Logger.d("handleEmergency_currentLocation: $locationLat | $locationLng")
-
-                    ApiSender.createEvent(
-                        context = this@BleManager,
-                        serviceType = serviceType,
-                        latitude = lat,
-                        longitude = lng
-                    ) { eventId ->
-                        eventIdCallback?.onEventId(eventId)
-                    }
-                }
+            // isEmergencyViaApp 은 앱 내에서 cmdEmergency 발생시 true 가 된다.
+            // (방식이 맘에 안들지만 일단 가자.)
+            val serviceType = if (isEmergencyViaApp) {
+                ApiSender.Event.EMERGENCY.serviceType
             } else {
-                // 전역 상태 변경 및 신고 취소 API 호출
-                (application as GaboApplication).isEmergency = false
-                val eventId = (application as GaboApplication).eventId
-                // 신고 취소(상황해제) 푸시가 들어오면 이미 eventId 는 초기화(-1) 되므로 API 호출이 안되는게 맞다.
-                // ApiSender.cancelEmergency 에서 필터됨.
-                ApiSender.cancelEvent(this@BleManager, eventId)
-
-                // 효과 해제
-                emergencyEffect(false)
+                ApiSender.Event.BELL_EMERGENCY.serviceType
             }
 
-            val intent = Intent(stateEmergency).apply {
-                putExtra("cmd", valueHex)
+            // TODO: emergencyEffect 가 MainActivity 와 코드 중복 (추후 정리 필요)
+            if(!isEmergencyViaApp) {
+                emergencyEffect(true)
             }
-            sendBroadcast(intent)
 
-            valueList.clear()
+            isEmergencyViaApp = false
+
+            LocationHelper.getCurrentLocation(this) { lat, lng ->
+                val locationLat: Double = lat
+                val locationLng: Double = lng
+                Logger.d("handleEmergency_currentLocation: $locationLat | $locationLng")
+
+                ApiSender.createEvent(
+                    context = this@BleManager,
+                    serviceType = serviceType,
+                    latitude = lat,
+                    longitude = lng
+                ) { eventId ->
+                    eventIdCallback?.onEventId(eventId)
+                }
+            }
+        } else {
+
+            // 이미 취소 상태냐?
+            if (!(application as GaboApplication).isEmergency)
+                return
+
+            // 전역 상태 변경 및 신고 취소 API 호출
+            (application as GaboApplication).isEmergency = false
+            val eventId = (application as GaboApplication).eventId
+            // 신고 취소(상황해제) 푸시가 들어오면 이미 eventId 는 초기화(-1) 되므로 API 호출이 안되는게 맞다.
+            // ApiSender.cancelEmergency 에서 필터됨.
+            ApiSender.cancelEvent(this@BleManager, eventId)
+
+            // 효과 해제
+            emergencyEffect(false)
         }
+
+        val intent = Intent(stateEmergency).apply {
+            putExtra("cmd", valueHex)
+        }
+        sendBroadcast(intent)
     }
 
     // 긴급 구조 요청 처리 (0xB2)

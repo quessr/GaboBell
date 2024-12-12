@@ -120,6 +120,9 @@ class RegisterDeviceActivity :
                 .setOnOkClickListener(getString(R.string.register_device_connection)) {
                     startConnect()
                 }
+                .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
+                    stopScan()
+                }
                 .build()
                 .show()
 
@@ -210,9 +213,12 @@ class RegisterDeviceActivity :
 //        startService(intent)
 //        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
 
-        if (bleManager == null) {
+        if (BleManager.instance == null) {
             val intent = Intent(this, BleManager::class.java)
             startService(intent)
+        }
+
+        if (bleManager == null) {
             bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         } else {
             // 이미 서비스가 바인딩되어 있으면 바로 스캔 시작

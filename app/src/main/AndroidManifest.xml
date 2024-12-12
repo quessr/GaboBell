@@ -5,6 +5,7 @@
 
     <!-- ############ 공통 퍼미션 ############ -->
     <uses-feature android:name="android.hardware.camera.any" />
+
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -30,13 +31,13 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 
     <!-- ############ 안드로이드 13 이상 ############ -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- ############ 안드로이드 14 이상 ############ -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!--    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>-->
+    <!--    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>-->
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <application
         android:name=".GaboApplication"
@@ -62,11 +63,13 @@
         <activity
             android:name=".ui.ReportActivity"
             android:exported="true"
-            android:label="Report Activity" />
+            android:label="Report Activity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -77,41 +80,50 @@
         <activity
             android:name=".ui.RegisterDeviceActivity"
             android:exported="true"
-            android:label="Register Device Activity" />
+            android:label="Register Device Activity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.DeviceSettingsActivity"
             android:exported="true"
-            android:label="Device Settings Activity" />
+            android:label="Device Settings Activity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.MediaCaptureActivity"
             android:exported="true"
-            android:label="Device Media Capture" />
+            android:label="Device Media Capture"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.MainActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.SignInActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.MembershipActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.MonitoringActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".ui.searchAddress.SearchAddressActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -134,10 +146,11 @@
             android:enabled="true"
             android:foregroundServiceType="connectedDevice|location" />
 
-        <service android:name=".service.FirebaseMessageService"
+        <service
+            android:name=".service.FirebaseMessageService"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 

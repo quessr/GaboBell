@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
@@ -78,6 +79,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private val shakeThreshold = 30.0f  // 흔들기 감지 임계값
     */
 
+
+    // 안드로이드 12 미만 퍼미션
+    private val permissionsAndy11 = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.CAMERA,
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
+
+    // 안드로이드 12 이상 퍼미션
     private val permissionsAndy12 = arrayOf(
         Manifest.permission.BLUETOOTH_SCAN,
         Manifest.permission.BLUETOOTH_CONNECT,
@@ -87,12 +98,30 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
-    private val permissionsAndy11 = arrayOf(
+    private val permissionsAndy13 = arrayOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT,
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.CAMERA,
         Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.READ_MEDIA_VIDEO,
     )
+
+    private val permissionsAndy14 = arrayOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.CAMERA,
+        Manifest.permission.RECORD_AUDIO,
+        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.POST_NOTIFICATIONS,
+        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
+        Manifest.permission.READ_MEDIA_VIDEO
+    )
+
+
 
     // 권한 요청 필요한지?
     private var isNecessaryToRequestPermission = true
@@ -108,6 +137,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
         if (checkPermissions()) {
             isNecessaryToRequestPermission = false
+            startMainService()
+
         } else {
             Handler(Looper.getMainLooper()).postDelayed({
                 // 맵이 보여지기 전에 mapView.pause() 가 호출되면 맵이 출력되지 않아서
@@ -493,6 +524,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             flashUtil.startEmergencySignal(lifecycleScope)
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
             mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
                 setAudioAttributes(
@@ -501,6 +533,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build()
                 )
+                setVolume(1.0f, 1.0f)
                 isLooping = true
                 start()
             }
@@ -521,25 +554,37 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         return (application as GaboApplication).isEmergency
     }
 
-    private fun checkPermissions(): Boolean
-    =  hasPermissions(
-        this@MainActivity,
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) permissionsAndy12 else permissionsAndy11
-    )
+    private fun checkPermissions(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            Log.d("@!@", "checkPermissions UPSIDE_DOWN_CAKE")
+            return hasPermissions(this@MainActivity, permissionsAndy14)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return hasPermissions(this@MainActivity, permissionsAndy13)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            return hasPermissions(this@MainActivity, permissionsAndy12)
+        } else {
+            return hasPermissions(this@MainActivity, permissionsAndy11)
+        }
+    }
+
 
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
+        Log.d("@!@", "hasPermissionsㄴㄴㄴ : $permissions")
         return permissions.all { permission ->
+            Log.d("@!@", "hasPermissions : $permission")
             ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
         }
     }
 
     private fun requestPermissions() {
-        Log.d("@!@", "requestPermissions")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            //android 12 이상
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            requestMultiplePermissions.launch(permissionsAndy14)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestMultiplePermissions.launch(permissionsAndy13)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             requestMultiplePermissions.launch(permissionsAndy12)
         } else {
-            //android 11 이하
             requestMultiplePermissions.launch(permissionsAndy11)
         }
     }
@@ -550,7 +595,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val allGranted = permissions.all { it.value } // 모든 권한이 승인되었는지 확인
         if (allGranted) {
             Logger.d("모든 권한이 허용됨")
-            Log.d("@!@", "allGranted")
+            startMainService()
             if (map != null) {
                 startLocation()
             }
@@ -603,6 +648,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         } else { // 활성화가 되어 있을 경우
             val intent = Intent(this, RegisterDeviceActivity::class.java)
             startActivity(intent)
+        }
+    }
+
+    private fun startMainService() {
+        if (BleManager.instance == null) {
+            val intent = Intent(this@MainActivity, BleManager::class.java)
+            startService(intent)
         }
     }
 

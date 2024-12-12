@@ -61,6 +61,7 @@ class MonitoringActivity :
     private var isDepartureMarkerUpdated = false
     private var isDestinationMarkerUpdated = false
     private var isMonitoring: Boolean = false
+    private var monitoringId: Long = -1
 
     private var bounds: LatLngBounds? = null
     private val policeMarkers = mutableListOf<Label>()
@@ -188,7 +189,7 @@ class MonitoringActivity :
 
         }, object : KakaoMapReadyCallback() {
             override fun getPosition(): LatLng {
-                return LatLng.from(37.58376, 126.8867)
+                return LatLng.from(37.566535, 126.9779692)
             }
 
             override fun onMapReady(kakaoMap: KakaoMap) {
@@ -210,23 +211,45 @@ class MonitoringActivity :
         })
     }
 
+    // 실시간 위치 정보를 수신하여 처리하는 메소드
+    private fun locationCallback(latitude: Double, longitude: Double) {
+        val currentLatLng = LatLng.from(latitude, longitude)
+        currentLocationLabel?.moveTo(currentLatLng) ?: run {
+            currentLocationLabel =
+                addLabelToMap(currentLatLng, R.drawable.current_marker)
+        }
+
+        //회전 동작 고정(제스쳐)
+        map?.setGestureEnable(GestureType.Rotate, false)
+
+        // 현재위치 좌표에 따라 지도 카메라 업데이트
+//            val cameraUpdate = CameraUpdateFactory.newCenterPosition(currentLatLng)
+//            kakaoMap.moveCamera(cameraUpdate)
+
+        // 귀가 모니터링 중...
+        if (isMonitoring && monitoringId > 0) {
+            val currentTime = System.currentTimeMillis().toString()
+            CoroutineScope(Dispatchers.IO).launch {
+                gpsTracksClient.gasTracks(
+                    monitoringId = monitoringId,
+                    latitude = latitude,
+                    longitude = longitude,
+                    trackTime = currentTime,
+                    onSuccess = { Logger.d("Location successfully sent: Lat=$latitude, Lng=$longitude") },
+                    onFailure = { errorMessage ->
+                        Logger.e("Failed to send location: $errorMessage")
+                    }
+                )
+            }
+        }
+    }
+
     private fun setupKakaoMap(kakaoMap: KakaoMap) {
         map = kakaoMap
 
         // 현재 위치 가져오기
         LocationHelper.startLocation(this@MonitoringActivity) { latitude, longitude ->
-            val currentLatLng = LatLng.from(latitude, longitude)
-            currentLocationLabel?.moveTo(currentLatLng) ?: run {
-                currentLocationLabel =
-                    addLabelToMap(currentLatLng, R.drawable.current_marker)
-            }
-
-            //회전 동작 고정(제스쳐)
-            map?.setGestureEnable(GestureType.Rotate, false)
-
-            // 현재위치 좌표에 따라 지도 카메라 업데이트
-//            val cameraUpdate = CameraUpdateFactory.newCenterPosition(currentLatLng)
-//            kakaoMap.moveCamera(cameraUpdate)
+            locationCallback(latitude, longitude)
         }
     }
 
@@ -402,21 +425,26 @@ class MonitoringActivity :
             longitude = departureLongitude,
             dstLatitude = destinationLatitude,
             dstLongitude = destinationLongitude
-        ) { monitoringId ->
-            Logger.d("Received monitoring ID in MonitoringActivity: $monitoringId")
+        ) { eventId ->
+            Logger.d("Received monitoring ID in MonitoringActivity: $eventId")
 
             isMonitoring = true
+            monitoringId = eventId
             binding.btnStart.isVisible = false
             binding.btnFinish.isVisible = true
 
-            CoroutineScope(Dispatchers.IO).launch {
-                trackUserLocation(monitoringId)
-            }
+//            CoroutineScope(Dispatchers.IO).launch {
+//                trackUserLocation(monitoringId)
+//            }
         }
     }
 
+    /*
     private suspend fun trackUserLocation(monitoringId: Long) {
         LocationHelper.startLocation(this@MonitoringActivity) { latitude, longitude ->
+
+            Log.d("@!@", "startLocation for tracking")
+
             val currentTime = System.currentTimeMillis().toString()
             CoroutineScope(Dispatchers.IO).launch {
                 gpsTracksClient.gasTracks(
@@ -432,6 +460,7 @@ class MonitoringActivity :
             }
         }
     }
+    */
 
     // backkey를 눌렀을때도 적용
     private fun finishMonitoringEvent() {
@@ -441,6 +470,7 @@ class MonitoringActivity :
             .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
                 ApiSender.cancelEvent(this, (application as GaboApplication).monitorId)
                 isMonitoring = false
+                monitoringId = -1
                 LocationHelper.stopLocation()
                 finish()
             }
