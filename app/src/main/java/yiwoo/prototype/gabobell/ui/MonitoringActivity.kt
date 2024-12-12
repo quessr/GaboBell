@@ -127,6 +127,11 @@ class MonitoringActivity :
         binding.mapView.pause()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        LocationHelper.stopLocation()
+    }
+
     private fun initUi() {
         binding.btnStart.setOnClickListener {
             if (departureLatitude == 0.0 || departureLongitude == 0.0 ||
@@ -471,7 +476,8 @@ class MonitoringActivity :
                 ApiSender.cancelEvent(this, (application as GaboApplication).monitorId)
                 isMonitoring = false
                 monitoringId = -1
-                LocationHelper.stopLocation()
+                // onDestory 으로 코드 옮김.
+                // LocationHelper.stopLocation()
                 finish()
             }
             .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
