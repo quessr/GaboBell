@@ -9,17 +9,24 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import yiwoo.prototype.gabobell.BuildConfig
 import yiwoo.prototype.gabobell.helper.UserDataStore
 
 object RetrofitModule {
 
     private const val BASE_URL = "https://ansimi.withfriends.kr:8443/api/v1/"
+    // private const val BASE_DEV_URL = "https://ansimi-dev.withfriends.kr:8443/api/v1/"
+    private const val BASE_DEV_URL = BASE_URL
+
 //    private const val BASE_URL = "http://192.168.1.100:8080/api/v1/"
     private const val SEARCH_API_BASE = "https://dapi.kakao.com/"
 
+
+    private fun getBaseUrl() = if (BuildConfig.DEBUG_MODE) BASE_DEV_URL else BASE_URL
+
     fun provideRetrofit(context: Context): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(getBaseUrl())
             .client(okHttpClient(context))
             .addConverterFactory(GsonConverterFactory.create())
             .build()

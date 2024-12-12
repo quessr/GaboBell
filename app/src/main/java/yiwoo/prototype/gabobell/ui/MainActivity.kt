@@ -18,6 +18,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,6 +35,7 @@ import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
+import yiwoo.prototype.gabobell.BuildConfig
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.api.dto.response.PoliceResultItem
@@ -150,6 +152,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         // initShakeDetection()
         initEmergencyStateReceiver()
         handleBackPressed()
+        debugMode()
     }
 
     override fun onResume() {
@@ -179,6 +182,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         super.onDestroy()
         Logger.d("===> onDestroy")
         LocationHelper.stopLocation()
+
+
+    }
+
+    private fun debugMode() {
+        if (BuildConfig.DEBUG_MODE) {
+            Toast.makeText(this@MainActivity, "개발자 모드", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun initUi() {
