@@ -85,7 +85,8 @@ class MembershipActivity :
                 "birthDate" to birthDate,
 //                "gender" to gender,
 //                "nationality" to nationality,
-                "district" to district
+                // 영업용은 자치구를 입력 값에 관계없이 '마포구'로 진행.
+                "district" to "마포구"
             )
             // 회원가입
             signup(userDetails)

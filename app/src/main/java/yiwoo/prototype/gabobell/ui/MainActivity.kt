@@ -556,7 +556,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private fun checkPermissions(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            Log.d("@!@", "checkPermissions UPSIDE_DOWN_CAKE")
             return hasPermissions(this@MainActivity, permissionsAndy14)
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return hasPermissions(this@MainActivity, permissionsAndy13)
@@ -569,9 +568,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
 
     private fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
-        Log.d("@!@", "hasPermissionsㄴㄴㄴ : $permissions")
         return permissions.all { permission ->
-            Log.d("@!@", "hasPermissions : $permission")
             ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
         }
     }

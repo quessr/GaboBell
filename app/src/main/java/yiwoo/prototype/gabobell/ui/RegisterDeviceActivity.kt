@@ -213,11 +213,10 @@ class RegisterDeviceActivity :
 //        startService(intent)
 //        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
 
+        val intent = Intent(this, BleManager::class.java)
         if (BleManager.instance == null) {
-            val intent = Intent(this, BleManager::class.java)
             startService(intent)
         }
-
         if (bleManager == null) {
             bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         } else {
