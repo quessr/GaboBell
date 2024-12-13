@@ -534,9 +534,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         if (isPlay) {
             flashUtil.startEmergencySignal(lifecycleScope)
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
-
-            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, AudioManager.FLAG_PLAY_SOUND)
+            val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_PLAY_SOUND)
             mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()

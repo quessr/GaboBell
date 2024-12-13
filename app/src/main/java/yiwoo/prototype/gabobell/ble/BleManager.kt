@@ -833,6 +833,7 @@ class BleManager : Service() {
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build()
                 )
+                setVolume(1.0f, 1.0f)
                 isLooping = true
                 start()
             }
