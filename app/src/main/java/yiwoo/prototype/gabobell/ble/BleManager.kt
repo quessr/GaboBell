@@ -33,10 +33,8 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import yiwoo.prototype.gabobell.GaboApplication
@@ -71,7 +69,7 @@ class BleManager : Service() {
 
     private lateinit var bluetoothStateReceiver: CommonReceiver
     private var isReceiverRegistered = false
-    private var isEmergencyViaApp = false
+    // private var isEmergencyViaApp = false
 
     private lateinit var audioManager: AudioManager
     private var mediaPlayer: MediaPlayer? = null
@@ -559,7 +557,6 @@ class BleManager : Service() {
     fun cmdEmergency(isRequest: Boolean) {
         if (isRequest) {
             Logger.d("[A2B] 0xA2_EMERGENCY_ON")
-            isEmergencyViaApp = true
             sendCommand(0x01, 0xA2.toByte(), null)
         } else {
             Logger.d("[A2B] 0xA3_EMERGENCY_OFF")
@@ -647,18 +644,23 @@ class BleManager : Service() {
 
         // CMD 값에 따라 처리
         when (cmd) {
-            0xB2.toByte() -> handleEmergencyRequest()
-            0xB3.toByte() -> handleEmergencyCancel()
+            0xB2.toByte() -> handleEmergencyRequestFromBell()
+            0xB3.toByte() -> handleEmergencyCancelFromBell()
             0xB4.toByte() -> handleBellSetting(data1)
             0xB5.toByte() -> handleStatusResponse(data1, data2, data3, data4)
             0xB8.toByte() -> handleLedSetting(data1)
+            0xB9.toByte() -> handleEmergencyRequestFromApp()
+            0xBA.toByte() -> handleEmergencyCancelFromApp()
             else -> Logger.d("알 수 없는 CMD: 0x${String.format("%02X", cmd)}")
         }
     }
 
+    // B2, B9 vs B3, BA
     private fun handleEmergency(cmd: Byte, stateEmergency: String) {
+
+        // 벨에서만 호출.
         val valueHex = String.format("0x%02X", cmd.toInt() and 0xFF)
-        if (cmd == 0xB2.toByte()) {
+        if (cmd == 0xB2.toByte() || cmd == 0xB9.toByte()) {
 
             // 이미 신고 중인 상태냐?
             if ((application as GaboApplication).isEmergency)
@@ -667,20 +669,14 @@ class BleManager : Service() {
             // 전역 상태 변경 및 신고 API 호출
             (application as GaboApplication).isEmergency = true
 
-            // isEmergencyViaApp 은 앱 내에서 cmdEmergency 발생시 true 가 된다.
-            // (방식이 맘에 안들지만 일단 가자.)
-            val serviceType = if (isEmergencyViaApp) {
-                ApiSender.Event.EMERGENCY.serviceType
-            } else {
+            // 신고 이펙트 발생
+            val serviceType = if(cmd == 0xB2.toByte()) {
                 ApiSender.Event.BELL_EMERGENCY.serviceType
+            } else {
+                ApiSender.Event.EMERGENCY.serviceType
             }
 
-            // TODO: emergencyEffect 가 MainActivity 와 코드 중복 (추후 정리 필요)
-            if(!isEmergencyViaApp) {
-                emergencyEffect(true)
-            }
-
-            isEmergencyViaApp = false
+            emergencyEffect(true)
 
             LocationHelper.getCurrentLocation(this) { lat, lng ->
                 val locationLat: Double = lat
@@ -696,7 +692,7 @@ class BleManager : Service() {
                     eventIdCallback?.onEventId(eventId)
                 }
             }
-        } else {
+        } else if (cmd == 0xB3.toByte() || cmd == 0xBA.toByte()) {
 
             // 이미 취소 상태냐?
             if (!(application as GaboApplication).isEmergency)
@@ -708,8 +704,6 @@ class BleManager : Service() {
             // 신고 취소(상황해제) 푸시가 들어오면 이미 eventId 는 초기화(-1) 되므로 API 호출이 안되는게 맞다.
             // ApiSender.cancelEmergency 에서 필터됨.
             ApiSender.cancelEvent(this@BleManager, eventId)
-
-            // 효과 해제
             emergencyEffect(false)
         }
 
@@ -720,18 +714,34 @@ class BleManager : Service() {
     }
 
     // 긴급 구조 요청 처리 (0xB2)
-    private fun handleEmergencyRequest() {
+    private fun handleEmergencyRequestFromBell() {
         // 0xB2 는
         // 앱에서 벨로 요청해서 수신되는 경우와
         // 벨에서 직접 요청하는 경우를 구분해야 한다.
+
+        // 24.12.13
+        // FW16 에서 B2는 벨에서 신고시에만 수신된다.
+
+
         Logger.d("긴급 구조 요청")
         handleEmergency(0xB2.toByte(), BLE_REPORTE_EMERGENCY)
     }
 
+    private fun handleEmergencyRequestFromApp() {
+
+        Logger.d("긴급 구조 요청")
+        handleEmergency(0xB9.toByte(), BLE_REPORTE_EMERGENCY)
+    }
+
     // 긴급 구조 취소 처리 (0xB3)
-    private fun handleEmergencyCancel() {
+    private fun handleEmergencyCancelFromBell() {
         Logger.d("긴급 구조 취소")
         handleEmergency(0xB3.toByte(), BLE_CANCEL_REPORTE_EMERGENCY)
+    }
+
+    private fun handleEmergencyCancelFromApp() {
+        Logger.d("긴급 구조 취소")
+        handleEmergency(0xBA.toByte(), BLE_CANCEL_REPORTE_EMERGENCY)
     }
 
     // 벨 On/Off 설정 응답 처리 (0xB4)
