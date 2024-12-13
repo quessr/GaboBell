@@ -85,8 +85,11 @@ class MembershipActivity :
                 "birthDate" to birthDate,
 //                "gender" to gender,
 //                "nationality" to nationality,
+
+                // 24.12.13 - '마포구' 대신 자치구 코드 번호로 변경 됨.
                 // 영업용은 자치구를 입력 값에 관계없이 '마포구'로 진행.
-                "district" to "마포구"
+                // "district" to "마포구"
+                "district" to "3130000"
             )
             // 회원가입
             signup(userDetails)
