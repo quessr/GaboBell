@@ -69,7 +69,7 @@ class BleManager : Service() {
 
     private lateinit var bluetoothStateReceiver: CommonReceiver
     private var isReceiverRegistered = false
-    // private var isEmergencyViaApp = false
+    private var isEmergencyViaApp = false
 
     private lateinit var audioManager: AudioManager
     private var mediaPlayer: MediaPlayer? = null
@@ -557,6 +557,7 @@ class BleManager : Service() {
     fun cmdEmergency(isRequest: Boolean) {
         if (isRequest) {
             Logger.d("[A2B] 0xA2_EMERGENCY_ON")
+            isEmergencyViaApp = true
             sendCommand(0x01, 0xA2.toByte(), null)
         } else {
             Logger.d("[A2B] 0xA3_EMERGENCY_OFF")
@@ -670,13 +671,20 @@ class BleManager : Service() {
             (application as GaboApplication).isEmergency = true
 
             // 신고 이펙트 발생
-            val serviceType = if(cmd == 0xB2.toByte()) {
-                ApiSender.Event.BELL_EMERGENCY.serviceType
-            } else {
+           val serviceType = if (isEmergencyViaApp) {
                 ApiSender.Event.EMERGENCY.serviceType
+            } else {
+                ApiSender.Event.BELL_EMERGENCY.serviceType
             }
+//            val serviceType = if(cmd == 0xB2.toByte() ) {
+//                ApiSender.Event.BELL_EMERGENCY.serviceType
+//            } else {
+//                ApiSender.Event.EMERGENCY.serviceType
+//            }
 
             emergencyEffect(true)
+
+            isEmergencyViaApp = false
 
             LocationHelper.getCurrentLocation(this) { lat, lng ->
                 val locationLat: Double = lat
@@ -690,6 +698,7 @@ class BleManager : Service() {
                     longitude = lng
                 ) { eventId ->
                     eventIdCallback?.onEventId(eventId)
+                    Logger.d("serviceType : $serviceType")
                 }
             }
         } else if (cmd == 0xB3.toByte() || cmd == 0xBA.toByte()) {
