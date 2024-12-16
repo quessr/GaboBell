@@ -9,14 +9,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
-import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -373,7 +371,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                             callPoliceApi(map)
                         } else {
                             //zoomLevel 이 13 미만(12 이하)일 경우 마커 clear
-                            policeMarkers.forEach { it.remove() }
+                            policeMarkers.forEach {
+                                it.remove()
+                            }
                             policeMarkers.clear()
                         }
                     }
@@ -496,7 +496,16 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             // binding.fabPolice.setBackgroundResource(R.color.pink)
             binding.fabPolice.isSelected = true
             // 지구대 마커 표기
-            callPoliceApi(map!!)
+            Logger.d("toggleOnOffLabel_level : ${map?.zoomLevel}")
+            if (map?.zoomLevel!! >= MapConstants.ZOOMLEVEL) {
+                callPoliceApi(map!!)
+            } else {
+                //zoomLevel 이 13 미만(12 이하)일 경우 마커 clear
+                policeMarkers.forEach {
+                    it.remove()
+                }
+                policeMarkers.clear()
+            }
         } else {
 //            binding.fabPolice.setBackgroundResource(R.color.black_op_66)
             binding.fabPolice.isSelected = false
