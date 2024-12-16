@@ -76,6 +76,9 @@ class BleManager : Service() {
     private lateinit var flashUtil: FlashUtil
     private val serviceScope = CoroutineScope(Dispatchers.Main) // Main 스레드에서 실행
 
+    private var deviceName: String? = null
+    private var deviceAddress: String? = null
+
 
 
     fun setEventIdCallback(callback: EventIdCallback?) {
@@ -215,8 +218,8 @@ class BleManager : Service() {
             //어뎁터에 연결하여 디바이스 정보 뿌려주는 로직(우선 리스트에 담아서 로그로 확인작업)
             //result 를 브로드캐스트로 액티비티 전달
             val device = result?.device
-            val deviceName = device?.name
-            val deviceAddress = device?.address
+            deviceName = device?.name
+            deviceAddress = device?.address
 
             val permissionGranted =
                 Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
@@ -375,12 +378,19 @@ class BleManager : Service() {
                 //ble 특성 읽기
                 displayGattServices(getSupportedGattServices())
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED)
+
+                // 연결된 장치 정보를 저장
+                if (deviceName != null && deviceAddress != null) {
+                    UserDeviceManager.registerDevice(applicationContext, deviceName!!, deviceAddress!!)
+                }
+
                 // 알림 설정을 위해 setCharacteristicNotification 호출
                 setCharacteristicNotification(notifyCharacteristic!!, true)
 
                 Logger.d("onServicesDiscovered_GATT_SUCCESS")
             } else {
                 Logger.d("onServicesDiscovered_GATT_FAIL: $status")
+                broadcastUpdate(ACTION_GATT_FAILURE)
             }
         }
 
@@ -875,6 +885,8 @@ class BleManager : Service() {
         const val ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED"
         const val ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED"
         const val ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED"
+        const val ACTION_GATT_FAILURE = "ACTION_GATT_FAILURE"
+
         const val ACTION_DATA_AVAILABLE = "ACTION_DATA_AVAILABLE"
         const val EXTRA_DATA = "EXTRA_DATA"
         const val BLE_STATUS_UPDATE = "BLE_STATUS_UPDATE"

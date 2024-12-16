@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import yiwoo.prototype.gabobell.R
@@ -34,6 +35,7 @@ class RegisterDeviceActivity :
         initUi()
     }
 
+
     override fun onResume() {
         super.onResume()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -43,6 +45,12 @@ class RegisterDeviceActivity :
             registerReceiver(gattUpdateReceiver, makeGattUpdateIntentFilter())
             registerReceiver(bleScanReceiver, bleScanIntentFilter())
         }
+
+        if (UserDeviceManager.getDeviceName(this@RegisterDeviceActivity).isNotEmpty()) {
+            Toast.makeText(this@RegisterDeviceActivity, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+
     }
 
     override fun onPause() {
@@ -119,6 +127,7 @@ class RegisterDeviceActivity :
                 .setDeviceMessage(getString(R.string.pop_register_message))
                 .setOnOkClickListener(getString(R.string.register_device_connection)) {
                     startConnect()
+                    blockUserInteraction()
                 }
                 .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
                     stopScan()
@@ -153,8 +162,17 @@ class RegisterDeviceActivity :
                     Logger.d("BLE : GATT_SERVICES_DISCOVERED")
                     // 디바이스 연결 후 10초 이내 0xA1을 전송.
 //                    bleManager?.sayHello()
+                    // 24.12.16 - 코드 이동 (BleManager)
                     // 연결된 디바이스 정보 저장
-                    UserDeviceManager.registerDevice(applicationContext, deviceName!!, deviceAddress!!)
+                    // UserDeviceManager.registerDevice(applicationContext, deviceName!!, deviceAddress!!)
+                    finish()
+                }
+                BleManager.ACTION_GATT_FAILURE -> {
+                    Toast.makeText(
+                        this@RegisterDeviceActivity,
+                        "장치 연결에 실패하였습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     finish()
                 }
             }
@@ -167,6 +185,7 @@ class RegisterDeviceActivity :
             addAction(BleManager.ACTION_GATT_DISCONNECTED)
             addAction(BleManager.ACTION_GATT_SERVICES_DISCOVERED)
             addAction(BleManager.ACTION_DATA_AVAILABLE)
+            addAction(BleManager.ACTION_GATT_FAILURE)
         }
     }
 
@@ -177,6 +196,18 @@ class RegisterDeviceActivity :
         }
     }
     // endregion
+
+    // 디바이스 연결 시도 중에는 사용자 개입을 막는다. (잠깐만 막을께요~)
+    private fun blockUserInteraction() {
+        binding.btnScan.isEnabled = false
+        binding.btnClose.isEnabled = false
+        binding.btnScanCancel.isEnabled = false
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // no code (뒤로가기 방지)
+            }
+        })
+    }
 
     // region * Bind service
     /**
