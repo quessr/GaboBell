@@ -1,4 +1,8 @@
+
+import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import java.io.FileInputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -35,7 +39,41 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            /**
+             * - pplicationVariants.configureEach는 기본적으로 모든 빌드 변형에 대해 작동
+             *   그래서 release 내부에서도 구현이 가능
+             * - buildType.name을 사용하여 빌드 타입에 따라 파일명을 설정하고자 할 때,
+             *   빌드 프로세스가 debug 빌드를 기준으로 실행될 경우, 이 값은 debug로 설정
+             */
+            applicationVariants.configureEach {
+                outputs.configureEach {
+                    val project = "ansimi"
+                    // 날짜 포맷 설정
+                    val date = Date()
+                    val formattedDate = SimpleDateFormat("yyMMdd_HHmm").format(date)
+                    (this as? ApkVariantOutputImpl)?.outputFileName =
+                        "${project}_${"v$versionName"}_${buildType.name}_${formattedDate}.apk"
+                }
+            }
         }
+//        debug {
+//            isMinifyEnabled = false
+//            proguardFiles(
+//                getDefaultProguardFile("proguard-android-optimize.txt"),
+//                "proguard-rules.pro"
+//            )
+//            applicationVariants.configureEach {
+//                outputs.configureEach {
+//                    val project = "ansimi"
+//                    // 날짜 포맷 설정
+//                    val date = Date()
+//                    val formattedDate = SimpleDateFormat("yyMMdd_HHmm").format(date)
+//                    (this as? ApkVariantOutputImpl)?.outputFileName =
+//                        "${project}_${"v$versionName"}_${buildType.name}_${formattedDate}.apk"
+//                }
+//            }
+//        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
