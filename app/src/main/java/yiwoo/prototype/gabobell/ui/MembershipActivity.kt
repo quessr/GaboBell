@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.core.text.HtmlCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.data.network.LogInUserClient
 import yiwoo.prototype.gabobell.data.network.SignUpUserClient
 import yiwoo.prototype.gabobell.databinding.ActivityMembershipBinding
@@ -32,15 +30,12 @@ class MembershipActivity :
     private fun initUi() {
         if (userName.isEmpty()) {
             // 일반회원
-            binding.clUserPw.visibility = View.VISIBLE
-            binding.etUserId.isEnabled = true
             binding.etUserId.setText("")
-
         } else {
             // 카카오
             binding.clUserPw.visibility = View.GONE
-            binding.etUserPw.isEnabled = false
-            binding.etUserPw.setText(userName)
+            binding.clUserId.visibility = View.GONE
+            binding.etUserId.setText(userName)
         }
 
         binding.tvBtnRegister.setOnClickListener {
