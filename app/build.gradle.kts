@@ -1,9 +1,9 @@
+
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
-import kotlin.script.experimental.api.ScriptCompilationConfiguration.Default.properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -24,8 +24,8 @@ android {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.0.9"
+        versionCode = 10
+        versionName = "0.0.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

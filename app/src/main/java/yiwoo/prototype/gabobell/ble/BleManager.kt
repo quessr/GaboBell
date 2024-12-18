@@ -69,7 +69,6 @@ class BleManager : Service() {
 
     private lateinit var bluetoothStateReceiver: CommonReceiver
     private var isReceiverRegistered = false
-    private var isEmergencyViaApp = false
 
     private lateinit var audioManager: AudioManager
     private var mediaPlayer: MediaPlayer? = null
@@ -567,8 +566,11 @@ class BleManager : Service() {
     fun cmdEmergency(isRequest: Boolean) {
         if (isRequest) {
             Logger.d("[A2B] 0xA2_EMERGENCY_ON")
-            isEmergencyViaApp = true
-            sendCommand(0x01, 0xA2.toByte(), null)
+            /**
+             * 신규 프로토콜 문서에서는 A2 명령어 사용하지 않음
+             * (앱에서 구조 요청시 안심벨 사이렌소리 울림 기능 없음)
+             */
+            // sendCommand(0x01, 0xA2.toByte(), null)
         } else {
             Logger.d("[A2B] 0xA3_EMERGENCY_OFF")
             sendCommand(0x01, 0xA3.toByte(), null)
@@ -638,7 +640,8 @@ class BleManager : Service() {
             writeCharacteristic!!.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
             bleGatt?.writeCharacteristic(writeCharacteristic) == true
         }
-        Logger.d("Command sent successfully: $result")
+        val valueHex = String.format("0x%02X", cmd.toInt() and 0xFF)
+        Logger.d("Command sent successfully: $result : $valueHex")
     }
 
 // endregion
@@ -680,21 +683,7 @@ class BleManager : Service() {
             // 전역 상태 변경 및 신고 API 호출
             (application as GaboApplication).isEmergency = true
 
-            // 신고 이펙트 발생
-           val serviceType = if (isEmergencyViaApp) {
-                ApiSender.Event.EMERGENCY.serviceType
-            } else {
-                ApiSender.Event.BELL_EMERGENCY.serviceType
-            }
-//            val serviceType = if(cmd == 0xB2.toByte() ) {
-//                ApiSender.Event.BELL_EMERGENCY.serviceType
-//            } else {
-//                ApiSender.Event.EMERGENCY.serviceType
-//            }
-
             emergencyEffect(true)
-
-            isEmergencyViaApp = false
 
             LocationHelper.getCurrentLocation(this) { lat, lng ->
                 val locationLat: Double = lat
@@ -703,12 +692,11 @@ class BleManager : Service() {
 
                 ApiSender.createEvent(
                     context = this@BleManager,
-                    serviceType = serviceType,
+                    serviceType = ApiSender.Event.BELL_EMERGENCY.serviceType,
                     latitude = lat,
                     longitude = lng
                 ) { eventId ->
                     eventIdCallback?.onEventId(eventId)
-                    Logger.d("serviceType : $serviceType")
                 }
             }
         } else if (cmd == 0xB3.toByte() || cmd == 0xBA.toByte()) {
@@ -744,6 +732,8 @@ class BleManager : Service() {
 
         Logger.d("긴급 구조 요청")
         handleEmergency(0xB2.toByte(), BLE_REPORTE_EMERGENCY)
+        //0xB2에 대한 ACK 로 0xA9 보냄
+        sendCommand(0x01, 0xA9.toByte(), null)
     }
 
     private fun handleEmergencyRequestFromApp() {
@@ -756,6 +746,8 @@ class BleManager : Service() {
     private fun handleEmergencyCancelFromBell() {
         Logger.d("긴급 구조 취소")
         handleEmergency(0xB3.toByte(), BLE_CANCEL_REPORTE_EMERGENCY)
+        //0xB3에 대한 ACK 로 0xAA 보냄
+        sendCommand(0x01, 0xAA.toByte(), null)
     }
 
     private fun handleEmergencyCancelFromApp() {

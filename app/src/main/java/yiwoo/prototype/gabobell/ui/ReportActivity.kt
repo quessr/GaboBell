@@ -102,13 +102,16 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
     // 신고 처리 (API 호출)
     private fun reportEmergency() {
         countDownTimer?.cancel()
-        if (isConnected()) {
-            bleManager?.cmdEmergency(true)
-        } else {
-            // TODO: 해당 메소드를 서비스에서도 호출해야하므로 따로 뺄것.
-            // 벨 연동 없이 직접 API 호출을 수행함.
-            sendEmergencyCreate()
-        }
+
+        //신규 프로토콜 대응(앱에서 신고시 바로 api 호출)
+        sendEmergencyCreate()
+//        if (isConnected()) {
+//            bleManager?.cmdEmergency(true)
+//        } else {
+//            // TODO: 해당 메소드를 서비스에서도 호출해야하므로 따로 뺄것.
+//            // 벨 연동 없이 직접 API 호출을 수행함.
+//            sendEmergencyCreate()
+//        }
     }
 
     // 신고 API 호출 (직접 호출)
