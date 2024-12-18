@@ -1,9 +1,9 @@
-
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
+import kotlin.script.experimental.api.ScriptCompilationConfiguration.Default.properties
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -18,6 +18,8 @@ android {
     val properties = Properties()
     properties.load(FileInputStream(rootProject.file("local.properties")))
 
+    val nativeAppKey = properties.getProperty("KAKAO_NATIVE_APP_KEY_NONE_DOUBLE_QUOTES") ?: ""
+
     defaultConfig {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
@@ -27,9 +29,18 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "SEARCH_REST_API_KEY", properties.getProperty("SEARCH_REST_API_KEY"))
+        buildConfigField(
+            "String",
+            "SEARCH_REST_API_KEY",
+            properties.getProperty("SEARCH_REST_API_KEY")
+        )
+        buildConfigField(
+            "String",
+            "KAKAO_NATIVE_APP_KEY",
+            properties.getProperty("KAKAO_NATIVE_APP_KEY")
+        )
         buildConfigField("Boolean", "DEBUG_MODE", "false")
-
+        manifestPlaceholders["NATIVE_APP_KEY"] = nativeAppKey
     }
 
     buildTypes {
@@ -84,6 +95,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
         buildConfig = true
     }
 }

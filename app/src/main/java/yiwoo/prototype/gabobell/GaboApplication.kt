@@ -21,7 +21,7 @@ class GaboApplication: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        KakaoSdk.init(this, "2ec0ef7ff1549353fb1a5a9d4ac4b0ea")
-        KakaoMapSdk.init(this, "2ec0ef7ff1549353fb1a5a9d4ac4b0ea")
+        KakaoSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
+        KakaoMapSdk.init(this, BuildConfig.KAKAO_NATIVE_APP_KEY)
     }
 }
