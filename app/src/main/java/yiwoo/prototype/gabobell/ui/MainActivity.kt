@@ -53,14 +53,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var currentLocationLabel: Label? = null
-    private var isVisibleFab: Boolean = false
-    private var isActivePolice: Boolean = false
+    // private var isVisibleFab: Boolean = false
+    // private var isActivePolice: Boolean = false
     private lateinit var emergencyLauncher: ActivityResultLauncher<Intent>
 
-    private var bounds: LatLngBounds? = null
-    private var isPoliceActive: Boolean = false // 토글 상태를 저장
-    private val policeMarkers = mutableListOf<Label>() // 기존 라벨 관리 리스트
-    private var policeLabel: Label? = null
+    // private var bounds: LatLngBounds? = null
+    // private var isPoliceActive: Boolean = false // 토글 상태를 저장
+    // private val policeMarkers = mutableListOf<Label>() // 기존 라벨 관리 리스트
+    // private var policeLabel: Label? = null
     private var map: KakaoMap? = null
     private var currentPosition: LatLng? = null
     private var isFirstLocationUpdate = true    // 카메라 처음 위치 업데이트 여부를 확인
@@ -121,8 +121,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         Manifest.permission.READ_MEDIA_VIDEO
     )
 
-
-
     // 권한 요청 필요한지?
     private var isNecessaryToRequestPermission = true
 
@@ -178,10 +176,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     override fun onDestroy() {
         super.onDestroy()
-        Logger.d("===> onDestroy")
         LocationHelper.stopLocation()
-
-
     }
 
     private fun debugMode() {
@@ -193,10 +188,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private fun initUi() {
 
         // 귀가 모니터링
+        /*
         binding.btnMonitoring.setOnClickListener {
             val intent = Intent(this, MonitoringActivity::class.java)
             startActivity(intent)
         }
+        */
 
         // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
@@ -242,6 +239,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             }
         }
 
+        /*
         // 안심시설 (지구대)
         visibleFab(isVisibleFab)
         togglePolice(isActivePolice)
@@ -255,6 +253,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             isActivePolice = !isActivePolice
             togglePolice(isActivePolice)
         }
+        */
 
         //GPS, ZoomIn, ZoomOut
         binding.zoomIn.setOnClickListener {
@@ -360,6 +359,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                  * 카메라 이동시 센터 포지션 값에 대한 ne, sw 좌표 변경
                  */
                 map = kakaoMap
+                /*
                 map!!.setOnCameraMoveEndListener { map, cameraPosition, _ ->
                     updateBounds(map, mapView, cameraPosition)
 
@@ -378,6 +378,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                         }
                     }
                 }
+                */
 
                 //회전 동작 고정(제스쳐)
                 map?.setGestureEnable(GestureType.Rotate, false)
@@ -385,6 +386,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         })
     }
 
+    /*
     private fun callPoliceApi(map: KakaoMap) {
         bounds?.let { currentBounds ->
             Logger.d("Police API 호출: ${currentBounds.southwest} ~ ${currentBounds.northeast}")
@@ -432,6 +434,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     }
 
 
+
     private fun updateBounds(kakaoMap: KakaoMap ,mapView: MapView, cameraPosition: CameraPosition) {
         //카메라의 현재 위치 정보
         val centerLat = cameraPosition.position.latitude
@@ -457,6 +460,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private fun screenToLatLng(map: KakaoMap, x: Int, y: Int): LatLng {
         return map.fromScreenPoint(x.toDouble().toInt(), y.toDouble().toInt())!!
     }
+    */
 
     private fun initLauncher() {
         emergencyLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -486,10 +490,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
+    /*
     private fun visibleFab(visible: Boolean) {
-        binding.fabPolice.visibility = if (visible) View.VISIBLE else View.GONE
+         binding.fabPolice.visibility = if (visible) View.VISIBLE else View.GONE
     }
+    */
 
+    /*
     private fun togglePolice(isActive: Boolean) {
         isPoliceActive = isActive
         if (isActive) {
@@ -514,6 +521,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             policeMarkers.clear()
         }
     }
+    */
 
     private fun updateCurrentLocationMarker(
         map: KakaoMap, latitude: Double, longitude: Double) {

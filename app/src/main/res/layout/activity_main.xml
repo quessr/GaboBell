@@ -96,7 +96,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <ImageView
+    <!-- 24.12.18 // 귀가모니터링 및 안심시설 숨김 처리 -->
+    <!--ImageView
         android:id="@+id/btn_monitoring"
         android:layout_width="92dp"
         android:layout_height="92dp"
@@ -125,6 +126,6 @@
         android:background="@drawable/btn_police_selector"
         app:layout_constraintBottom_toTopOf="@id/btn_facilities"
         app:layout_constraintEnd_toEndOf="@id/btn_facilities"
-        app:layout_constraintStart_toStartOf="@id/btn_facilities" />
+        app:layout_constraintStart_toStartOf="@id/btn_facilities" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
