@@ -80,6 +80,8 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="22dp"
             android:background="@color/white"
+            android:digits="abcdefghijklmnopqrstuvwxyz1234567890"
+            android:hint="영문 소문자 또는 숫자"
             android:inputType="text"
             android:padding="10dp"
             android:textSize="14sp"
