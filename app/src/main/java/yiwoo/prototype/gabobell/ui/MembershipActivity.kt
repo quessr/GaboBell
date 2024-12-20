@@ -104,6 +104,8 @@ class MembershipActivity :
                                 Log.d("TOKEN@@", "uuid: $uuid, token: $token")
                                 UserDataStore.saveUUID(this@MembershipActivity, uuid)
                                 UserDataStore.saveToken(this@MembershipActivity, token)
+                                UserDataStore.saveUserID(this@MembershipActivity, username)
+                                UserDataStore.saveUserPassWord(this@MembershipActivity, userPassword)
 
                                 Log.d("MembershipActivity@@", "logInUpUserClient onSuccess")
 

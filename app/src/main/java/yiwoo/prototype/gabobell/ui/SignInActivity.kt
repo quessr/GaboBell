@@ -98,6 +98,8 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
                                                 )
                                                 UserDataStore.saveUUID(this@SignInActivity, uuid)
                                                 UserDataStore.saveToken(this@SignInActivity, token)
+                                                UserDataStore.saveUserID(this@SignInActivity, username)
+                                                UserDataStore.saveUserPassWord(this@SignInActivity, username)
 
                                                 Log.d(
                                                     "SignInActivity@@",

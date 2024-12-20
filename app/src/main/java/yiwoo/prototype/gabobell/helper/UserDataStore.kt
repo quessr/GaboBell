@@ -2,7 +2,6 @@ package yiwoo.prototype.gabobell.helper
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
@@ -11,6 +10,8 @@ object UserDataStore {
     private const val UUID_KEY = "uuid"
     private const val PREFERENCE_NAME = "encrypted_preferences"
     private const val PUSH_TOKEN_KEY = "push"
+    private const val USER_ID_KEY = "user_id"
+    private const val USER_PW_KEY = "user_pw"
 
     private fun getSharedPreferences(context: Context): SharedPreferences {
         val masterKey = MasterKey.Builder(context)
@@ -24,6 +25,23 @@ object UserDataStore {
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
+    }
+
+    //아이디 저장
+    fun saveUserID(context: Context, userID: String) {
+        val sharedPreferences = getSharedPreferences(context)
+        with(sharedPreferences.edit()) {
+            putString(USER_ID_KEY, userID)
+            commit()
+        }
+    }
+    //패스워드 저장
+    fun saveUserPassWord(context: Context, userPW: String) {
+        val sharedPreferences = getSharedPreferences(context)
+        with(sharedPreferences.edit()) {
+            putString(USER_PW_KEY, userPW)
+            commit()
+        }
     }
 
     // 토근 저장하기
@@ -71,6 +89,18 @@ object UserDataStore {
         return sharedPreferences.getString(PUSH_TOKEN_KEY, "") ?: ""
     }
 
+
+    //아이디 가져오기
+    fun getUserId(context: Context): String {
+        val sharedPreferences = getSharedPreferences(context)
+        return sharedPreferences.getString(USER_ID_KEY, "") ?:""
+    }
+
+    //패스워드 가져오기
+    fun getUserPassWord(context: Context): String {
+        val sharedPreferences = getSharedPreferences(context)
+        return sharedPreferences.getString(USER_PW_KEY, "") ?:""
+    }
 
     // EncryptedSharedPreferences 제거하기
     fun removeToken(context: Context) {
