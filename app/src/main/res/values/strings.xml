@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">안심벨</string>
+    <string name="app_name">GABOSAFETY</string>
+    <string name="app_name_title">GABOSAFETY DEMO</string>
 
     <string name="kakao_native_app_key">2ec0ef7ff1549353fb1a5a9d4ac4b0ea</string>
     <string name="scheme_kakao_app_key">kakao2ec0ef7ff1549353fb1a5a9d4ac4b0ea</string>
