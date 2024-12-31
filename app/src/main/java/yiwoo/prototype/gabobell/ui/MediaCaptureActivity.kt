@@ -5,31 +5,38 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Environment
 import android.os.Environment.DIRECTORY_MOVIES
 import android.os.Environment.DIRECTORY_PICTURES
-import android.os.Environment.getExternalStoragePublicDirectory
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.camera.core.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.*
+import androidx.camera.video.FileOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import yiwoo.prototype.gabobell.constants.MediaFormatConstants
 import yiwoo.prototype.gabobell.data.network.FileUploadClient
 import yiwoo.prototype.gabobell.databinding.ActivityMediaCaptureBinding
 import yiwoo.prototype.gabobell.helper.UserSettingsManager
+import yiwoo.prototype.gabobell.workers.UploadWorker
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
-import java.util.logging.Logger
 
 class MediaCaptureActivity :
     BaseActivity<ActivityMediaCaptureBinding>(ActivityMediaCaptureBinding::inflate) {
@@ -156,7 +163,7 @@ class MediaCaptureActivity :
     private fun captureVideo() {
         val videoCapture = videoCapture ?: return
 
-        val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
+        val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.KOREA)
             .format(System.currentTimeMillis())
         val videoFile = File(getExternalFilesDir(DIRECTORY_MOVIES), "$name.mp4")
         val outputOptions = FileOutputOptions.Builder(videoFile).build()
@@ -203,15 +210,38 @@ class MediaCaptureActivity :
                             val msg = "Video capture succeeded: ${videoFile.absolutePath}"
                             Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                             Log.d("CameraXApp", msg)
-                            Log.d("MediaCaptureActivity videoFileSize", "${videoFile.length() / (1024 * 1024)} MB")
+                            Log.d(
+                                "MediaCaptureActivity videoFileSize",
+                                "${videoFile.length() / (1024 * 1024)} MB"
+                            )
 
-                            CoroutineScope(Dispatchers.IO).launch {
-                                uploadFiles(
-                                    eventId = mediaEventId,
-                                    imageFiles = null,
-                                    videoFile = videoFile
-                                )
-                            }
+                            val inputData = Data.Builder()
+                                .putLong("eventId", mediaEventId)
+                                .putString("videoFilePath", videoFile.absolutePath)
+                                .build()
+
+                            val uploadWorkRequest = OneTimeWorkRequestBuilder<UploadWorker>()
+                                .setInputData(inputData)
+                                .build()
+
+                            WorkManager.getInstance(this).enqueue(uploadWorkRequest)
+
+//                            // WorkManager 동작 확인용 코드
+//                            WorkManager.getInstance(this)
+//                                .getWorkInfoByIdLiveData(uploadWorkRequest.id)
+//                                .observeForever { workInfo ->
+//                                    workInfo?.let {
+//                                        Log.d("WorkManagerTest", "현재 상태: ${it.state}")
+//                                    }
+//                                }
+//
+//                            // fileSize 확인용 코드
+//                            val fileSizeMB = videoFile.length() / (1024 * 1024) // MB 단위로 변환
+//                            Log.d("CameraXApp", "Video file size: ${fileSizeMB} MB")
+
+
+                            if (!isFinishing) finish()
+
                         } else {
                             Log.e("CameraXApp", "Video capture failed: ${recordEvent.error}")
                         }
@@ -220,6 +250,7 @@ class MediaCaptureActivity :
             }
     }
 
+    // TODO 추후 takePhoto시 uploadFiles로직 UploadWorker로 옮기기
     private suspend fun uploadFiles(eventId: Long, videoFile: File?, imageFiles: List<File>?) {
         fileUploadClient.uploadFiles(
             context = this,

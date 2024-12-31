@@ -1,4 +1,3 @@
-
 import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import java.io.FileInputStream
 import java.text.SimpleDateFormat
@@ -24,8 +23,8 @@ android {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
         targetSdk = 34
-        versionCode = 14
-        versionName = "0.0.14"
+        versionCode = 15
+        versionName = "0.0.15"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -157,9 +156,10 @@ dependencies {
 
     implementation("com.kakao.maps.open:android:2.12.8")
 
-//Firebase
+//Firebase  
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-messaging:24.1.0")
 
-
+//WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 }
