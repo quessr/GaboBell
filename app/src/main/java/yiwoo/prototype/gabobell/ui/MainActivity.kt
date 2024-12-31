@@ -556,7 +556,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             mediaPlayer = MediaPlayer.create(this, R.raw.siren).apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        // 갤럭시 저사양 (버전 7, 8)에서 사이렌 발생하지 않음.
+                        // USAGE_MEDIA 으로 속성 변경하고 추이 확인 필요
+                        // .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .build()
                 )

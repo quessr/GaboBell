@@ -24,8 +24,8 @@ android {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
         targetSdk = 34
-        versionCode = 12
-        versionName = "0.0.12"
+        versionCode = 13
+        versionName = "0.0.13"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -39,8 +39,23 @@ android {
             "KAKAO_NATIVE_APP_KEY",
             properties.getProperty("KAKAO_NATIVE_APP_KEY")
         )
-        buildConfigField("Boolean", "DEBUG_MODE", "false")
+        buildConfigField("Boolean", "DEBUG_MODE", "true")
         manifestPlaceholders["NATIVE_APP_KEY"] = nativeAppKey
+    }
+
+    // Flavors
+    flavorDimensions.add("region")
+    productFlavors {
+        // 기본형
+        register("abc") {
+            dimension = "region"
+        }
+
+        // 천안-아산
+        register("ca") {
+            dimension = "region"
+            versionNameSuffix = "-ca"
+        }
     }
 
     buildTypes {
