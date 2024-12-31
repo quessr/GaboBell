@@ -24,8 +24,8 @@ android {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
         targetSdk = 34
-        versionCode = 13
-        versionName = "0.0.13"
+        versionCode = 14
+        versionName = "0.0.14"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

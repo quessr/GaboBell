@@ -12,6 +12,8 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.Task
 
@@ -22,6 +24,41 @@ object LocationHelper {
     //BleManager 에서 onCreate() 함수에서 초기화
     fun locationInit(context: Context) {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    /**
+     * Google play 서비스(위치 서비스) -> 위치 정보 on/off and 위치 정확도 개선 토글 버튼 on/off 상태 관리
+     * checkLocationSettings를 사용하는 경우에는 별도로 isLocationEnabled 메서드를 구현하지 않아도 위치 서비스 활성화 상태 확인과 설정 화면 유도가 가능
+     * checkLocationSettings -> FusedLocationProviderClient 사용할 경우(Google Play Services에 의존)
+     *      , 위치 정확도 확인 가능
+     * isLocationEnabled -> LocationManager를 사용해 GPS(GPS_PROVIDER)와 네트워크(NETWORK_PROVIDER) 위치 서비스가 각각 활성화되어 있는지 확인
+     *      , 위치 정확도 상태는 확인 불가능
+     *
+     * ===> 서울 안심이는 LocationManager 를 이용하여 위치정보를 얻는것으로 보임
+     */
+    fun checkLocationSettings(context: Context, taskCallback: (Boolean, LocationSettingsResponse?, Exception?) -> Unit) {
+        val locationRequest = LocationRequest.Builder(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            1000)
+            .build()
+
+        val locationSettingsRequest = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+            .setAlwaysShow(true) // 필요 시 사용자에게 설정 화면을 표시
+            .build()
+
+        val settingsClient = LocationServices.getSettingsClient(context)
+        val task: Task<LocationSettingsResponse> = settingsClient.checkLocationSettings(locationSettingsRequest)
+
+        task.addOnSuccessListener { response ->
+            Logger.d("위치 정보(정확도) addOnSuccessListener=====")
+            taskCallback(true, response, null)
+        }
+
+        task.addOnFailureListener { exception ->
+            Logger.d("위치 정보(정확도) addOnFailureListener=====")
+            taskCallback(false, null, exception)
+        }
     }
 
     //최신 상태의 정확한 위치를 더 일관되게 가져온다.(현재 위치를 한 번 요청)

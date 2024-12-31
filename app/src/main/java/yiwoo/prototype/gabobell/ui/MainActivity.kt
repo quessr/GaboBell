@@ -1,12 +1,14 @@
 package yiwoo.prototype.gabobell.ui
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioManager
@@ -15,31 +17,26 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.common.api.ResolvableApiException
 import com.kakao.vectormap.GestureType
 import com.kakao.vectormap.KakaoMap
 import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
-import com.kakao.vectormap.LatLngBounds
 import com.kakao.vectormap.MapLifeCycleCallback
-import com.kakao.vectormap.MapView
-import com.kakao.vectormap.camera.CameraPosition
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
 import yiwoo.prototype.gabobell.BuildConfig
 import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
-import yiwoo.prototype.gabobell.api.dto.response.PoliceResultItem
 import yiwoo.prototype.gabobell.ble.BleManager
-import yiwoo.prototype.gabobell.constants.MapConstants
-import yiwoo.prototype.gabobell.data.network.PoliceClient
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
 import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.FlashUtil
@@ -165,6 +162,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         */
 
         updateUi()
+
+        LocationHelper.checkLocationSettings(this) { isLocationAccuracy, response, exception ->
+            if (!isLocationAccuracy) {
+                Logger.d("위치 정보(정확도) 비활성화되어 있습니다.onResume=====")
+                if (exception is ResolvableApiException) {
+                    try {
+                        // ResolvableApiException에서 제공되는 IntentSender를 올바르게 처리하기 위해사용
+                        val intentSenderRequest =
+                            IntentSenderRequest.Builder(exception.resolution).build()
+                        locationSettingsLauncher.launch(intentSenderRequest)
+                    } catch (sendEx: IntentSender.SendIntentException) {
+                        sendEx.printStackTrace()
+                    }
+                }
+            }
+        }
     }
 
     override fun onPause() {
@@ -640,6 +653,18 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(latitude, longitude)))
                 isFirstLocationUpdate = false // 첫 위치 업데이트 이후로는 카메라 이동하지 않음
             }
+        }
+    }
+
+    private val locationSettingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            Logger.d("위치 정보(정확도) 설정이 완료되었습니다.")
+            isNecessaryToRequestPermission = false
+        } else {
+            Logger.d("위치 정보(정확도) 설정이 취소되었습니다.")
+            finish()
         }
     }
 
