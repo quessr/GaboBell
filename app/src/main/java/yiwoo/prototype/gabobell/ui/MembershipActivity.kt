@@ -8,6 +8,7 @@ import android.widget.Toast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import yiwoo.prototype.gabobell.BuildConfig
 import yiwoo.prototype.gabobell.data.network.LogInUserClient
 import yiwoo.prototype.gabobell.data.network.SignUpUserClient
 import yiwoo.prototype.gabobell.databinding.ActivityMembershipBinding
@@ -53,10 +54,11 @@ class MembershipActivity :
             val birthDate = binding.etBirthDate.text.toString()
 //            val gender = binding.etGender.text.toString()
 //            val nationality = binding.etNationality.text.toString()
-            val district = binding.etDistrict.text.toString()
+//            val district = binding.etDistrict.text.toString()
 
             if (userId.isEmpty() || password.isEmpty() || nickname.isEmpty() ||
-                phoneNumber.isEmpty() || birthDate.isEmpty() || district.isEmpty()
+                phoneNumber.isEmpty() || birthDate.isEmpty()
+                // || district.isEmpty()
             ) {
                 Toast.makeText(this@MembershipActivity, "모든 항목을 입력해주세요.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -72,6 +74,13 @@ class MembershipActivity :
                 return@setOnClickListener
             }
 
+            // 25.01.02 - 지역코드
+            // 전국 모니터링은 마포구 (3130000), 천안/아산용은 천안시(4490000) 코드로 기본 설정됨.
+            val regionCode = when(BuildConfig.FLAVOR) {
+                "ca" -> "4490000"
+                else -> "3130000"
+            }
+
             val userDetails = mapOf(
                 "username" to userId,
                 "password" to password,
@@ -84,7 +93,7 @@ class MembershipActivity :
                 // 24.12.13 - '마포구' 대신 자치구 코드 번호로 변경 됨.
                 // 영업용은 자치구를 입력 값에 관계없이 '마포구'로 진행.
                 // "district" to "마포구"
-                "district" to "3130000"
+                "district" to regionCode
             )
             // 회원가입
             signup(userDetails)

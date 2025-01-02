@@ -331,7 +331,7 @@
             app:layout_constraintVertical_bias="0.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ImageView
+    <!--ImageView
         android:id="@+id/ivDashLine"
         android:layout_width="match_parent"
         android:layout_height="1.5dp"
@@ -341,10 +341,10 @@
         android:src="@drawable/memership_dash_line"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/clNationality" />
+        app:layout_constraintTop_toBottomOf="@id/clNationality" /-->
 
     <!--        거주지 관리구청-->
-    <TextView
+    <!--TextView
         android:id="@+id/tvTitleDistrict"
         style="@style/AnsimTextView.Bold"
         android:layout_width="match_parent"
@@ -354,10 +354,10 @@
         android:text="@string/membership_district"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivDashLine" />
+        app:layout_constraintTop_toBottomOf="@id/ivDashLine" /-->
 
     <!--    자치구-->
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!--androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clDistrict"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -394,7 +394,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/tvDistrict"
             app:layout_constraintTop_toTopOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout-->
 
     <!--가입하기 버튼-->
     <TextView

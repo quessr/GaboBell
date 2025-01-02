@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">GABOSAFETY</string>
-    <string name="app_name_title">GABOSAFETY DEMO</string>
+    <string name="app_name">GABOSAFETY_DEMO</string>
+    <string name="app_name_in_splash">GABOSAFETY\nDEMO</string>
+    <string name="app_name_in_top">GABOSAFETY DEMO</string>
 
     <string name="kakao_native_app_key">2ec0ef7ff1549353fb1a5a9d4ac4b0ea</string>
     <string name="scheme_kakao_app_key">kakao2ec0ef7ff1549353fb1a5a9d4ac4b0ea</string>
@@ -19,7 +20,7 @@
     <string name="pop_monitoring_setting_error_title">출발지와 도착지를 설정해주세요.</string>
     <string name="pop_monitoring_running_title">귀가모니터링 실행 중</string>
     <string name="pop_monitoring_running_description">귀가 모니터링이 실행 중입니다. \n출발지와 도착지를 변경할 수 없습니다.</string>
-    <string name="pop_sign_message">안심이 서비스 회원 가입이 성공적으로 완료되었습니다.\n안심벨 기기설정을 통해 세부설정이 가능합니다.</string>
+    <string name="pop_sign_message">회원 가입이 성공적으로 완료되었습니다.\n안심벨 기기설정을 통해 세부설정이 가능합니다.</string>
     <string name="pop_register_message">연결하시겠습니까?</string>
 
     <!--Main-->
@@ -101,7 +102,12 @@
     <string name="membership_phone_numbser">휴대폰번호</string>
     <string name="membership_phone_numbser_hint">ex. 01012345678</string>
     <string name="membership_title_district">거주지 관리구청</string>
-    <string name="membership_district">관리구청</string>¬
-    <string name="membership_district_hint">ex. 마포구</string>¬
-    <string name="membership_register">가입하기</string>¬
+    <string name="membership_district">관리구청</string>
+    <string name="membership_district_hint">ex. 마포구</string>
+    <string name="membership_register">가입하기</string>
+
+    <!--Sign in-->
+    <!--string name="welcome_message">안전한 귀가길을 위한 필수 서비스\n&quot;안심벨&quot;에 오신걸 환영합니다.</string-->
+    <string name="welcome_message">안전한 귀가길을 위한 필수 서비스\nGABOSAFETY</string>
+
 </resources>

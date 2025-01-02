@@ -14,7 +14,7 @@
         android:fontFamily="@font/roboto_bold"
         android:gravity="center"
         android:lineSpacingExtra="8dp"
-        android:text="안전한 귀가길을 위한 필수 서비스\n&quot;안심벨&quot;에 오신걸 환영합니다."
+        android:text="@string/welcome_message"
         android:textColor="#0055A4"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"

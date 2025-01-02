@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GABOSAFETY</string>
-    <string name="app_name_title">GABOSAFETY(천안-아산)</string>
+    <string name="app_name">GABOSAFETY_DEMO</string>
+    <string name="app_name_in_top">천안/아산</string>
 </resources>

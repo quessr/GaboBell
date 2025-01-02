@@ -18,7 +18,7 @@
         android:layout_marginBottom="100dp"
         android:fontFamily="@font/roboto_bold"
         android:gravity="center"
-        android:text="스마트\n안심귀가 서비스"
+        android:text="@string/app_name_in_splash"
         android:textColor="#18B8CA"
         android:textSize="40sp"
         app:layout_constraintEnd_toEndOf="parent"

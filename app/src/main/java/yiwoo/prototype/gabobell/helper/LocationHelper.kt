@@ -47,7 +47,7 @@ object LocationHelper {
      * isLocationEnabled -> LocationManager를 사용해 GPS(GPS_PROVIDER)와 네트워크(NETWORK_PROVIDER) 위치 서비스가 각각 활성화되어 있는지 확인
      *      , 위치 정확도 상태는 확인 불가능
      *
-     * ===> 서울 안심이는 LocationManager 를 이용하여 위치정보를 얻는것으로 보임
+     * ===> 참고용 앱은 LocationManager 를 이용하여 위치정보를 얻는것으로 보임
      */
     fun checkLocationSettings(context: Context, taskCallback: (Boolean, LocationSettingsResponse?, Exception?) -> Unit) {
         val locationRequest = LocationRequest.Builder(

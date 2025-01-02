@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/app_name_title"
+            android:text="@string/app_name_in_top"
             android:textSize="24sp"
             android:theme="@style/AnsimTextView.Bold.White"
             app:layout_constraintBottom_toBottomOf="parent"
