@@ -685,18 +685,30 @@ class BleManager : Service() {
 
             emergencyEffect(true)
 
-            LocationHelper.getCurrentLocation(this) { lat, lng ->
-                val locationLat: Double = lat
-                val locationLng: Double = lng
-                Logger.d("handleEmergency_currentLocation: $locationLat | $locationLng")
-
+            val location = LocationHelper.latestValidLocation()
+            if (location != null) {
                 ApiSender.createEvent(
                     context = this@BleManager,
                     serviceType = ApiSender.Event.BELL_EMERGENCY.serviceType,
-                    latitude = lat,
-                    longitude = lng
+                    latitude = location.latitude,
+                    longitude = location.longitude
                 ) { eventId ->
                     eventIdCallback?.onEventId(eventId)
+                }
+            } else {
+                LocationHelper.getCurrentLocation(this) { lat, lng ->
+                    val locationLat: Double = lat
+                    val locationLng: Double = lng
+                    Logger.d("handleEmergency_currentLocation: $locationLat | $locationLng")
+
+                    ApiSender.createEvent(
+                        context = this@BleManager,
+                        serviceType = ApiSender.Event.BELL_EMERGENCY.serviceType,
+                        latitude = lat,
+                        longitude = lng
+                    ) { eventId ->
+                        eventIdCallback?.onEventId(eventId)
+                    }
                 }
             }
         } else if (cmd == 0xB3.toByte() || cmd == 0xBA.toByte()) {

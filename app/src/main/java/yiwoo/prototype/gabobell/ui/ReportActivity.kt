@@ -116,26 +116,62 @@ class ReportActivity : BaseActivity<ActivityReportBinding>(ActivityReportBinding
 
     // 신고 API 호출 (직접 호출)
     private fun sendEmergencyCreate() {
-        LocationHelper.getCurrentLocation(this) { lat, lng ->
-            val locationLat: Double = lat
-            val locationLng: Double = lng
-            Logger.d("Emergency_currentLocation: $locationLat | $locationLng")
-            /**
-             * getCurrentLocation 함수는 비동기로 처리되기 때문에,
-             * 위치 값을 가져오기전 reportEmergency함수가 호출 될 경우 NullPointerException 발생
-             * 바동기 콜백 내부에서 reportEmergency 함수 호출
-             */
+
+        val location = LocationHelper.latestValidLocation()
+        if (location != null) {
             ApiSender.createEvent(
                 context = this@ReportActivity,
                 serviceType = ApiSender.Event.EMERGENCY.serviceType,
-                latitude = lat,
-                longitude = lng
+                latitude = location.latitude,
+                longitude = location.longitude
             ) { eventId ->
                 Logger.d("Received event ID in SomeActivity: $eventId")
                 (application as GaboApplication).isEmergency = true
                 sendEmergencyVideo(eventId)
             }
+        } else {
+            LocationHelper.getCurrentLocation(this) { lat, lng ->
+                val locationLat: Double = lat
+                val locationLng: Double = lng
+                Logger.d("Emergency_currentLocation: $locationLat | $locationLng")
+                /**
+                 * getCurrentLocation 함수는 비동기로 처리되기 때문에,
+                 * 위치 값을 가져오기전 reportEmergency함수가 호출 될 경우 NullPointerException 발생
+                 * 바동기 콜백 내부에서 reportEmergency 함수 호출
+                 */
+                ApiSender.createEvent(
+                    context = this@ReportActivity,
+                    serviceType = ApiSender.Event.EMERGENCY.serviceType,
+                    latitude = lat,
+                    longitude = lng
+                ) { eventId ->
+                    Logger.d("Received event ID in SomeActivity: $eventId")
+                    (application as GaboApplication).isEmergency = true
+                    sendEmergencyVideo(eventId)
+                }
+            }
         }
+
+//        LocationHelper.getCurrentLocation(this) { lat, lng ->
+//            val locationLat: Double = lat
+//            val locationLng: Double = lng
+//            Logger.d("Emergency_currentLocation: $locationLat | $locationLng")
+//            /**
+//             * getCurrentLocation 함수는 비동기로 처리되기 때문에,
+//             * 위치 값을 가져오기전 reportEmergency함수가 호출 될 경우 NullPointerException 발생
+//             * 바동기 콜백 내부에서 reportEmergency 함수 호출
+//             */
+//            ApiSender.createEvent(
+//                context = this@ReportActivity,
+//                serviceType = ApiSender.Event.EMERGENCY.serviceType,
+//                latitude = lat,
+//                longitude = lng
+//            ) { eventId ->
+//                Logger.d("Received event ID in SomeActivity: $eventId")
+//                (application as GaboApplication).isEmergency = true
+//                sendEmergencyVideo(eventId)
+//            }
+//        }
     }
 
     // 긴급 상황 동영상 전달

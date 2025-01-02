@@ -21,6 +21,19 @@ object LocationHelper {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var locationCallback: LocationCallback? = null
 
+    private var latestLocation: Location? = null
+    private var latestCurrentTime: Long = 0
+
+    fun latestValidLocation(): Location? {
+        val diffTime = System.currentTimeMillis() - latestCurrentTime
+        Logger.d("latestDiffTime : $diffTime")
+        if (diffTime > 60_000) {
+            Logger.d("diffTime : $diffTime")
+            return null
+        }
+        return latestLocation
+    }
+
     //BleManager 에서 onCreate() 함수에서 초기화
     fun locationInit(context: Context) {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
@@ -83,6 +96,9 @@ object LocationHelper {
                 )
             locationRequest.addOnSuccessListener { location ->
                 location?.let {
+                    latestLocation = location
+                    latestCurrentTime = System.currentTimeMillis()
+
                     val lat = location.latitude
                     val long = location.longitude
                     Logger.d("currentLocation: $lat | $long")
@@ -115,6 +131,9 @@ object LocationHelper {
                     super.onLocationResult(locationResult)
                     val location = locationResult.lastLocation
                     location?.let {
+                        latestLocation = location
+                        latestCurrentTime = System.currentTimeMillis()
+
                         val lat = it.latitude
                         val long = it.longitude
                         Log.d("KakaoMap", "LocationHelper_Updated Location: $lat | $long")
