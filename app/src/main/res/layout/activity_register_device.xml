@@ -48,7 +48,7 @@
         app:layout_constraintTop_toBottomOf="@id/register_title_area"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="98dp"
-        android:src="@drawable/ansimi_bell"/>
+        android:src="@drawable/img_set_device"/>
 
     <LinearLayout
         android:orientation="vertical"

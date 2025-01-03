@@ -9,6 +9,8 @@ import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import yiwoo.prototype.gabobell.BuildConfig
+import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.constants.CheckAccountConstants
 import yiwoo.prototype.gabobell.data.network.LogInUserClient
 import yiwoo.prototype.gabobell.data.network.UserAccountCheckClient
@@ -26,6 +28,13 @@ class SignInActivity : BaseActivity<ActivitySignInBinding>(ActivitySignInBinding
     }
 
     private fun initUi() {
+
+        val imgWelcome = when(BuildConfig.FLAVOR) {
+            "ca" -> R.drawable.character_ca
+            else -> R.drawable.podolli
+        }
+        binding.ivCharacter.setBackgroundResource(imgWelcome)
+
         binding.btnKakaoLogIn.setOnClickListener { kakaoLogin() }
         binding.btnNormalLogIn.setOnClickListener {
             startActivity(Intent(this@SignInActivity, MembershipActivity::class.java))

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#EDEDED">
 
     <!-- Welcome Text -->
@@ -22,13 +23,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
+        android:id="@+id/iv_character"
         android:layout_width="200dp"
         android:layout_height="200dp"
         android:layout_marginTop="50dp"
-        android:src="@drawable/podolli"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_welcome" />
+        app:layout_constraintTop_toBottomOf="@id/tv_welcome"
+        tools:src="@drawable/podolli" />
 
     <LinearLayout
         android:id="@+id/ll_button_group"
@@ -85,7 +87,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="27dp"
         android:gravity="center"
-        android:text="본 어플리케이션은 프로토타입 버전입니다.\n상업용 버전에서 포돌이, 포순이 캐릭터는 변경될 수 있습니다."
+        android:text="@string/prototype_message"
         android:textColor="#8a8c8f"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"

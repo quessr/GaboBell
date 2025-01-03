@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="28dp"
         android:gravity="center"
-        android:text="본 어플리케이션은 프로토타입 버전입니다.\n상업용 버전에서 포돌이, 포순이 캐릭터는 변경될 수 있습니다."
+        android:text="@string/prototype_message"
         android:textSize="12sp"
         app:layout_constraintBottom_toTopOf="@id/copyright"
         app:layout_constraintEnd_toEndOf="parent"
