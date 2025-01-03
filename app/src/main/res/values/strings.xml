@@ -22,6 +22,7 @@
     <string name="pop_monitoring_running_description">귀가 모니터링이 실행 중입니다. \n출발지와 도착지를 변경할 수 없습니다.</string>
     <string name="pop_sign_message">회원 가입이 성공적으로 완료되었습니다.\n안심벨 기기설정을 통해 세부설정이 가능합니다.</string>
     <string name="pop_register_message">연결하시겠습니까?</string>
+    <string name="pop_failed_permission_message">원활한 서비스(데모) 이용을 위해\n모든 권한 허용이 필요합니다.</string>
 
     <!--Main-->
     <string name="main_registered_device">등록기기</string>

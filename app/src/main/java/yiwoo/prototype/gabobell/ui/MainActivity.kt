@@ -641,8 +641,15 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             }
         } else {
             Logger.d("일부 권한이 거부됨")
-            // TODO: 권한 거부에 대한 시나리오는 추후 반영
-            finish()
+
+            CustomPopup.Builder(this)
+                .setTitle(getString(R.string.pop_emergency_completed_title))
+                .setMessage(getString(R.string.pop_failed_permission_message))
+                .setOnOkClickListener(getString(R.string.pop_btn_confirm)) {
+                    finish()
+                }
+                .build()
+                .show()
         }
     }
 
