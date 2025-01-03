@@ -80,6 +80,12 @@
 # With R8 full mode generic signatures are stripped for classes that are not kept.
 -keep,allowobfuscation,allowshrinking class retrofit2.Response
 
+# request, reponse data class which are used with Retrofit
+-keep class yiwoo.prototype.gabobell.api.dto.request.** { *; }
+-keep class yiwoo.prototype.gabobell.api.dto.response.** { *; }
+-keep class yiwoo.prototype.gabobell.api.dto.** { *; }
+
+
 ## kakao
 -keep class com.kakao.sdk.**.model.* { <fields>; }
 -keep class * extends com.google.gson.TypeAdapter

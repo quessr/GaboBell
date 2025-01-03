@@ -23,8 +23,8 @@ android {
         applicationId = "yiwoo.prototype.gabobell"
         minSdk = 23
         targetSdk = 34
-        versionCode = 18
-        versionName = "0.0.18"
+        versionCode = 20
+        versionName = "0.0.20"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -38,7 +38,6 @@ android {
             "KAKAO_NATIVE_APP_KEY",
             properties.getProperty("KAKAO_NATIVE_APP_KEY")
         )
-        buildConfigField("Boolean", "DEBUG_MODE", "true")
         manifestPlaceholders["NATIVE_APP_KEY"] = nativeAppKey
     }
 
@@ -58,7 +57,18 @@ android {
     }
 
     buildTypes {
+
+        debug {
+            buildConfigField("Boolean", "DEBUG_MODE", "true")
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+
         release {
+            buildConfigField("Boolean", "DEBUG_MODE", "false")
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
