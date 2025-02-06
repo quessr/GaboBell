@@ -129,6 +129,15 @@ dependencies {
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.2")
 
+    //viewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    //viewMopdel_LifecycleScope
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    //viewModel_liveData
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
+    implementation("androidx.activity:activity-ktx:1.8.0")  // add
+
+
 //location
     implementation("com.google.android.gms:play-services-location:21.3.0")
 

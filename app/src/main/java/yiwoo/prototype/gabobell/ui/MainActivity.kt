@@ -1,15 +1,12 @@
 package yiwoo.prototype.gabobell.ui
 
-import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.IntentSender
-import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -22,7 +19,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.common.api.ResolvableApiException
 import com.kakao.vectormap.GestureType
@@ -33,22 +30,39 @@ import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.camera.CameraUpdateFactory
 import com.kakao.vectormap.label.Label
 import com.kakao.vectormap.label.LabelOptions
-import yiwoo.prototype.gabobell.BuildConfig
-import yiwoo.prototype.gabobell.GaboApplication
 import yiwoo.prototype.gabobell.R
 import yiwoo.prototype.gabobell.ble.BleManager
 import yiwoo.prototype.gabobell.databinding.ActivityMainBinding
-import yiwoo.prototype.gabobell.helper.ApiSender
 import yiwoo.prototype.gabobell.helper.FlashUtil
 import yiwoo.prototype.gabobell.helper.LocationHelper
 import yiwoo.prototype.gabobell.helper.Logger
-import yiwoo.prototype.gabobell.helper.UserDeviceManager
+import yiwoo.prototype.gabobell.repository.BleServiceRepository
+import yiwoo.prototype.gabobell.repository.LocationRepository
+import yiwoo.prototype.gabobell.repository.PermissionRepository
+import yiwoo.prototype.gabobell.repository.UserDeviceRepository
 import yiwoo.prototype.gabobell.ui.popup.CustomPopup
+import yiwoo.prototype.gabobell.ui.viewmodel.MainActivityViewModel
+import yiwoo.prototype.gabobell.ui.viewmodel.MainActivityViewModelFactory
 
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
     // SensorEventListener {
 
-    private var bluetoothAdapter: BluetoothAdapter? = null
+    //by ViewModels()를 사용하면 ViewModelProvider를 사용하지 않고 ViewModel을 지연 생성(viewModel 라이브러리 추가)
+    //but : viewModel 클래스가 매개변수를 필요로 하는 경우 Factory 명시적으로 제공 필요
+//    private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val permissionRepository: PermissionRepository by lazy { PermissionRepository(this) }
+    private val userDeviceRepository: UserDeviceRepository by lazy { UserDeviceRepository(applicationContext) }
+    private val locationRepository: LocationRepository by lazy { LocationRepository(applicationContext) }
+    private val bleServiceRepository: BleServiceRepository by lazy { BleServiceRepository(applicationContext, application) }
+    private val mainActivityViewModel: MainActivityViewModel by viewModels {
+        MainActivityViewModelFactory(
+            permissionRepository,
+            userDeviceRepository,
+            locationRepository,
+            bleServiceRepository
+        )
+    }
+
     private var currentLocationLabel: Label? = null
     // private var isVisibleFab: Boolean = false
     // private var isActivePolice: Boolean = false
@@ -77,47 +91,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     */
 
 
-    // 안드로이드 12 미만 퍼미션
-    private val permissionsAndy11 = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
-
-    // 안드로이드 12 이상 퍼미션
-    private val permissionsAndy12 = arrayOf(
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
-
-    private val permissionsAndy13 = arrayOf(
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.READ_MEDIA_VIDEO,
-    )
-
-    private val permissionsAndy14 = arrayOf(
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO,
-        // Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.POST_NOTIFICATIONS,
-        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-        Manifest.permission.READ_MEDIA_VIDEO
-    )
-
     // 권한 요청 필요한지?
     private var isNecessaryToRequestPermission = true
 
@@ -126,21 +99,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         flashUtil = FlashUtil.getInstance(this@MainActivity)
 
+        initObserve()
         initUi()
         initLauncher()
         initMap()
-
-        if (checkPermissions()) {
-            isNecessaryToRequestPermission = false
-            startMainService()
-
-        } else {
-            Handler(Looper.getMainLooper()).postDelayed({
-                // 맵이 보여지기 전에 mapView.pause() 가 호출되면 맵이 출력되지 않아서
-                // 권한 요청을 늦췄다.
-                requestPermissions()
-            }, 1_000)
-        }
 
         // initShakeDetection()
         initEmergencyStateReceiver()
@@ -162,22 +124,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         */
 
         updateUi()
-
-        LocationHelper.checkLocationSettings(this) { isLocationAccuracy, response, exception ->
-            if (!isLocationAccuracy) {
-                Logger.d("위치 정보(정확도) 비활성화되어 있습니다.onResume=====")
-                if (exception is ResolvableApiException) {
-                    try {
-                        // ResolvableApiException에서 제공되는 IntentSender를 올바르게 처리하기 위해사용
-                        val intentSenderRequest =
-                            IntentSenderRequest.Builder(exception.resolution).build()
-                        locationSettingsLauncher.launch(intentSenderRequest)
-                    } catch (sendEx: IntentSender.SendIntentException) {
-                        sendEx.printStackTrace()
-                    }
-                }
-            }
-        }
+        mainActivityViewModel.checkLocationSettings()
     }
 
     override fun onPause() {
@@ -193,8 +140,162 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     }
 
     private fun debugMode() {
-        if (BuildConfig.DEBUG_MODE) {
-            Toast.makeText(this@MainActivity, "개발자 모드", Toast.LENGTH_LONG).show()
+        mainActivityViewModel.debugMode()
+    }
+
+    private fun initObserve() {
+
+        /**
+         * 퍼미션_observe
+         */
+        mainActivityViewModel.permissionState.observe(this) { isGranted ->
+            if (isGranted) {
+                isNecessaryToRequestPermission = false
+                startMainService()
+            } else {
+                Handler(Looper.getMainLooper()).postDelayed({
+                    // 맵이 보여지기 전에 mapView.pause() 가 호출되면 맵이 출력되지 않아서
+                    // 권한 요청을 늦췄다.
+                    requestMultiplePermissions.launch(mainActivityViewModel.requestCheckPermissions())
+                }, 1_000)
+            }
+        }
+        mainActivityViewModel.checkPermissions()
+
+        /**
+         * 퍼미션 결과_observe
+         */
+        mainActivityViewModel.resultPermission.observe(this) { allGranted ->
+            if (allGranted) {
+                startMainService()
+                if (map != null) {
+                    mainActivityViewModel.startLocation()
+                }
+            } else {
+                Logger.d("일부 권한이 거부됨======")
+                CustomPopup.Builder(this)
+                    .setTitle(getString(R.string.pop_emergency_completed_title))
+                    .setMessage(getString(R.string.pop_failed_permission_message))
+                    .setOnOkClickListener(getString(R.string.pop_btn_confirm)) {
+                        finish()
+                    }
+                    .build()
+                    .show()
+            }
+        }
+
+        /**
+         * debugMode_observe
+         */
+        mainActivityViewModel.isDebugMode.observe(this) { isDebugMode ->
+            if (isDebugMode) {
+                Toast.makeText(this@MainActivity, "개발자 모드", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        /**
+         * 현재위치_observe
+         */
+        mainActivityViewModel.currentLocation.observe(this) { location ->
+            updateCurrentLocationMarker(map!!, location.latitude, location.longitude)
+            if (isFirstLocationUpdate) {
+                map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(location.latitude, location.longitude)))
+                isFirstLocationUpdate = false // 첫 위치 업데이트 이후로는 카메라 이동하지 않음
+            }
+        }
+
+        /**
+         * 위치정보(정확도)설정_observe
+         */
+        mainActivityViewModel.isLocationAccuracy.observe(this) { (_, exception) ->
+            if (exception is ResolvableApiException) {
+                try {
+                    // ResolvableApiException에서 제공되는 IntentSender를 올바르게 처리하기 위해사용
+                    val intentSenderRequest =
+                        IntentSenderRequest.Builder(exception.resolution).build()
+                    locationSettingsLauncher.launch(intentSenderRequest)
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    sendEx.printStackTrace()
+                }
+            }
+        }
+
+        /**
+         * ble 등록 여부_observe
+         */
+        mainActivityViewModel.isRegister.observe(this) { isRegister ->
+            if (isRegister) {
+                val intent = Intent(this, DeviceSettingsActivity::class.java)
+                startActivity(intent)
+            } else {
+                mainActivityViewModel.enableBleAdapter()
+            }
+        }
+
+        /**
+         * Bluetooth 활성화 여부_observe
+         */
+        mainActivityViewModel.isEnableBleAdapter.observe(this) { isEnable ->
+            if (isEnable == false) {
+                // 활성화가 안 되어 있을 경우
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                requestBluetooth.launch(enableBtIntent)
+            } else {
+                val intent = Intent(this, RegisterDeviceActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
+        /**
+         * 위급 상황 신고 여부_observe
+         */
+        mainActivityViewModel.isEmergency.observe(this) { isEmergency ->
+            if (isEmergency) {  //신고중인 상태(=true)
+                CustomPopup.Builder(this)
+                    .setTitle(getString(R.string.pop_emergency_completed_title))
+                    .setMessage(getString(R.string.pop_emergency_cancel_description))
+//                    .setConfirmButtonText(getString(R.string.pop_btn_yes))
+                    .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
+                        mainActivityViewModel.stateConnected()
+                    }
+                    .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
+                        // no code
+                    }
+                    .build()
+                    .show()
+            } else {
+                // 신고화면 이동
+                val intent = Intent(this, ReportActivity::class.java)
+                emergencyLauncher.launch(intent)
+                emergencyEffect(true)
+            }
+        }
+
+        /**
+         * 기기 연결 상태_observe
+         */
+        mainActivityViewModel.isConnected.observe(this) { isConnected ->
+            if (isConnected) {
+                // 기기 연결 상태에서 신고 취소
+                mainActivityViewModel.connectStateCancelEmergency()
+            } else {
+                // 기기 미연결 상태에서 신고 취소
+                mainActivityViewModel.disConnectStateCancelEmergency()
+                updateUi()
+                emergencyEffect(false)
+            }
+        }
+
+        /**
+         * 신고중 UI 상태_observe
+         */
+        mainActivityViewModel.isUpdateUi.observe(this) { isEmergencyUi ->
+            if (isEmergencyUi) {
+                // binding.btnEmergencyReport.text = "신고취소"
+                binding.btnEmergencyReport.setBackgroundResource(R.drawable.btn_emergency_cancel_selector)
+            } else {
+                binding.btnEmergencyReport.setBackgroundResource(R.drawable.btn_emergency_selector)
+            }
         }
     }
 
@@ -210,46 +311,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
         // 신고/신고취소하기
         binding.btnEmergencyReport.setOnClickListener {
-            if (isEmergency()) {
-                CustomPopup.Builder(this)
-                    .setTitle(getString(R.string.pop_emergency_completed_title))
-                    .setMessage(getString(R.string.pop_emergency_cancel_description))
-//                    .setConfirmButtonText(getString(R.string.pop_btn_yes))
-                    .setOnOkClickListener(getString(R.string.pop_btn_yes)) {
-                        if ((application as GaboApplication).isConnected) {
-                            // 기기 연결 상태에서 신고 취소
-                            BleManager.instance?.cmdEmergency(false)
-                        } else {
-                            // 기기 미연결 상태에서 신고 취소
-                            val eventId = (application as GaboApplication).eventId
-                            ApiSender.cancelEvent(this@MainActivity, eventId)
-                            (application as GaboApplication).isEmergency = false
-                            updateUi()
-                            emergencyEffect(false)
-                        }
-                    }
-                    .setOnCancelClickListener(getString(R.string.pop_btn_no)) {
-                        // no code
-                    }
-                    .build()
-                    .show()
-
-            } else {
-                // 신고화면 이동
-                val intent = Intent(this, ReportActivity::class.java)
-                emergencyLauncher.launch(intent)
-                emergencyEffect(true)
-            }
+            mainActivityViewModel.stateEmergency()
         }
 
         // 설정
         binding.btnSetting.setOnClickListener {
-            if (UserDeviceManager.isRegister(this)) {
-                val intent = Intent(this, DeviceSettingsActivity::class.java)
-                startActivity(intent)
-            } else {
-                enableBleAdapter()
-            }
+            mainActivityViewModel.bleRegister()
         }
 
         /*
@@ -363,7 +430,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 Logger.d("===> onMapReady")
 
                 if (!isNecessaryToRequestPermission) {
-                    startLocation()
+                    mainActivityViewModel.startLocation()
                 }
 
                 /**
@@ -495,12 +562,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     }
 
     private fun updateUi() {
-        if (isEmergency()) {
-            // binding.btnEmergencyReport.text = "신고취소"
-            binding.btnEmergencyReport.setBackgroundResource(R.drawable.btn_emergency_cancel_selector)
-        } else {
-            binding.btnEmergencyReport.setBackgroundResource(R.drawable.btn_emergency_selector)
-        }
+        mainActivityViewModel.stateEmergencyUi()
     }
 
     /*
@@ -592,75 +654,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
-    // 신고 여부 반환
-    private fun isEmergency(): Boolean {
-        return (application as GaboApplication).isEmergency
-    }
-
-    private fun checkPermissions(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            return hasPermissions(this@MainActivity, permissionsAndy14)
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return hasPermissions(this@MainActivity, permissionsAndy13)
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return hasPermissions(this@MainActivity, permissionsAndy12)
-        } else {
-            return hasPermissions(this@MainActivity, permissionsAndy11)
-        }
-    }
-
-
-    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean {
-        return permissions.all { permission ->
-            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
-        }
-    }
-
-    private fun requestPermissions() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            requestMultiplePermissions.launch(permissionsAndy14)
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestMultiplePermissions.launch(permissionsAndy13)
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            requestMultiplePermissions.launch(permissionsAndy12)
-        } else {
-            requestMultiplePermissions.launch(permissionsAndy11)
-        }
-    }
 
     private val requestMultiplePermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val allGranted = permissions.all { it.value } // 모든 권한이 승인되었는지 확인
-        if (allGranted) {
-            Logger.d("모든 권한이 허용됨")
-            startMainService()
-            if (map != null) {
-                startLocation()
-            }
-        } else {
-            Logger.d("일부 권한이 거부됨")
-
-            CustomPopup.Builder(this)
-                .setTitle(getString(R.string.pop_emergency_completed_title))
-                .setMessage(getString(R.string.pop_failed_permission_message))
-                .setOnOkClickListener(getString(R.string.pop_btn_confirm)) {
-                    finish()
-                }
-                .build()
-                .show()
-        }
-    }
-
-    private fun startLocation() {
-        LocationHelper.startLocation(this@MainActivity) { latitude, longitude ->
-            updateCurrentLocationMarker(map!!, latitude, longitude)
-            if (isFirstLocationUpdate) {
-                map?.moveCamera(CameraUpdateFactory.newCenterPosition(LatLng.from(latitude, longitude)))
-                isFirstLocationUpdate = false // 첫 위치 업데이트 이후로는 카메라 이동하지 않음
-            }
-        }
+        mainActivityViewModel.handlePermissionResult(permissions)
     }
 
     private val locationSettingsLauncher = registerForActivityResult(
@@ -692,29 +690,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
-    private fun enableBleAdapter() {
-        val bluetoothManager: BluetoothManager = getSystemService(BluetoothManager::class.java)
-        bluetoothAdapter = bluetoothManager.adapter
-        Logger.d("bluetoothAdapter_info : $bluetoothAdapter")
-        Logger.d("bluetoothAdapter_boolean : ${bluetoothAdapter?.isEnabled}")
-
-        // 블루투스 활성화 상태 체크
-        if (bluetoothAdapter?.isEnabled == false) {
-            // 활성화가 안 되어 있을 경우
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            requestBluetooth.launch(enableBtIntent)
-
-        } else { // 활성화가 되어 있을 경우
-            val intent = Intent(this, RegisterDeviceActivity::class.java)
-            startActivity(intent)
-        }
-    }
 
     private fun startMainService() {
-        if (BleManager.instance == null) {
-            val intent = Intent(this@MainActivity, BleManager::class.java)
-            startService(intent)
-        }
+        mainActivityViewModel.startMainService()
     }
 
     // region * 흔들기 감지 처리
